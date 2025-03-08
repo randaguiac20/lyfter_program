@@ -1,5 +1,6 @@
-import json
-from data import write_student_info, convert_csv_to_dict, show_as_csv
+from data import (write_student_info, load_csv_as_dict,
+                  load_as_csv, export_csv_records,
+                  import_csv_records)
 
 
 def calculate_grade_average(grades, single_avg=False):
@@ -102,9 +103,10 @@ def get_grade_average_per_student(data):
 
 def read_students_info(format="csv"):
     if format == "csv":
-        show_as_csv()
+        student_info = load_as_csv()
+        return student_info
     if format == "dict":
-        student_info = convert_csv_to_dict()
+        student_info = load_csv_as_dict()
         return student_info
 
 
@@ -150,7 +152,8 @@ def get_student_info():
 
 
 def get_all_student_info():
-    print_student_info()
+    student_info = read_students_info(format="csv")
+    print_student_info(student_info)
 
 
 def get_third_grades():
@@ -183,18 +186,31 @@ def get_average_grade_among_all():
         print()
 
 
+def export_records_as_csv():
+    export_csv_records()
+
+
+def import_records_as_csv(filename="exported_student_records.csv"):
+    student_info = import_csv_records()
+    print_student_info(student_info)
+
+
 def exit_program():
     print("\nExiting program.\n")
     return False
 
 
-def print_student_info():
+def print_student_info(student_records):
     print("\n======================================\n")
-    print("Student records: ")
-    print("\n--------------------------------------\n")
-    read_students_info(format="csv")
-    print("\n--------------------------------------\n")
-    print("======================================\n")
+    print("Student records: \n")
+    #print("\n--------------------------------------\n")
+    if student_records is None:
+        print("There are not records in the system.")
+    else:
+        for student_record in student_records:
+            print(student_record)
+    #print("\n--------------------------------------\n")
+    print("\n======================================\n")
 
 
 def print_menu(menu):

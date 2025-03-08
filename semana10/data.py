@@ -1,5 +1,6 @@
 import os
 import csv
+import shutil
 
 def extract_keys_structure(headers):
     clean_dataset = []
@@ -11,7 +12,22 @@ def extract_keys_structure(headers):
     return clean_dataset
 
 
-def write_student_info(dataset, filename="student_info.txt"):
+def transform_dict_to_csv(student_records):
+    header_string = "name,class,spanish_grade,english_grade,history_grade,science_grade"
+    row_list = []
+    row_string = ""
+    if student_records is not None:
+        for _, student_record in student_records.items():
+            for _, value in student_record.items():
+                row_string += f"{value},"
+            row_list.append(row_string[0:-1])
+        row_list.insert(0, header_string)
+        return row_list
+    else:
+        return None
+
+
+def write_student_info(dataset, filename="student_info.csv"):
     headers = extract_keys_structure(dataset)
     content = 0
     try:
@@ -28,16 +44,19 @@ def write_student_info(dataset, filename="student_info.txt"):
             csv_writter.writerows(dataset)
 
 
-def show_as_csv(filename="student_info.txt"):
+def load_as_csv(filename="student_info.csv"):
+    student_info = []
     try:
         with open(filename, 'r', encoding="utf-8") as file:
             data = csv.reader(file, delimiter=',')
             for rows in data:
-                print(', '.join(rows))
+                student_data = ', '.join(rows)
+                student_info.append(student_data)
+            return student_info
     except FileNotFoundError:
         print("No information available at the moment.")
 
-def convert_csv_to_dict(filename="student_info.txt"):
+def load_csv_as_dict(filename="student_info.csv"):
     dict_data = {}
     try:
         with open(filename, 'r', encoding="utf-8") as file:
@@ -53,3 +72,26 @@ def convert_csv_to_dict(filename="student_info.txt"):
             return dict_data
     except FileNotFoundError:
         print("\nThere are not records in the system yet.")
+
+
+def export_csv_records(filename="exported_student_records.csv"):
+    src_file = "student_info.csv"
+    destination_file = filename
+    try:
+        if os.path.exists(filename):
+            print("\nFile has already been exported.")
+        else:
+            shutil.copy(src_file, destination_file)
+            print("\nFile succesfully exported!")
+    except FileNotFoundError:
+        print("\nNo file has been exported yet.")
+
+
+def import_csv_records(filename="exported_student_records.csv"):
+    try:
+        if os.path.getsize(filename):
+            student_info = load_as_csv(filename=filename)
+            return student_info
+    except FileNotFoundError:
+        print("\nFile does not exist, no previous file has been exported.")
+        
