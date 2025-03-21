@@ -57,20 +57,20 @@ def print_results(human_body):
 
 
 class Head:
-    # ears, eyes, nouse, mouth, forhead, chick, chin and jaw
+    # ears, eyes, nose, mouth, forhead, cheek, chin and jaw
     def __init__(self):
         self.ears = "ears"
         self.eyes = "eyes"
-        self.nouse = "nouse"
+        self.nose = "nose"
         self.mouth = "mouth"
         self.forhead = "forhead"
-        self.chick = "chick"
+        self.cheek = "cheek"
         self.chin = "chin"
         self.jaw = "jaw"
         
     def get_result(self):
-        head_list = [self.ears, self.eyes, self.nouse, self.mouth,
-                     self.forhead, self.chick, self.chin, self.jaw]
+        head_list = [self.ears, self.eyes, self.nose, self.mouth,
+                     self.forhead, self.cheek, self.chin, self.jaw]
         head = {"head": []}
         for part in head_list:
             head["head"].append(part)

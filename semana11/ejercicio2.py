@@ -10,37 +10,38 @@
 """
 import random
 
-class Person():
-    def get_person_name(self, name):
+class Person:
+    def __init__(self, name):
         self.name = name
 
 class Bus:
-    def __init__(self):
+    def __init__(self, cls):
         self.max_passenger = 5
         self.seats = random.sample(range(1, 1001), 1000)
         self.exceed_passengers = f"\nSorry, No more passenger are allowed. ONLY {self.max_passenger}"
+        self.person = cls
 
     def counter(self, action, counter):
+        if self.max_passenger <= counter:
+            return False
         if action == "add":
             counter += 1
+            return True
         if action == "remove" and counter == 0:
             counter = 0
+            return True
         if action == "remove" and counter > 0:
             counter -= 1
-        return counter
-        
-    def take_class(self, cls):
-        self.instance = cls
+            return True
     
-    def add_passenger(self, seat, passenger_list, passenger):
-        if self.max_passenger <= counter:
-            print(self.exceed_passengers)
-        if self.max_passenger > counter:
-            passenger_list.append(passenger)
-            self.passenger = self.instance.name
+    def add_passenger(self, seat, passenger_list, passenger_info):
+        true_false = self.counter("add", counter)
+        if true_false:
+            passenger_list.append(passenger_info)
             self.passengers = passenger_list
-            self.counter("add", counter)
-            print(f"\nPassenger: {self.passenger} - seat: {seat} -  get on the bus.")
+            print(f"\nPassenger: {self.person.name} - seat: {seat} -  get on the bus.")
+        if true_false is False:
+            print(self.exceed_passengers)
     
     def remove_passenger(self, counter, passenger_list, passenger_name):
         if len(passenger_list) == 0:
@@ -65,7 +66,7 @@ class Bus:
                     print(f"Passenger name: {name} - Seat number: {seat}")
             return True
 
-class Menu():
+class Menu:
     def __init__(self, menu):
          self.menu = menu
 
@@ -79,8 +80,8 @@ class Menu():
                 1: "add",
                 2: "remove",
                 3: "show",
-                4: "exit",
-                5: "print_menu"
+                4: "print_menu",
+                5: "exit"
                 
             }
             return menu_options.get(option)
@@ -102,8 +103,8 @@ Please select an option:
 1. Add passenger.
 2. Remove passenger.
 3. Show list of passengers.
-4. Exit program.
-5: Print menu
+4. Print menu.
+5: Exit program
 
 
 """
@@ -116,14 +117,12 @@ while program_on:
     try:
         option = _menu.get_menu_option()
         menu_option = _menu.menu_options(option)
-        person_name = Person()
-        passenger = Bus()
-        passenger.take_class(person_name)
+        #passenger = Bus
         if menu_option == "add":
             passenger_name = input("\nPlease enter passenger name: ")
-            person_name.get_person_name(passenger_name)
+            passenger = Bus(Person(passenger_name))
             menu_counter = passenger.counter(menu_option, counter)
-            passenger_dict = {passenger.instance.name: passenger.seats[counter]}
+            passenger_dict = {passenger.person.name: passenger.seats[counter]}
             passenger.add_passenger(passenger.seats[counter], passenger_list, passenger_dict)
         if menu_option == "remove":
             on_board_passengers = passenger.get_passengers(passenger_list)
