@@ -54,7 +54,7 @@ def load_as_csv(filename="student_info.csv"):
                 student_info.append(student_data)
             return student_info
     except FileNotFoundError:
-        print("No information available at the moment.")
+        print("")
 
 def load_csv_as_dict(filename="student_info.csv"):
     dict_data = {}
@@ -81,7 +81,7 @@ def export_csv_records(filename="exported_student_info.csv"):
         shutil.copy(src_file, destination_file)
         print("\nFile succesfully exported!")
     except FileNotFoundError:
-        print("\nNo file has been exported yet.")
+        print("\nUnable to export the file, because there is not data available yet!!")
 
 
 def import_csv_records(filename="exported_student_info.csv"):

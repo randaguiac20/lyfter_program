@@ -44,7 +44,7 @@ from data import (write_student_info, load_as_csv, load_csv_as_dict,
                   export_csv_records, import_csv_records)
 
 
-class Student():
+class Student:
     def __init__(self, name, s_class,
                  spanish_grade, english_grade,
                  history_grade, science_grade):
@@ -55,7 +55,7 @@ class Student():
         self.history_grade = history_grade
         self.science_grade = science_grade
 
-    def create_student(self):
+    def get_student_as_dict(self):
         student_info = {
             "name": self.name,
             "class": self.s_class,
@@ -65,10 +65,9 @@ class Student():
             "science_grade": self.science_grade
         }
         self.student_data = student_info
-        write_student_info(student_info)
 
 
-class StudentManager():
+class StudentManager:
     
     def set_student_info(self):
         student_info = {
@@ -82,7 +81,8 @@ class StudentManager():
         self.student = Student(student_info["name"], student_info["class"],
                         student_info["spanish_grade"], student_info["english_grade"],
                         student_info["history_grade"], student_info["science_grade"])
-        self.student.create_student()
+        self.student.get_student_as_dict()
+        write_student_info(self.student.student_data)
 
     def read_students_info(self, format="csv"):
         if format == "csv":
@@ -98,6 +98,7 @@ class StudentManager():
 
     def _get_grade_average_per_student(self):
         self.grade_average = get_grade_average_per_student(self.read_students_info(format="dict"))
+        return self.grade_average
  
     def _get_grades_per_student(self):
         self.all_grades_sorted, self.all_grades = get_grades_per_student(self.grade_average)
@@ -106,17 +107,18 @@ class StudentManager():
         self.top_three = validated_top_three(self.all_grades_sorted, self.all_grades)
 
     def get_top_third_grades(self):
-        self._get_grade_average_per_student()
-        self._get_grades_per_student()
-        self._validated_top_three()
-        print("\nTop 3 grades average per student: ")
-        counter = 1
-        for top in self.top_three:
-            print(f"\nTop {counter} Student(s)")
-            for student_info in [data for data in top]:
-                for student, grade in student_info.items():
-                    print(f"{student}: {grade}")
-            counter = counter + 1
+        average_per_student = self._get_grade_average_per_student()
+        if average_per_student:
+            self._get_grades_per_student()
+            self._validated_top_three()
+            print("\nTop 3 grades average per student: ")
+            counter = 1
+            for top in self.top_three:
+                print(f"\nTop {counter} Student(s)")
+                for student_info in [data for data in top]:
+                    for student, grade in student_info.items():
+                        print(f"{student}: {grade}")
+                counter = counter + 1
             
     def get_average_grade_among_all(self):
         student_info = self.read_students_info(format="dict")

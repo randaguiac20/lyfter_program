@@ -1,6 +1,4 @@
-from data import (write_student_info, load_csv_as_dict,
-                  load_as_csv, export_csv_records,
-                  import_csv_records)
+
 
 
 def calculate_grade_average(grades, single_avg=False):
@@ -98,7 +96,8 @@ def get_grade_average_per_student(data):
         students_avg_grade = calculate_grade_average(average_grade_per_student)
         return students_avg_grade
     except AttributeError:
-        print("")
+        print("\nNo data is available yet!!\n")
+        return None
 
 
 def validate_grade_input(grade, subject):
