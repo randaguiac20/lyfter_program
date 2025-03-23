@@ -97,7 +97,6 @@ Please select an option:
 
 
 """
-passenger_dict = {}
 _menu = Menu(menu)
 _menu.print_menu()
 passenger = Bus()
