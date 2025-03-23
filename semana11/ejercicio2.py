@@ -15,53 +15,42 @@ class Person:
         self.name = name
 
 class Bus:
-    def __init__(self, cls):
+    def __init__(self):
         self.max_passenger = 5
         self.seats = random.sample(range(1, 1001), 1000)
-        self.exceed_passengers = f"\nSorry, No more passenger are allowed. ONLY {self.max_passenger}"
-        self.person = cls
+        self.exceed_passengers = f"\nSorry, Only {self.max_passenger} passenger are allowed."
+        self.passenger_list = []
 
-    def counter(self, action, counter):
-        if self.max_passenger <= counter:
-            return False
-        if action == "add":
-            counter += 1
-            return True
-        if action == "remove" and counter == 0:
-            counter = 0
-            return True
-        if action == "remove" and counter > 0:
-            counter -= 1
-            return True
-    
-    def add_passenger(self, seat, passenger_list, passenger_info):
-        true_false = self.counter("add", counter)
-        if true_false:
-            passenger_list.append(passenger_info)
-            self.passengers = passenger_list
-            print(f"\nPassenger: {self.person.name} - seat: {seat} -  get on the bus.")
-        if true_false is False:
+    def counter(self):
+        if self.max_passenger <= len(self.passenger_list):
             print(self.exceed_passengers)
+            return False
+        return True
     
-    def remove_passenger(self, counter, passenger_list, passenger_name):
-        if len(passenger_list) == 0:
+    def add_passenger(self):
+        self.person = Person(input("\nPlease enter passenger name: "))
+        seat = 0 if len(self.passenger_list) == 0 else len(self.passenger_list)
+        self.passenger_list.append({self.person.name: self.seats[seat]})
+        print(f"\nPassenger: {self.person.name} - seat: {self.seats[seat]} -  get on the bus.")
+    
+    def remove_passenger(self, passenger_name):
+        if len(self.passenger_list) == 0:
             print("\nNo passengers on board.")
-        if len(passenger_list) != 0:
-            for index, passenger in enumerate(passenger_list[:]):
+        if len(self.passenger_list) != 0:
+            for index, passenger in enumerate(self.passenger_list[:]):
                 for name, seat in passenger.items():
                     if passenger_name == name:
-                        passenger_list.pop(index)
-                        self.counter("remove", counter)
+                        self.passenger_list.pop(index)
                         return f"\nPassenger name: {passenger_name} - seat: {seat} -  get down the bus."
             return f"\nPassenger name: {passenger_name} was not found on this bus."
             
-    def get_passengers(self, passenger_list):
-        if len(passenger_list) == 0:
+    def get_passengers(self):
+        if len(self.passenger_list) == 0:
             print("\nNo passengers on board.\n")
             return False
-        if len(passenger_list) != 0:
+        if len(self.passenger_list) != 0:
             print("\nPassengers on board are: \n")
-            for passenger in passenger_list:
+            for passenger in self.passenger_list:
                 for name, seat in passenger.items():
                     print(f"Passenger name: {name} - Seat number: {seat}")
             return True
@@ -108,32 +97,28 @@ Please select an option:
 
 
 """
-passenger_list = []
 passenger_dict = {}
 _menu = Menu(menu)
 _menu.print_menu()
+passenger = Bus()
 
 while program_on:
     try:
         option = _menu.get_menu_option()
         menu_option = _menu.menu_options(option)
-        #passenger = Bus
         if menu_option == "add":
-            passenger_name = input("\nPlease enter passenger name: ")
-            passenger = Bus(Person(passenger_name))
-            menu_counter = passenger.counter(menu_option, counter)
-            passenger_dict = {passenger.person.name: passenger.seats[counter]}
-            passenger.add_passenger(passenger.seats[counter], passenger_list, passenger_dict)
+            counter = passenger.counter()
+            if counter:
+                passenger.add_passenger()
         if menu_option == "remove":
-            on_board_passengers = passenger.get_passengers(passenger_list)
+            on_board_passengers = passenger.get_passengers()
             if on_board_passengers is False:
                 pass
             if on_board_passengers:
                 passenger_name = input("\nPlease enter passenger name: ")
-                menu_counter = passenger.counter(menu_option, counter)
-                print(passenger.remove_passenger(menu_counter, passenger_list, passenger_name))
+                print(passenger.remove_passenger(passenger_name))
         if menu_option == "show":
-            passenger.get_passengers(passenger_list)
+            passenger.get_passengers()
         if menu_option == "exit":
             program_on = False
             print("\nExiting program as requested!!\n")
@@ -141,9 +126,5 @@ while program_on:
             _menu.print_menu()
         if menu_option is None:
             print("\nThis option is not part of the choises in the menu.")
-        try:
-            counter = menu_counter
-        except NameError:
-            print()
     except ValueError:
         print("\nPlease enter a number.")
