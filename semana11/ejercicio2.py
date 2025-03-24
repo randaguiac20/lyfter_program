@@ -27,8 +27,8 @@ class Bus:
             return False
         return True
     
-    def add_passenger(self):
-        self.person = Person(input("\nPlease enter passenger name: "))
+    def add_passenger(self, cls):
+        self.person = cls
         seat = 0 if len(self.passenger_list) == 0 else len(self.passenger_list)
         self.passenger_list.append({self.person.name: self.seats[seat]})
         print(f"\nPassenger: {self.person.name} - seat: {self.seats[seat]} -  get on the bus.")
@@ -106,9 +106,11 @@ while program_on:
         option = _menu.get_menu_option()
         menu_option = _menu.menu_options(option)
         if menu_option == "add":
+            passenger_name = input("\nPlease enter passenger name: ")
+            person = Person(passenger_name)
             counter = passenger.counter()
             if counter:
-                passenger.add_passenger()
+                passenger.add_passenger(person)
         if menu_option == "remove":
             on_board_passengers = passenger.get_passengers()
             if on_board_passengers is False:
