@@ -8,7 +8,7 @@ from abc import ABC, abstractmethod
 import math
 
 
-class Shape:
+class Shape(ABC):
     
     @abstractmethod
     def calculate_perimeter(self):
@@ -51,12 +51,9 @@ class Square(Shape):
 
 
 class Rectangle(Shape):
-    def __init__(self, formula):
-        if formula == "perimeter":
-            self.length = int(input("\nProvide the length: "))
-        if formula == "area":
-            self.length = int(input("\nProvide the length: "))
-            self.width = int(input("\nProvide the width: "))
+    def __init__(self):
+        self.length = int(input("\nProvide the length: "))
+        self.width = int(input("\nProvide the width: "))
     
     def calculate_perimeter(self):
         # P=2(L+W)
@@ -169,7 +166,7 @@ Area of a shape (Circle, Square, Rectangle).
                 _formula = _menu.formula_menu()
                 shape = _menu.get_shape_formula(_shape)
                 if _shape == "rectangle":
-                    rectangle = shape(_formula)
+                    rectangle = shape()
                     if _formula == "perimeter":
                         rectangle.calculate_perimeter()
                     if _formula == "area":

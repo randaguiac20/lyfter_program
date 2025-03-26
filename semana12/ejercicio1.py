@@ -13,42 +13,52 @@ from abc import ABC, abstractmethod
 
 
 class BankAccount(ABC):
-    # Balance is in dolars
-    balance = 0
+    def __init__(self, balance=0):
+        # Balance is in dolars
+        self.balance = balance
     
     @abstractmethod
     def withdraw(self, amount):
-        # Get money out of my account
-        self.balance -= amount
+        pass
 
     @abstractmethod
     def deposit(self, amount):
-        # Put money in my account
-        self.balance += amount
+        pass
     
 
 class SavingsAccount(BankAccount):
-    def __init__(self, min_balance):
+    def __init__(self, balance, min_balance):
+        self.balance = balance
         # Minimun balance is in dolares
         self.min_balance = min_balance
-    
-    def check_min_balance(self):
-        if self.min_balance > self.balance:
-            print(f"\n>> IMPORTANT: WARNING You are under the minimum balance {self.min_balance}, please make a deposit to avoid a fee of 2$.")
-            print(f">> Your current balance is {self.balance}$")
-        else:
-            print(f"\nYou add {amount}$ to your account. Your new balance is: {self.balance}$")
+
+    def validate_widthdraw_balance(self, amount):
+        subtraction = self.balance - amount
+        if self.min_balance > subtraction:
+            print(f"\n>> You are under the minimum balance {self.min_balance}$.")
+            print(f"\n>> Your current balance is: {self.balance}$.")
+        if self.balance < amount:
+            print(f"\n>> There is not enough money in your account.")
+            print(f"\n>> Your current balance is: {self.balance}$.")
+        if self.min_balance <= subtraction:
+            self.balance -= amount
+            print(f"\nYou take out {amount}$ to your account. Your new balance is: {self.balance}$")
 
     def withdraw(self):
         # Get money out of my account
-        print("\nYou are not allowed to take money out of your account!!")
-        
-    def deposit(self, amount):
+        if self.balance == 0:
+            print(f"\n>> No enough money in your account!! Your current balance is: {self.balance}$.")
+        if self.balance != 0:
+            print(f"\nRemember the minimun amount in your account should be: {self.min_balance}$.")
+            amount = int(input("\nPlease enter the amount you want to take out: "))
+            self.validate_widthdraw_balance(amount)
+
+    def deposit(self):
+        amount = int(input("\nPlease enter the amount of your deposit: "))
         # Put money in my account
         self.balance += amount
-        self.check_min_balance()
-        
-        
+        print(f"\nYou add {amount}$ to your account. Your new balance is: {self.balance}$")
+
     def get_balance(self):
         print(f"\nYour balance is: {self.balance}$")
 
@@ -98,16 +108,14 @@ Please select an option:
 passenger_dict = {}
 _menu = Menu(menu)
 _menu.print_menu()
-saving_account = SavingsAccount(10)
-saving_account.check_min_balance()
+saving_account = SavingsAccount(balance=0, min_balance=10)
 
 while program_on:
     try:
         option = _menu.get_menu_option()
         menu_option = _menu.menu_options(option)
         if menu_option == "add":
-            amount = int(input("\nPlease enter the amount: "))
-            saving_account.deposit(amount)
+            saving_account.deposit()
         if menu_option == "remove":
             saving_account.withdraw()
         if menu_option == "show":
