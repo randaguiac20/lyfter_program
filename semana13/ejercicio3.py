@@ -24,19 +24,19 @@ class User:
 
 def adult_only(func):
     def wrapper(user):
-        func(user)
+        print("\nValidating your age to make sure you can buy the concert ticket...")
         if user.age < 18:
-            print(f"Your age is {user.age}.")
+            print(f"\nYour age is {user.age}.")
             raise ValueError("You are not an adult yet, your under 18 years old.")
         else:
             print(f"\nYour age is: {user.age}, please proceed with the purchase of your ticket.")
             print()
-        
+        return func(user)
     return wrapper
 
 @adult_only
 def buy_ticket(user):
-    print("\nValidating your age to make sure you can buy the concert ticket...")
+    return user
 
 user_birth_date = date(2008, 11, 17)
 user = User(user_birth_date)
