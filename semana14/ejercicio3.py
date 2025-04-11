@@ -62,7 +62,6 @@ class BinaryTree:
     def insert(self, node):
         print(f"\n================ Inserting {node.data} ================")
         while not self.queue.is_empty:
-            # current_node = self.queue.remove()
             current_node = self.queue.current_node()
             print(f"\n===> Visiting Node {current_node.data}")
             if current_node.left is None:
@@ -76,25 +75,6 @@ class BinaryTree:
                 self.queue.add(node)
                 self.queue.remove()  # Current node now has 2 children
                 return
-            # if not current_node.left:
-            #     print("Left")
-            #     current_node.left = node
-            #     print(f"Inserted {node.data} to the LEFT of {current_node.data}")
-            #     return
-            # else:
-            #     print("Left")
-            #     print(f"{current_node.data} already has LEFT child {current_node.left.data}")
-            #     self.queue.add(current_node.left)
-
-            # if not current_node.right:
-            #     print("Right")
-            #     current_node.right = node
-            #     print(f"Inserted {node.data} to the RIGHT of {current_node.data}")
-            #     return
-            # else:
-            #     print("Right")
-            #     print(f"{current_node.data} already has RIGHT child {current_node.right.data}")
-            #     self.queue.add(current_node.right)
 
     def print_structure(self, node=None, level=0, prefix="\nRoot-- "):
         if node is None:
