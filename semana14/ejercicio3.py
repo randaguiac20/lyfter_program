@@ -33,13 +33,15 @@ class QueueManager:
         self.right = new_node
         
     def remove(self):
-        if self.left is None:
-            return None
-        new_node = self.left.node
+        # if self.left is None:
+        #     print("Queuemanager remove method - left is NONE")
+        #     return None
+        current_node = self.left.node
         self.left = self.left.next
-        if self.left is None:
-            self.right = None
-        return new_node
+        # if self.left is None:
+        #     self.right = None
+        #     print("Queuemanager remove method - left is NONE")
+        return current_node
     
     def current_node(self):
         if self.left:
@@ -96,3 +98,4 @@ for node in range(2, 18):
     tree.insert(Node(node))
 
 tree.print_structure()
+
