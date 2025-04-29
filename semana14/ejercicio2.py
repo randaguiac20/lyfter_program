@@ -27,7 +27,7 @@ class DoubleEndedQueue:
 
     def push_left(self, node):
         # Add nodes to the beginning=head=left
-        if self.tail is None:
+        if self.head is None:
             self.tail = node
         node.next = self.head
         self.head = node
@@ -35,11 +35,10 @@ class DoubleEndedQueue:
     def push_right(self, node):
         # Add nodes to the end=tail=right
         if self.head is None:
-            self.head = node
-            self.tail = node
+            self.head = self.tail = node
         else:
-            self.tail.next = node
-            self.tail = node
+            self.tail.next = node # second - fourth
+            self.tail = node # fourth
 
     def pop_left(self):
         # Remove nodes to the beginning
@@ -48,10 +47,10 @@ class DoubleEndedQueue:
         # Data structure: Node: Third <==> Node: First <==> Node: Fourth <==> Node: Second
         # `self.head` is Third
         # `remove_node` will removed Third node
-        remove_node = self.head
+        remove_node = self.head.data
         # `self.head` now becomes First
         self.head = self.head.next
-        return remove_node.data
+        return remove_node
     
     def pop_right(self):
         # Remove nodes to the end
@@ -84,7 +83,7 @@ class DoubleEndedQueue:
         # Node in `self.tail` which was found a matched
         # so `current_node` will hold previous element than the one in `self.tail` 
         # Node in `self.tail` is now saved in remove_node to be deleted.
-        remove_node = self.tail
+        remove_node = self.tail.data
         # Here we replace last element with None
         # Data structure: Node: Third <==> Node: First <==> Node: Fourth <==> Node: Second
         # `current_node.next` will be Second, and it is reset or replace for None
@@ -92,7 +91,7 @@ class DoubleEndedQueue:
         current_node.next = None
         # `self.tail` now becomes Fourth
         self.tail = current_node
-        return remove_node.data
+        return remove_node
 
     def print_structure(self, action):
         action = "Pushing nodes" if action == "push" else "Popping node"

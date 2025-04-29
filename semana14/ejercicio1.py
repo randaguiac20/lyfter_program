@@ -27,7 +27,6 @@ stack.pop()       # Pop (removes 20 the last element)
 
 """
 
-
 class Node:
     """Defines a single node in the stack."""
     def __init__(self, data):

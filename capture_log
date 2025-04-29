@@ -1,0 +1,27 @@
+
+Double Ended Queue logic
+
+ ==> Push node
+
+Node: Second ==> Node: First ==> Node: Third ==> Node: Forth
+
+
+ ==> Pop node
+
+Node: Second ==> Node: First ==> Node: Third ==> Node: Forth
+
+
+Node: First ==> Node: Third ==> Node: Forth
+
+
+Node: Third ==> Node: Forth
+
+> /Users/randall_aguilar/Documents/Randall_Aguilar/STUDY/LYFTER/git/lyfter_program/semana14/datastructures.py(59)pop_right()
+-> return remove_node
+(Pdb) --KeyboardInterrupt--
+(Pdb) (Pdb) --KeyboardInterrupt--
+(Pdb) --KeyboardInterrupt--
+(Pdb) --KeyboardInterrupt--
+(Pdb) --KeyboardInterrupt--
+(Pdb) --KeyboardInterrupt--
+(Pdb) 
