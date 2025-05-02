@@ -28,7 +28,7 @@ def print_10_or_less_elements(list_to_print):
 		print(list_to_print[index])
 
 # >> generate_list_trios
-# Big O Notation of O(n)
+# Big O Notation of O(n^3)
 def generate_list_trios(list_a, list_b, list_c):
 	result_list = []
 	for element_a in list_a:
