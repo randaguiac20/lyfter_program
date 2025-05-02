@@ -30,8 +30,8 @@ def test_bubble_sort_large_list():
     correctamente con una lista grande.
     """
     # Arrange
-    input_list = [i for i in range(100, 0, -1)]
-    expected_output = [i for i in range(1, 101)]
+    input_list = [i for i in range(102, 0, -1)]
+    expected_output = [i for i in range(1, 103)]
     # Act
     result = bubble_sort(input_list)
     # Assert
