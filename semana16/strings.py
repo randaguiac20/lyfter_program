@@ -5,6 +5,12 @@
 """
 
 def reverse_string(string):
+    if not isinstance(string, str):
+      raise TypeError("Input must be a string")
+    if len(string) == 0:
+        return string
+    if len(string) == 1:
+        return string
     _string = ""
     for gnirts in range(len(string)-1, -1, -1):
         _string += string[gnirts]

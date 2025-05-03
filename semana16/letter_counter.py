@@ -4,6 +4,10 @@
 """
 
 def letter_case_counter(string):
+    if not isinstance(string, str):
+        raise TypeError("The input must be a string")
+    if len(string) == 0:
+        raise ValueError("The input string cannot be empty")
     upper_case = 0
     lower_case = 0
     msg = ""

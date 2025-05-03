@@ -5,6 +5,10 @@
 """
 
 def add_numbers(number_list):
+    if not isinstance(number_list, list):
+      raise TypeError("Input must be a list")
+    if len(number_list) == 0:
+        return 0
     result = 0
     for number in number_list:
         result += number
