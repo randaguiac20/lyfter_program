@@ -6,6 +6,8 @@ código de la lección.
 """
 
 def bubble_sort(elements):
+    if not isinstance(elements, list):
+      raise TypeError("Input must be a list")
     print(elements)
     n_elements = len(elements)
     made_change = False
