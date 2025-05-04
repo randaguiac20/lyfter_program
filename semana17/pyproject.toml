@@ -1,0 +1,10 @@
+[project]
+name = "semana17"
+version = "0.1.0"
+description = "Semana 17 - PySimpleGUI"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "freesimplegui>=5.2.0.post1",
+    "freesimpleguiweb>=1.1.0",
+]
