@@ -32,14 +32,18 @@ def add_category(value, filename="data/categories.txt"):
         file.write(f"{value}\n")
 
 def write_finance_data(dataset, headers=None,
-                       filename="data/my_finance_data.csv"):
+                       filename="my_finance_data.csv"):
     content = 0
+    data_dir = "data/"
+    file_path = os.path.join(data_dir, filename)
     try:
-        if os.path.getsize(filename):
-            content = os.path.getsize(filename)
+        if not os.path.exists(data_dir):
+            os.mkdir(data_dir)
+        if os.path.getsize(file_path):
+            content = os.path.getsize(file_path)
     except FileNotFoundError:
         content = 0
-    with open(filename, 'a', encoding='utf-8', newline='') as file:
+    with open(file_path, 'a', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
         if content == 0:
             writer.writerow(headers)
