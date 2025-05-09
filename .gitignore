@@ -12,6 +12,7 @@ ENV/
 .conda/
 .mypy_cache/
 .pytest_cache/
+v3*
 
 # Installer logs
 pip-log.txt

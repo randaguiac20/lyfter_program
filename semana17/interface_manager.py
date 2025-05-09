@@ -143,7 +143,6 @@ class InterfaceTransactionHandler:
     def run_main_window(self, window, handler, cls, data):
         while True:
             categories = handler.load_categories()
-            print(categories)
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
                 event, values = window.read(timeout=1000)
@@ -159,6 +158,6 @@ class InterfaceTransactionHandler:
                 cls.expense_window()
             # Refresh table view
             data_table = [row for row in data if len(row) == 4]
-            window['-TABLE-'].update(values=data_table))
+            window['-TABLE-'].update(values=data_table)
         window.close()
         self.data_manager.export_csv_file()
