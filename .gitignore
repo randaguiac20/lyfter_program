@@ -1,0 +1,131 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+.pipenv/
+.conda/
+.mypy_cache/
+.pytest_cache/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython history
+.profile_default/
+.ipython/
+
+# VS Code settings
+.vscode/
+.history/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Linux
+*~
+
+# Environments
+.env
+.env.*
+*.env
+
+# Editor backup files
+*.swp
+*.bak
+*.tmp
+
+# Compiled C extensions
+*.so
+
+# MyPy type checker
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# Pyright type checker
+.pyright/
+
+# Pylint
+.pylint.d/
+
+# Poetry
+poetry.lock
+
+# Coverage tool
+.coverage
+
+# Build
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Testing
+test-results/
+
+# Logs
+*.log
+
+# Custom IDE/OS files
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Data folder
+data/

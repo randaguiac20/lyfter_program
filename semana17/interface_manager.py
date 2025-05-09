@@ -6,7 +6,7 @@ class InterfaceStructure:
     def __init__(self, data, headers, categories):
         self.income_layout = [
             [sg.Text("Item"), sg.Input(key='-ITEM-', size=(20, 1))],
-            [sg.Text("Category"), sg.Combo(categories, key='-CATEGORY-', size=(20, 1))],
+            [sg.Text("Category"), sg.Combo(categories.load_categories(), key='-CATEGORY-', size=(20, 1))],
             [sg.Text("Income"), sg.Input(key='-INCOME-', size=(20, 1))],
             [sg.Table(values=data, headings=headers, key="-TABLE-", size=(20, 5),
                     auto_size_columns=True, justification='left')],
@@ -14,7 +14,7 @@ class InterfaceStructure:
         ]
         self.expense_layout = [
             [sg.Text("Item"), sg.Input(key='-ITEM-', size=(20, 1))],
-            [sg.Text("Category"), sg.Combo(categories, key='-CATEGORY-', size=(20, 1))],
+            [sg.Text("Category"), sg.Combo(categories.load_categories(), key='-CATEGORY-', size=(20, 1))],
             [sg.Text("Expense"), sg.Input(key='-EXPENSE-', size=(20, 1))],
             [sg.Table(values=data, headings=headers, key="-TABLE-", size=(20, 5),
                     auto_size_columns=True, justification='left')],
@@ -94,7 +94,8 @@ class InterfaceTransactionHandler:
         print(f"add_category {category}")
         self.data_manager.write_txt_file(value=category)
 
-    def run_income_window(self, window, categories, handler, data):
+    def run_income_window(self, window, handler, data):
+        categories = handler.load_categories()
         while True:
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
@@ -109,7 +110,8 @@ class InterfaceTransactionHandler:
                 handler.add_income(window, values, data)
         window.close()
 
-    def run_expense_window(self, window, categories, handler, data):
+    def run_expense_window(self, window, handler, data):
+        categories = handler.load_categories()
         while True:
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
@@ -132,13 +134,16 @@ class InterfaceTransactionHandler:
                 break
             if event == "Create new category":
                 new_category = values['-NEWCAT-'].strip()
-                if new_category and new_category not in handler.load_categories():
+                categories = handler.load_categories()
+                if new_category and new_category not in categories:
                     handler.add_category(new_category)
                 break
         window.close()
 
-    def run_main_window(self, window, categories, cls, data):
+    def run_main_window(self, window, handler, cls, data):
         while True:
+            categories = handler.load_categories()
+            print(categories)
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
                 event, values = window.read(timeout=1000)
@@ -154,6 +159,6 @@ class InterfaceTransactionHandler:
                 cls.expense_window()
             # Refresh table view
             data_table = [row for row in data if len(row) == 4]
-            window['-TABLE-'].update(values=data_table)
+            window['-TABLE-'].update(values=data_table))
         window.close()
         self.data_manager.export_csv_file()
