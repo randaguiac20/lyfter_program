@@ -3,8 +3,8 @@ from data_manager import DataManager
 
 
 class InterfaceStructure:
-    def __init__(self, data, headers, categories):
-        self.income_layout = [
+    def income_layout(self, data, headers, categories):
+        return [
             [sg.Text("Item"), sg.Input(key='-ITEM-', size=(20, 1))],
             [sg.Text("Category"), sg.Combo(categories.load_categories(), key='-CATEGORY-', size=(20, 1))],
             [sg.Text("Income"), sg.Input(key='-INCOME-', size=(20, 1))],
@@ -12,7 +12,9 @@ class InterfaceStructure:
                     auto_size_columns=True, justification='left')],
             [sg.Button("Save"), sg.Button("Exit")]
         ]
-        self.expense_layout = [
+
+    def expense_layout(self, data, headers, categories):
+        return [
             [sg.Text("Item"), sg.Input(key='-ITEM-', size=(20, 1))],
             [sg.Text("Category"), sg.Combo(categories.load_categories(), key='-CATEGORY-', size=(20, 1))],
             [sg.Text("Expense"), sg.Input(key='-EXPENSE-', size=(20, 1))],
@@ -20,12 +22,16 @@ class InterfaceStructure:
                     auto_size_columns=True, justification='left')],
             [sg.Button("Save"), sg.Button("Exit")]
         ]
-        self.category_layout = [
+
+    def category_layout(self, data, headers, categories):
+        return [
             [sg.Text("Enter a new category: ")],
             [sg.Input(key='-NEWCAT-')],
             [sg.Button("Create new category"), sg.Button("Exit")]
         ]
-        self.main_layout = [
+
+    def main_layout(self, data, headers, categories):
+        return [
             [sg.Button("Add New Income"), sg.Button("Add New Expense"), sg.Button("Add New Category")],
             [sg.Table(values=data, headings=headers, key="-TABLE-", size=(20, 5),
                     auto_size_columns=True, justification='left')],
