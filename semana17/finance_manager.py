@@ -41,6 +41,6 @@ class FinanceManager:
         # Create the Window
         window = sg.Window('My Finances', layout, resizable=True)
         # Event Loop to process
-        categories = handler.load_categories()
+        handler.load_categories()
         handler.run_main_window(window, handler,
                                 self, self.data)
