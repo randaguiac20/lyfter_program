@@ -7,7 +7,7 @@ from functools import wraps
 def check_file_not_found(create_if_missing=False,
                          file_type="txt", headers=None):
     """
-    I DO NOT DO THIS BY MY OWN
+    I DID NOT DO THIS BY MY OWN
     I HAD TO LOOK FOR EXAMPLES TO BUILD THIS DECORATOR
     """
     def decorator(func):
