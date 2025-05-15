@@ -29,7 +29,7 @@ class FinanceManager:
 
     def category_window(self):
         handler = self.int_transaction_handler
-        layout = self.structure.category_layout(self.data, self.headers, handler)
+        layout = self.structure.category_layout()
         window = sg.Window("Create a new category!", layout)
         # Event loop
         handler.run_category_window(window, handler)
