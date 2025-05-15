@@ -10,7 +10,7 @@ from env_vars import (FINANCE_FILENAME, CATEGORIES_FILENAME,
 from validator import check_file_not_found
 
 
-class DataManager:
+class Transaction:
     def __init__(self):
         self.data_dir = os.mkdir(DATA_DIR) if not os.path.exists(DATA_DIR) else DATA_DIR
 
@@ -51,3 +51,6 @@ class DataManager:
                     export_finance_filename=DATA_DIR_EXPORTED_FINANCE_FILENAME):
         shutil.copy(finance_filename, export_finance_filename)
         print(f"\nFile {export_finance_filename} succesfully updated!")
+
+    def check_is_positve_number(self, value):
+        return value.isdigit()

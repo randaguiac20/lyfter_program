@@ -1,29 +1,26 @@
 import FreeSimpleGUI as sg
-from data_manager import DataManager
+from data_manager import Transaction
 
-
-class TransactionHandler:
-    pass
 
 class Category:
     def __init__(self):
-        self.data_manager = DataManager()
-        self.write_data = self.data_manager.write_csv_file()
+        self.transaction = Transaction()
+        self.write_data = self.transaction.write_csv_file()
 
     def add_category(self, category):
         print(f"add_category {category}")
-        self.data_manager.write_txt_file(value=category)
+        self.transaction.write_txt_file(value=category)
 
     def load_categories(self):
-        categories = self.data_manager.read_txt_file()
+        categories = self.transaction.read_txt_file()
         return categories
 
 class InterfaceStructure:
     def income_layout(self, data, headers, categories):
         return [
-            [sg.Text("Item"), sg.Input(default_text=0, key='-ITEM-', size=(20, 1))],
+            [sg.Text("Item"), sg.Input(key='-ITEM-', size=(20, 1))],
             [sg.Text("Category"), sg.Combo(categories.load_categories(), key='-CATEGORY-', size=(20, 1))],
-            [sg.Text("Income"), sg.Input(key='-INCOME-', size=(20, 1))],
+            [sg.Text("Income"), sg.Input(default_text=0, key='-INCOME-', size=(20, 1))],
             [sg.Table(values=data, headings=headers, key="-TABLE-", size=(20, 5),
                     auto_size_columns=True, justification='left')],
             [sg.Button("Save"), sg.Button("Exit")]
@@ -31,9 +28,9 @@ class InterfaceStructure:
 
     def expense_layout(self, data, headers, categories):
         return [
-            [sg.Text("Item"), sg.Input(default_text=0, key='-ITEM-', size=(20, 1))],
+            [sg.Text("Item"), sg.Input(key='-ITEM-', size=(20, 1))],
             [sg.Text("Category"), sg.Combo(categories.load_categories(), key='-CATEGORY-', size=(20, 1))],
-            [sg.Text("Expense"), sg.Input(key='-EXPENSE-', size=(20, 1))],
+            [sg.Text("Expense"), sg.Input(default_text=0, key='-EXPENSE-', size=(20, 1))],
             [sg.Table(values=data, headings=headers, key="-TABLE-", size=(20, 5),
                     auto_size_columns=True, justification='left')],
             [sg.Button("Save"), sg.Button("Exit")]
@@ -57,15 +54,11 @@ class InterfaceStructure:
 
 class InterfaceTransactionHandler:
     def __init__(self):
-        self.data_manager = DataManager()
-        self.write_data = self.data_manager.write_csv_file()
-
-    def load_categories(self):
-        categories = self.data_manager.read_txt_file()
-        return categories
+        self.transaction = Transaction()
+        self.write_data = self.transaction.write_csv_file()
     
     def load_finance_data(self):
-        data = self.data_manager.read_csv_file()
+        data = self.transaction.read_csv_file()
         if len(data) == 0:
             data.append([])
         return data[0], data[1:]
@@ -79,7 +72,7 @@ class InterfaceTransactionHandler:
         if item and category:
             new_row = [item, category, income, expense]
             data.append(new_row)
-            self.data_manager.write_csv_file(dataset=[new_row])
+            self.transaction.write_csv_file(dataset=[new_row])
 
             # Refresh table view
             data_table = [row for row in data if len(row) == 4]
@@ -100,7 +93,7 @@ class InterfaceTransactionHandler:
         if item and category:
             new_row = [item, category, income, expense]
             data.append(new_row)
-            self.data_manager.write_csv_file(dataset=[new_row])
+            self.transaction.write_csv_file(dataset=[new_row])
 
             # Refresh table view
             data_table = [row for row in data if len(row) == 4]
@@ -112,39 +105,47 @@ class InterfaceTransactionHandler:
         else:
             sg.popup("Please fill in at least Item and Category.")
 
-    def run_income_window(self, window, handler, data):
-        categories = handler.load_categories()
+    def run_income_window(self, window, handler, data, category):
+        categories = category.load_categories()
         while True:
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
                 event, values = window.read(timeout=1000)
-                self.int_transaction_handler.add_category(categories)
+                category.add_category(categories)
                 window['-CATEGORY-'].update(values=categories)
             event, values = window.read()
+            is_true = self.transaction.check_is_positve_number(values['-INCOME-'].strip())
             if event == sg.WIN_CLOSED or event == "Exit":
                 break
+            if not is_true:
+                sg.popup("Please enter a valid number!!")
             if event == "Save":
-                values.update({"-EXPENSE-": "0"})
-                handler.add_income(window, values, data)
+                if is_true:
+                    values.update({"-EXPENSE-": "0"})
+                    handler.add_income(window, values, data)
         window.close()
 
-    def run_expense_window(self, window, handler, data):
-        categories = handler.load_categories()
+    def run_expense_window(self, window, handler, data, category):
+        categories = category.load_categories()
         while True:
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
                 event, values = window.read(timeout=1000)
-                self.int_transaction_handler.add_category(categories)
+                category.add_category(categories)
                 window['-CATEGORY-'].update(values=categories)
             event, values = window.read()
+            is_true = self.transaction.check_is_positve_number(values['-EXPENSE-'].strip())
             if event == sg.WIN_CLOSED or event == "Exit":
                 break
+            if not is_true:
+                sg.popup("Please enter a valid number!!")
             if event == "Save":
-                values.update({"-INCOME-": "0"})
-                handler.add_expense(window, values, data)
+                if is_true:
+                    values.update({"-INCOME-": "0"})
+                    handler.add_expense(window, values, data)
         window.close()
 
-    def run_category_window(self, window, handler):
+    def run_category_window(self, window, category):
         new_category = None
         while True:
             event, values = window.read(timeout=1000)
@@ -152,15 +153,15 @@ class InterfaceTransactionHandler:
                 break
             if event == "Create new category":
                 new_category = values['-NEWCAT-'].strip()
-                categories = handler.load_categories()
+                categories = category.load_categories()
                 if new_category and new_category not in categories:
-                    handler.add_category(new_category)
+                    category.add_category(new_category)
                 break
         window.close()
 
-    def run_main_window(self, window, handler, cls, data):
+    def run_main_window(self, window, cls, data):
         while True:
-            categories = handler.load_categories()
+            categories = cls.category.load_categories()
             if len(categories[0]) == 0:
                 sg.popup("No categories available, add a new category!!")
                 event, values = window.read(timeout=1000)
@@ -178,4 +179,4 @@ class InterfaceTransactionHandler:
             data_table = [row for row in data if len(row) == 4]
             window['-TABLE-'].update(values=data_table)
         window.close()
-        self.data_manager.export_csv_file()
+        self.transaction.export_csv_file()
