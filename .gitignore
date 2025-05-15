@@ -119,7 +119,7 @@ dist/
 
 # Testing
 test-results/
-
+test*
 # Logs
 *.log
 
@@ -130,3 +130,7 @@ test-results/
 
 # Data folder
 data/
+data*
+
+
+
