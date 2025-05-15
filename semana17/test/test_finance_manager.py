@@ -9,12 +9,14 @@ from unittest.mock import MagicMock, patch
 
 @pytest.fixture
 def test_finance_manager_return_init_values():
-    with patch('finance_manager.InterfaceTransactionHandler') as MockHandler:
+    with patch('finance_manager.InterfaceTransactionHandler') as MockHandler, \
+        patch('finance_manager.Category') as MockCategory:
 
-        # Mock load_categories return
         mock_handler_instance = MockHandler.return_value
         mock_handler_instance.load_finance_data.return_value = (["header1", "header2"], [["row1", "row2"]])
-        mock_handler_instance.load_categories.return_value = ["Category1", "Category2"]
+
+        mock_category_instance = MockCategory.return_value
+        mock_category_instance.load_categories.return_value = ["Category1", "Category2"]
         
         yield FinanceManager()
 

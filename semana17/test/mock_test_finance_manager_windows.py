@@ -10,12 +10,15 @@ from unittest.mock import patch, MagicMock
 def mocked_finance_manager_with_window():
     with patch('finance_manager.InterfaceTransactionHandler') as MockHandler, \
          patch('finance_manager.InterfaceStructure') as MockStructure, \
+         patch('finance_manager.Category') as MockCategory, \
          patch('finance_manager.sg.Window') as MockWindow:
 
         # Mock the handler
         mock_handler = MockHandler.return_value
         mock_handler.load_finance_data.return_value = (["header1"], [["row1"]])
-        mock_handler.load_categories.return_value = ["MockedCategory"]
+
+        mock_category = MockCategory.return_value
+        mock_category.load_categories.return_value = ["MockedCategory"]
         mock_handler.run_main_window = MagicMock()
 
         # Mock the structure layout
@@ -27,45 +30,45 @@ def mocked_finance_manager_with_window():
         MockWindow.return_value = mock_window_instance
 
         fm = FinanceManager()
-        yield fm, mock_handler, mock_window_instance
+        yield fm, mock_handler, mock_window_instance, mock_category
 
 
 def test_main_window_calls_run(mocked_finance_manager_with_window):
     # Arrange
-    fm, mock_handler, mock_window = mocked_finance_manager_with_window
+    fm, mock_handler, mock_window, _ = mocked_finance_manager_with_window
 
     # Act
     fm.main_window()
 
     # Assert: Make sure the window was created and handler.run_main_window was called
-    mock_handler.run_main_window.assert_called_once_with(mock_window, mock_handler, fm, fm.data)
+    mock_handler.run_main_window.assert_called_once_with(mock_window, fm, fm.data)
 
 def test_category_window_calls_run(mocked_finance_manager_with_window):
     # Arrange
-    fm, mock_handler, mock_window = mocked_finance_manager_with_window
+    fm, mock_handler, mock_window, mock_category = mocked_finance_manager_with_window
 
     # Act
     fm.category_window()
 
     # Assert: Make sure the window was created and handler.run_main_window was called
-    mock_handler.run_category_window.assert_called_once_with(mock_window, mock_handler)
+    mock_handler.run_category_window.assert_called_once_with(mock_window, mock_category)
 
 def test_income_window_calls_run(mocked_finance_manager_with_window):
     # Arrange
-    fm, mock_handler, mock_window = mocked_finance_manager_with_window
+    fm, mock_handler, mock_window, mock_category = mocked_finance_manager_with_window
 
     # Act
     fm.income_window()
 
     # Assert: Make sure the window was created and handler.run_main_window was called
-    mock_handler.run_income_window.assert_called_once_with(mock_window, mock_handler, fm.data)
+    mock_handler.run_income_window.assert_called_once_with(mock_window, mock_handler, fm.data, mock_category)
 
 def test_expense_window_calls_run(mocked_finance_manager_with_window):
     # Arrange
-    fm, mock_handler, mock_window = mocked_finance_manager_with_window
+    fm, mock_handler, mock_window, mock_category = mocked_finance_manager_with_window
 
     # Act
     fm.expense_window()
 
     # Assert: Make sure the window was created and handler.run_main_window was called
-    mock_handler.run_expense_window.assert_called_once_with(mock_window, mock_handler, fm.data)
+    mock_handler.run_expense_window.assert_called_once_with(mock_window, mock_handler, fm.data, mock_category)
