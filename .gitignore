@@ -129,6 +129,6 @@ file.json
 # Directories like data
 data/
 output/
-
+test/
 data*
 test*
