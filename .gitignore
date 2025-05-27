@@ -130,5 +130,5 @@ file.json
 data/
 output/
 test/
-data*
+data
 test*
