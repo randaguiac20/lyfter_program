@@ -2,6 +2,7 @@ from flask import (Flask, request, jsonify)
 from validator import (TaskSchema)
 from data_manager import (Transaction)
 from marshmallow import ValidationError
+from env_vars import STATUS
 import uuid
 
 
