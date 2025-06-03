@@ -116,7 +116,6 @@ class FileTransactions:
         current_data = self.read_data(filepath_name)
         if true_false:
             current_keys = current_data.keys()
-            data.pop("user_id")
             for k,v in data.items():
                 if k in current_keys:
                     current_data[k] = v
@@ -129,4 +128,5 @@ class FileTransactions:
         true_false = self.file_validator.file_exist(filepath_name)
         if true_false:
             Path(filepath_name).unlink()
-            return true_false
+            return true_false, 200
+        return true_false, 404

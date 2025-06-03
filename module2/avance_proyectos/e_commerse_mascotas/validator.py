@@ -1,63 +1,8 @@
-import os
 import json
 import inspect
 from functools import wraps
 from flask import request, jsonify
-from marshmallow import (Schema, fields,
-                         validate)
 
-
-class UserSchema(Schema):
-    user_id = fields.UUID(required=False)
-    email = fields.Email(required=True)
-    name = fields.Str(required=True)
-    lastname = fields.Str(required=True)
-    description = fields.Str(required=False)
-    last_modified = fields.DateTime(required=True, format="%d_%m_%Y-%H:%M")
-    status = fields.Str(required=False,
-                        validate=validate.OneOf(
-                            ["registered", 
-                             "unregistered"]))
-
-class ProductSchema(Schema):
-    task_id = fields.Str(required=False)
-    title = fields.Str(required=True)
-    description = fields.Str(required=True)
-    status = fields.Str(required=True,
-                        validate=validate.OneOf(
-                            ["in_progress", 
-                             "to_be_done", 
-                             "completed"]))
-
-class SaleSchema(Schema):
-    task_id = fields.Str(required=False)
-    title = fields.Str(required=True)
-    description = fields.Str(required=True)
-    status = fields.Str(required=True,
-                        validate=validate.OneOf(
-                            ["in_progress", 
-                             "to_be_done", 
-                             "completed"]))
-    
-class RoleSchema(Schema):
-    task_id = fields.Str(required=False)
-    title = fields.Str(required=True)
-    description = fields.Str(required=True)
-    status = fields.Str(required=True,
-                        validate=validate.OneOf(
-                            ["in_progress", 
-                             "to_be_done", 
-                             "completed"]))
-
-class InventorySchema(Schema):
-    task_id = fields.Str(required=False)
-    title = fields.Str(required=True)
-    description = fields.Str(required=True)
-    status = fields.Str(required=True,
-                        validate=validate.OneOf(
-                            ["in_progress", 
-                             "to_be_done", 
-                             "completed"]))
 
 def check_file_not_found(create_if_missing=False,
                          json_filename=None):

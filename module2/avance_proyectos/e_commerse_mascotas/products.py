@@ -1,7 +1,7 @@
 from flask.views import MethodView
 from flask import (Flask, request, jsonify)
-from validator import (UserSchema, ProductSchema, SaleSchema,
-                       RoleSchema, InventorySchema, reject_fields)
+from validator import reject_fields
+from schema_validator import schema_validator
 from db_connector import (DataManager)
 from file_manager import (FileTransactions)
 from marshmallow import ValidationError
@@ -17,7 +17,7 @@ import uuid
 
 class ProductRegistration(MethodView):
     def __init__(self):
-        self.product_schema = ProductSchema()
+        self.product_schema = schema_validator
 
     def _get_data(self):
         return {"message":"hello world!"}
