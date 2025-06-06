@@ -1,32 +1,32 @@
-from file_manager import (FileTransactions)
 from flask import Flask
-from cache_config import cache
-from users import UserRegistration
-from products import ProductRegistration
+from api.registration import UserRegistration, ProductRegistration
+from data_manager.db_connector import DataManager as dm
+from configurations.config import CACHE_TYPE, CACHE_DEFAULT_TIMEOUT
+from configurations.https_config import ssl_context
+from configurations.cache_config import cache
 
 
 
 def register_api(app, name):
-    user_registration = UserRegistration.as_view(f"user_registration")
-    product_registration = ProductRegistration.as_view(f"product_registration")
-
     # user_registration
+    user_registration = UserRegistration.as_view(f"user_registration")
     app.add_url_rule(f"/{name}/user_registration", view_func=user_registration, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/user_registration/<user_id>", view_func=user_registration, methods=["GET"])
-    app.add_url_rule(f"/{name}/user_registration/<user_id>", view_func=user_registration, methods=["PUT", "DELETE"])
+    app.add_url_rule(f"/{name}/user_registration/<id>", view_func=user_registration, methods=["GET", "PUT", "DELETE"])
     
     # product_registration
+    product_registration = ProductRegistration.as_view(f"product_registration")
     app.add_url_rule(f"/{name}/product_registration", view_func=product_registration, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/product_registration/<product_id>", view_func=product_registration, methods=["GET"])
-    app.add_url_rule(f"/{name}/product_registration/<product_id>", view_func=product_registration, methods=["PUT", "DELETE"])
+    app.add_url_rule(f"/{name}/product_registration/<id>", view_func=product_registration, methods=["GET", "PUT", "DELETE"])
 
 
 if __name__ == "__main__":
     app = Flask(__name__)
-    app.config['CACHE_TYPE'] = 'SimpleCache'  # Use SimpleCache for file-based or memory-based
-    app.config['CACHE_DEFAULT_TIMEOUT'] = 300
+    app.config['CACHE_TYPE'] = CACHE_TYPE
+    app.config['CACHE_DEFAULT_TIMEOUT'] = CACHE_DEFAULT_TIMEOUT
     cache.init_app(app)
-    file_transaction = FileTransactions()
-    file_transaction.create_directories()
+    data_manager = dm()
+    data_manager.query_file.create_directories()
+    data_manager.create_admin_data()
     register_api(app, "pet_shop")
-    app.run(host="0.0.0.0", port=5001, debug=True)
+    app.run(ssl_context=ssl_context, host="0.0.0.0",
+            port=5001, debug=True)

@@ -20,7 +20,8 @@ Requirements:
 	Functionalities:
 		. Must allow operations like user registration and login.
 		. Must validate user priviledges to restrict level of access when doing a CRUD operation.
-		. Roles are administratior and client.
+		. Roles are administrator and client.
+
 
 - Authentiation module.
 	Functionalities:
@@ -34,6 +35,7 @@ Requirements:
 		. Manage products inventory.
 		. Must allow CRUD.
 		. Stock must be updated and a sales is done.
+
 
 - Sales module.
 	Functionalities:
@@ -54,6 +56,7 @@ First project progress:
 - Authentication modules requires user registration and login (No to be functional on this first progress).
 - All data need to be managed via json files.
 - Suggestion: create a module to read and write files.
+
 
 Deliverables:
 
