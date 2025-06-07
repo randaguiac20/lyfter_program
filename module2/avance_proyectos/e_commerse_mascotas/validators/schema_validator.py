@@ -40,6 +40,7 @@ class UserRegistrationSchema(Schema):
     email = fields.Email(required=True)
     name = fields.Str(required=True)
     lastname = fields.Str(required=True)
+    password = fields.Str(required=True, load_only=True)
     description = fields.Str(required=False)
     last_modified = fields.DateTime(required=True, format="%d_%m_%Y-%H:%M")
     access_level = StrOrList(fields.Str(required=False, load_default="no_access",
@@ -60,6 +61,7 @@ class UserSchema(Schema):
     email = fields.Email(required=True)
     name = fields.Str(required=True)
     lastname = fields.Str(required=True)
+    password = fields.Str(required=True, load_only=True)
     description = fields.Str(required=False)
     last_modified = fields.DateTime(required=True, format="%d_%m_%Y-%H:%M")
     status = fields.Str(required=False,

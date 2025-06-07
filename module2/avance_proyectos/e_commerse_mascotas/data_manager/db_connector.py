@@ -21,6 +21,15 @@ class DataManager:
         if data:
             return data, 200
         return data, 404
+    
+    def get_data_by_email(self, directory_path, email, admin=None):
+        data, http_code = self.get_data_items(directory_path)
+        user_data = [d for d in data if d.get("email") == email]
+        if user_data[0].get("status") == "active":
+            return user_data[0], http_code
+        if user_data[0].get("status") != "active":
+            return user_data, 400
+        return user_data, 404
 
     def get_data_items(self, directory_path):
         data = self.query_file.load_all_json_files(directory_path)

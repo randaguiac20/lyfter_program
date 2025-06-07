@@ -1,5 +1,6 @@
 import os
 
+
 # ALL Directories require to simulate DB
 ROOT_DIR = os.getcwd()
 DB_DIR = f"{ROOT_DIR}/db"
@@ -74,6 +75,7 @@ default_table_templates = {
         'email': '',
         'name': '',
         'lastname': '',
+        'password': '',
         'description': '',
         'last_modified': '',
         'status': ''

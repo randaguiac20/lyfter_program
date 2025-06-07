@@ -1,12 +1,31 @@
-from flask.views import MethodView
+
 from flask import request
 from validators.schema_validator import schema_validator
 from data_manager.db_connector import DataManager
 from configurations.config import directory_mapper
 from configurations.cache_config import cache
+from aaa.authentication import generate_password,check_password
 from datetime import datetime
 import uuid
+from flask_jwt_extended import create_access_token
 
+
+class LoginAPITransactions:
+    def __init__(self, option):
+        self.db = DataManager()
+        self.directory = directory_mapper.get(option)
+    
+    def _post(self, data):
+        dir_path = self.directory
+        email = data.get("email")
+        password = data.get("password")
+        user_data, http_code = self.db.get_data_by_email(dir_path, email)
+        if http_code == 400:
+            return {"msg": "User is disabled."}, 400
+        if not user_data or not check_password(user_data.get("password"), password):
+            return {"msg": "Invalid email or password"}, 401
+        token = create_access_token(identity=email)
+        return {"access_token": token}, 200
 
 class ApiRegistrationTransactions:
     def __init__(self, option):
@@ -44,6 +63,7 @@ class ApiRegistrationTransactions:
             request_data['inventory_id'] = str(uuid.uuid4())
         if self.option == "user_registration":
             request_data['user_id'] = str(uuid.uuid4())
+            request_data['password'] = generate_password(request_data)
         request_data['id'] = str(uuid.uuid4())
         request_data['last_modified'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
         request_data['status'] = "registered"
