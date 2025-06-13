@@ -259,7 +259,8 @@ class ApiControllerTransactions:
                         }
                         amount = update_amount.get(checkout_option)
                         total_amount += amount
-                        receipt_data = receipt_data | product
+                        receipt_data["products"] = [{**_product, **product} if _product.get("code") == product.get("code") else _product
+                                                    for index, _product in enumerate(receipt_data.get("products", []))]
                         # Update sale status
                         sdata, shttp_code = self.db.get_data_item(sale_file_id)
                         if shttp_code != 200:
