@@ -140,7 +140,8 @@ class CartsAPI(MethodView):
             Response: JSON response with update status and HTTP status code.
         """
         request_data = request.json
-        if request_data.get("checkout") == "True" and request_data.get("products"):
+        if request_data.get("checkout") == "True" or \
+           request_data.get("checkout") == "True" and request_data.get("products"):
             msg, http_code = self.api_transaction._update_cart_dependencies(request_data, id, self.cache_keys)
             return jsonify(msg), http_code
         elif request_data.get("checkout") == "False" and request_data.get("products"):

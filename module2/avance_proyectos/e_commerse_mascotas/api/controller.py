@@ -129,7 +129,7 @@ class ApiControllerTransactions:
         if self.option == "carts":
             request_data['receipt_id'] = str(uuid.uuid4())
             request_data['sale_id'] = str(uuid.uuid4())
-            request_data['checkout'] = "completed" if request_data['checkout'] == "True" else "in_progress"
+            request_data['status'] = "completed" if request_data['checkout'] == "True" else "in_progress"
         if self.option == "product_registration":
             request_data['product_id'] = str(uuid.uuid4())
             request_data['inventory_id'] = str(uuid.uuid4())
@@ -145,12 +145,23 @@ class ApiControllerTransactions:
             return msg, 400
         file_id = request_data.get('id')
         filename = f"{self.directory}/{file_id}.json"
-        msg, http_code = self.db.save_data(request_data=request_data, filepath=filename, directory_path=dir_path, option=self.option)
+        msg, http_code = self.db.save_data(request_data=request_data, filepath=filename,
+                                           directory_path=dir_path, option=self.option)
         if self.option == "carts" and request_data['checkout'] == "True":
-            cache_keys = self.cache_key_mapper.get("receipts")
-            msg, http_code = self._cart_custom_method(request_data, request_data['receipt_id'], cache_keys, option="post_method")
-            if http_code != 200:
-                return msg, http_code
+            rfile_id = request_data.get('receipt_id')
+            receipts_directory_path = self.directory_mapper.get("receipts")
+            rfilename = f"{receipts_directory_path}/{rfile_id}.json"
+            rmsg, rhttp_code = self.db.save_data(request_data=request_data, filepath=rfilepath,
+                                                 directory_path=receipts_directory_path, option="receipts")
+            if rhttp_code != 200:
+                return rmsg, rhttp_code
+            sfile_id = request_data.get('sale_id')
+            sales_directory_path = self.directory_mapper.get("sales")
+            sfilename = f"{sales_directory_path}/{sfile_id}.json"
+            smsg, shttp_code = self.db.save_data(request_data=request_data, filepath=sfilename,
+                                                 directory_path=sales_directory_path, option="receipts")
+            if shttp_code != 200:
+                return smsg, shttp_code
         return msg, http_code
 
     def _put(self, request_data, id, cache_keys, dir_path=None, option=None):
