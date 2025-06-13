@@ -39,7 +39,7 @@ Requirements:
 
 - Sales module.
 	Functionalities:
-		. Cart: create carts, manage products and manage any previous cart createed if not finalized.
+		. Cart: create carts, manage products and manage any previous cart created if not finalized.
 		. Sales: take carts into sales. Generate a receipt. Modify products as needed properly aligned to the stock. Needs receipt address and payment data.
 		. Receipts: enable option to check receipts based on receipt number. It should be able to manage return of a product and keep stock properly updated.
 
