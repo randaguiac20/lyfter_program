@@ -5,7 +5,7 @@ This project is an API for managing an e-commerce platform for pet products. It 
 ## Important Notes
 
 - `Alek is aware of the current logic` that I have used for this e-commerce app, that it is being coded in different layer to simulate a DB.
-- `I am completely aware of that I need some of the layer will be gone once a DB is used`.
+- `I am completely aware of that I need to remove some of the layer will be gone once a DB is used`.
 - When registering an user or product, the user and product will be created automatically.
 - For user and product deletion, we need to delete the user or product, so it will be deleting them automatically.
 - By default users and products will be disabled, so it requires to update via the put method the status, otherwise user won't be able to login, this needs to be done with administrator user.
