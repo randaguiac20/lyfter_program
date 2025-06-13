@@ -31,7 +31,7 @@ This project is an API for managing an e-commerce platform for pet products. It 
 
 ## Requirements
 
-- Python 3.8+
+- Python 3.10+
 - Flask
 - Flask-JWT-Extended
 - Flask-Caching
