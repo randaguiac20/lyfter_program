@@ -111,7 +111,6 @@ class DataManager:
             sale_id = request_data.get("sale_id")
             self.entity_dm.schema_entity_builder("sales", sale_id, request_data)
             receipt_id = request_data.get("receipt_id")
-            import ipdb; ipdb.set_trace()
             self.entity_dm.schema_entity_builder("receipts", receipt_id, request_data)
         if option == "product_registration":
             self.entity_dm.filter_new_entity_data(files_data, "inventory")

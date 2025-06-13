@@ -147,19 +147,17 @@ class ApiControllerTransactions:
         filename = f"{self.directory}/{file_id}.json"
         msg, http_code = self.db.save_data(request_data=request_data, filepath=filename,
                                            directory_path=dir_path, option=self.option)
-        if self.option == "carts" and request_data['checkout'] == "True":
+        if self.option == "carts":
             rfile_id = request_data.get('receipt_id')
-            receipts_directory_path = self.directory_mapper.get("receipts")
-            rfilename = f"{receipts_directory_path}/{rfile_id}.json"
-            rmsg, rhttp_code = self.db.save_data(request_data=request_data, filepath=rfilepath,
-                                                 directory_path=receipts_directory_path, option="receipts")
+            rcache_keys = self.cache_key_mapper.get("receipts")
+            rmsg, rhttp_code = self._update_cart_dependencies(_request_data=request_data, id=rfile_id,
+                                                              cache_keys=rcache_keys, option="receipts")
             if rhttp_code != 200:
                 return rmsg, rhttp_code
             sfile_id = request_data.get('sale_id')
-            sales_directory_path = self.directory_mapper.get("sales")
-            sfilename = f"{sales_directory_path}/{sfile_id}.json"
-            smsg, shttp_code = self.db.save_data(request_data=request_data, filepath=sfilename,
-                                                 directory_path=sales_directory_path, option="receipts")
+            scache_keys = self.cache_key_mapper.get("sales")
+            smsg, shttp_code = self._update_cart_dependencies(_request_data=request_data, id=sfile_id,
+                                                              cache_keys=scache_keys, option="sales")
             if shttp_code != 200:
                 return smsg, shttp_code
         return msg, http_code
@@ -229,10 +227,12 @@ class ApiControllerTransactions:
         if option is None:
             cart_file_id = f"{cart_dir_path}/{id}.json"
             cart_data, http_code = self.db.get_data_item(cart_file_id)
-            request_data = cart_data | _request_data
             if http_code != 200:
-                msg = f"File id {cart_file_id} was not found"
+                msg = f"File id {id} was not found"
                 return msg, 404
+            request_data = cart_data | _request_data
+        if option:
+            request_data = _request_data
         receipt_id = request_data.get("receipt_id")
         receipt_file_id = f"{receipts_dir_path}/{receipt_id}.json"
         receipt_data, rhttp_code = self.db.get_data_item(receipt_file_id)

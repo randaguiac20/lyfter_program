@@ -145,7 +145,10 @@ class CartsAPI(MethodView):
             msg, http_code = self.api_transaction._update_cart_dependencies(request_data, id, self.cache_keys)
             return jsonify(msg), http_code
         elif request_data.get("checkout") == "False" and request_data.get("products"):
-            msg = {"message": f"Cart requires checkout to be True if products needs to be updated."}
+            msg, http_code = self.api_transaction._update_cart_dependencies(request_data, id, self.cache_keys)
+            return jsonify(msg), http_code
+        elif request_data.get("checkout") == "False":
+            msg = {"message": f"Cart requires the product information to properly update cart dependencies."}
             return jsonify(msg), 406
         else:
             msg, http_code = self.api_transaction._put(request_data, id, self.cache_keys)

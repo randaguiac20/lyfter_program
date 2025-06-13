@@ -196,37 +196,40 @@ class EntityDatasetManager:
         dataset = self.templates.get(_schema)
         dir_path = self.directory_mapper.get(_schema)
         filepath_name = f"{dir_path}/{id}.json"
+        checkout = data_content.get("checkout")
         for k, v in data_content.items():
             if k in self.schemas[_schema]().load_fields.keys():
                 dataset.update({k: v})
-                if _schema == "sales" and data_content.get("checkout") == "False":
+                if _schema == "sales" and checkout == "False":
                     dataset['id'] = id
                     dataset['receipt_id'] = data_content.get("receipt_id")
                     dataset['cart_id'] = data_content.get("id")
                     dataset['last_modified'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
                     dataset['status'] = "pending_payment" 
-                elif _schema == "sales" and data_content.get("checkout") == "True":
+                elif _schema == "sales" and checkout == "True":
                     dataset['id'] = id
                     dataset['receipt_id'] = data_content.get("receipt_id")
                     dataset['cart_id'] = data_content.get("id")
                     dataset['purchase_date'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
                     dataset['last_modified'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
                     dataset['status'] = "completed_payment"
-                elif _schema == "receipts" and data_content.get("checkout") == "False":
+                elif _schema == "receipts" and checkout == "False":
                     dataset['id'] = id
                     dataset['receipt_number'] = str(uuid.uuid4())
                     dataset['cart_id'] = data_content.get("id")
                     dataset['sale_id'] = data_content.get("sale_id")
                     dataset['products'] = data_content.get("products")
                     dataset['last_modified'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
-                elif _schema == "receipts" and data_content.get("checkout") == "True":
+                    dataset['total_amount'] = 0.0
+                elif _schema == "receipts" and checkout == "True":
                     dataset['id'] = id
+                    dataset['receipt_number'] = str(uuid.uuid4())
                     dataset['cart_id'] = data_content.get("id")
                     dataset['sale_id'] = data_content.get("sale_id")
                     dataset['products'] = data_content.get("products")
                     dataset['purchase_date'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
                     dataset['last_modified'] = datetime.now().strftime("%d_%m_%Y-%H:%M")
-                    dataset['total_amount'] = 0
+                    dataset['total_amount'] = 0.0
         schema_true, msg = schema_validator(_schema, dataset)
         if schema_true:
             _ = self.file_transaction.write_data(dataset, filepath_name)
