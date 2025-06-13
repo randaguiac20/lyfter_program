@@ -4,6 +4,8 @@ This project is an API for managing an e-commerce platform for pet products. It 
 
 ## Important Notes
 
+- `Alek is aware of the current logic` that I have used for this e-commerce app, that it is being coded in different layer to simulate a DB.
+- `I am completely aware of that I need some of the layer will be gone once a DB is used`.
 - When registering an user or product, the user and product will be created automatically.
 - For user and product deletion, we need to delete the user or product, so it will be deleting them automatically.
 - By default users and products will be disabled, so it requires to update via the put method the status, otherwise user won't be able to login, this needs to be done with administrator user.
@@ -11,12 +13,11 @@ This project is an API for managing an e-commerce platform for pet products. It 
     - Once you create a cart this will be created with a default status value of `in_progress` and default `checkout` value of `False`, unless `checkout` is set to `True`. This is not a boolean field.
     - Once the cart `checkout` value is set as `True`, then cart, inventory, sales and receipts will be updated and the status will be updated as well as the inventory information.
     - Once you update the `checkout` value as needed, all of the files in cart, inventory, sales and receipts will be updated automatically.
-    - Based on the current logic, if you delete the cart the sale and receipt will be automacally deleted, otherwise if this is deleted individually then it will failled if cart is individually deleted (I am just leaving all endpoints available).
+    - Based on the current logic, if you delete the cart the sale and receipt will be automatically deleted, otherwise if this is deleted individually then it will failled if cart is individually deleted (I am just leaving all endpoints available).
 - Endpoints are using https.
 - All certs are automatically created for this first advance progress.
 - Roles for administrator are already created to properly manage this app initially.
-- Alek is aware of the current logic that I have used for this e-commerce app, that it is being coded in different layer to simulate a DB.
-- I am completely aware of that I need some of the layer will be gone once a DB is used.
+
 
 
 ## Features
