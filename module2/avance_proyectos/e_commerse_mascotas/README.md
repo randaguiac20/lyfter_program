@@ -13,7 +13,7 @@ This project is an API for managing an e-commerce platform for pet products. It 
     - Once you create a cart this will be created with a default status value of `in_progress` and default `checkout` value of `False`, unless `checkout` is set to `True`. This is not a boolean field.
     - Once the cart `checkout` value is set as `True`, then cart, inventory, sales and receipts will be updated and the status will be updated as well as the inventory information.
     - Once you update the `checkout` value as needed, all of the files in cart, inventory, sales and receipts will be updated automatically.
-    - Based on the current logic, if you delete the cart the sale and receipt will be automatically deleted, otherwise if this is deleted individually then it will failled if cart is individually deleted (I am just leaving all endpoints available).
+    - Based on the current logic, if you delete the cart the sale and receipt will be automatically deleted, otherwise if this is deleted individually then it will failed if cart is individually deleted (I am just leaving all endpoints available).
 - Endpoints are using https.
 - All certs are automatically created for this first advance progress.
 - Roles for administrator are already created to properly manage this app initially.
