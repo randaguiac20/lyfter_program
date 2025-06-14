@@ -20,7 +20,7 @@ class UsersAPI(MethodView):
         self.api_transaction = ApiControllerTransactions(option=self.option)
         self.cache_keys = cache_key_mapper.get(self.option)
 
-    @role_required(["administrator", "client"])
+    @role_required(["administrator"])
     def get(self, id=None):
         """
         Retrieve user(s) information.

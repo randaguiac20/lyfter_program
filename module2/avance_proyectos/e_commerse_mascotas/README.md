@@ -17,6 +17,7 @@ This project is an API for managing an e-commerce platform for pet products. It 
 - Endpoints are using https.
 - All certs are automatically created for this first advance progress.
 - Roles for administrator are already created to properly manage this app initially.
+- When doing using a `GET` method you can filter by `status`.
 
 
 

@@ -108,6 +108,7 @@ class ApiControllerTransactions:
             self.cache.set(cache_key, data)
         else:
             data = _data
+        _filter_key = "status" if filter_key else filter_key
         filter_status = request.headers.get("status")
         if filter_status:
             data = list(
