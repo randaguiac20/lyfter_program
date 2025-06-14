@@ -1,0 +1,10 @@
+{
+    "name": "administrator",
+    "lastname": "administrator",
+    "description": "admin user",
+    "email": "administrator@example.com",
+    "role": "administrator",
+    "password": "scrypt:32768:8:1$FmUAqJak65vDfgJd$d3095989f68c20e3d9d393677260dbff981987d34f73ebe5bfdb0355f447f9bb2b180e6909b73da59ec265792863f8cc09bae4921d4a10324897f21646d8ab3d",
+    "last_modified": "09_06_2025-01:25",
+    "status": "active"
+}

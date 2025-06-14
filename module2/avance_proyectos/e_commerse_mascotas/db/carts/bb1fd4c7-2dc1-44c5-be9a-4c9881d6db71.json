@@ -1,0 +1,20 @@
+{
+    "client_email": "kira20@gmail.com",
+    "products": [
+        {
+            "code": "COD_M0000120250604",
+            "quantity": 3
+        },
+        {
+            "code": "COD_M0000120250605",
+            "quantity": 2
+        }
+    ],
+    "description": "My cart updating products",
+    "checkout": "True",
+    "receipt_id": "d2c2c690-ae0e-4b45-b1bf-e8453ee25027",
+    "sale_id": "df565ee3-05fd-4c66-9d3c-c90b21324e68",
+    "status": "completed",
+    "id": "bb1fd4c7-2dc1-44c5-be9a-4c9881d6db71",
+    "last_modified": "13_06_2025-03:40"
+}

@@ -1,0 +1,11 @@
+{
+    "id": "df565ee3-05fd-4c66-9d3c-c90b21324e68",
+    "receipt_id": "d2c2c690-ae0e-4b45-b1bf-e8453ee25027",
+    "cart_id": "bb1fd4c7-2dc1-44c5-be9a-4c9881d6db71",
+    "store_name": "pet shop",
+    "store_email": "pet_shop@gmail.com",
+    "client_email": "kira20@gmail.com",
+    "description": "My cart",
+    "last_modified": "13_06_2025-03:40",
+    "status": "completed_payment"
+}

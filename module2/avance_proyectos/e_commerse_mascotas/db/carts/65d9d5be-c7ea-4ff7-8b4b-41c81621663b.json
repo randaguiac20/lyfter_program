@@ -1,0 +1,20 @@
+{
+    "client_email": "klay20@gmail.com",
+    "products": [
+        {
+            "code": "COD_M0000120250604",
+            "quantity": 2
+        },
+        {
+            "code": "COD_M0000120250605",
+            "quantity": 2
+        }
+    ],
+    "description": "My cart klay",
+    "checkout": "True",
+    "receipt_id": "8f21bf87-32ab-4968-854d-acc312920be5",
+    "sale_id": "97fe2460-68c8-40a3-89e5-ad25d6727b3a",
+    "status": "completed",
+    "id": "65d9d5be-c7ea-4ff7-8b4b-41c81621663b",
+    "last_modified": "13_06_2025-19:30"
+}

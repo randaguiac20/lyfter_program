@@ -1,0 +1,16 @@
+{
+    "code": "COD_M0000120250604",
+    "name": "bully sticks",
+    "size": "small",
+    "breed_size": "small",
+    "brand": "coronado",
+    "price": 6556.00,
+    "description": "Registering new product for pet_shop",
+    "ingress_date": "03_06_2025",
+    "expiration_date": "15_08_2035",
+    "product_id": "f8c0d4be-82c5-4c50-ba2d-3e10ec712d52",
+    "inventory_id": "3ed8be8d-9898-4eb8-adcd-5536cf580fb8",
+    "id": "259c93cc-f0c3-4dfe-9166-f46ccfb22e4b",
+    "last_modified": "09_06_2025-15:25",
+    "status": "registered"
+}

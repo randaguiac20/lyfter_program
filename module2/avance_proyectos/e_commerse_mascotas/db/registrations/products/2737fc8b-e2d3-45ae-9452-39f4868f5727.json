@@ -1,0 +1,16 @@
+{
+    "code": "COD_M0000120250605",
+    "name": "salmon treats",
+    "size": "small",
+    "breed_size": "medium",
+    "brand": "organic pet house",
+    "price": 7500.00,
+    "description": "Registering new product for pet_shop",
+    "ingress_date": "10_06_2025",
+    "expiration_date": "15_09_2029",
+    "product_id": "bbe53a53-3e1f-4536-bafa-3437227c2e49",
+    "inventory_id": "82529de4-d89a-4da0-bb5a-3c45d13ff4a4",
+    "status": "registered",
+    "id": "2737fc8b-e2d3-45ae-9452-39f4868f5727",
+    "last_modified": "10_06_2025-17:41"
+}
