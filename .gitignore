@@ -127,6 +127,7 @@ file.json
 *.key
 
 # Directories like data
+db/
 data/
 output/
 test/
