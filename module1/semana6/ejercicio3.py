@@ -12,3 +12,10 @@ def add_numbers(number_list):
 
 number_list = [4, 4, 6, 2, 29]
 print(add_numbers(number_list))
+
+# Better way of doing it
+# def add_numbers(number_list):
+#     return sum(number_list)
+
+# number_list = [4, 4, 6, 2, 29]
+# print(add_numbers(number_list))

@@ -12,3 +12,10 @@ def reverse_string(string):
 
 string = input("Enter a string i.e hello: ")
 print(reverse_string(string))
+
+# Better way of doing it
+# def reverse_string(string):
+#     return string[::-1]
+
+# string = input("Enter a string i.e hello: ")
+# print(reverse_string(string))

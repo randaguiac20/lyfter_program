@@ -23,3 +23,22 @@ def letter_case_counter(string):
 
 string = input("Enter a string i.e hello: ")
 letter_case_counter(string)
+
+# Better way of doing it
+# def letter_case_counter(string):
+#     upper_case = 0
+#     lower_case = 0
+#     for letter in string:
+#         if letter.isupper() and letter.isalpha():
+#             upper_case += 1
+#         elif letter.islower() and letter.isalpha():
+#             lower_case += 1
+
+#     # Singular/plural logic
+#     upper_word = "upper case" if upper_case == 1 else "upper cases"
+#     lower_word = "lower case" if lower_case == 1 else "lower cases"
+#     print(f"There's {upper_case} {upper_word} and {lower_case} {lower_word}")
+
+# # Usage
+# string = input("Enter a string i.e hello: ")
+# letter_case_counter(string)
