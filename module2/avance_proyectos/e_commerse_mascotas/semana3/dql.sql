@@ -99,7 +99,7 @@ SELECT
     products.brand AS brand_name,
     products.expiration_date AS expiration_date,
     inventory.quantity AS quantity,
-    status.name AS status_name
+    status.name AS status
 FROM product_registrations AS pr
 INNER JOIN products ON pr.product_id = products.id
 INNER JOIN inventory ON pr.inventory_id = inventory.id
