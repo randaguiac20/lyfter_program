@@ -155,7 +155,7 @@ class ReceiptSchema(Schema):
     description = fields.Str(required=True)
     purchase_date = fields.DateTime(required=False, format="%d_%m_%Y-%H:%M")
     last_modified = fields.DateTime(required=True, format="%d_%m_%Y-%H:%M")
-    total_amount = fields.Int(required=True)
+    total_amount = fields.Float(required=True)
 
 class SaleSchema(Schema):
     """
