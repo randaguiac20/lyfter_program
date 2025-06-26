@@ -53,13 +53,6 @@ INSERT INTO roles (name, description)
     ('client', 'Read Only access'),
     ('developer', 'Read and write access to development only');
 
-INSERT INTO status (name, description)
-	VALUES 
-    ('active', 'user is active'),
-    ('disabled', 'user is not active'),
-    ('in_progress', 'task is currently going.'),
-    ('pending', 'task is not done yet.'),
-    ('done', 'task is finished.');
 
 INSERT INTO users (name, lastname, email, description)
 	VALUES 
@@ -67,11 +60,11 @@ INSERT INTO users (name, lastname, email, description)
     ('Roger', 'Federer', 'rfederer@gmail.com',  'Amazing tennis player'),
     ('Stephen', 'Curry', 'scurry@gmail.com',  'One of a kind basketball player');
 
-INSERT INTO user_registrations (user_id, role_id, status_id)
+INSERT INTO user_registrations (user_id, role_id, status)
 	VALUES 
-    (1, 1, 1),
-    (3, 2, 2),
-    (2, 3, 1);
+    (1, 1, 'active'),
+    (3, 2, 'disable'),
+    (2, 3, 'active');
 
 INSERT INTO products (sku, name, size_id, breed_size_id, description, price, brand, expiration_date)
 	VALUES 
@@ -85,27 +78,27 @@ INSERT INTO product_registrations (product_id, inventory_id, description, ingres
     (2, 2, 'New product', '2025-06-23'),
     (3, 3, 'New product', '2025-06-23');
 
-INSERT INTO inventory (product_id, description, quantity, status_id)
+INSERT INTO inventory (product_id, description, quantity, status)
 	VALUES 
-    (1, 'New product', 45, 1),
-    (2, 'New product', 56, 1),
-    (3, 'New product', 34, 1);
+    (1, 'New product', 45, 'active'),
+    (2, 'New product', 56, 'active'),
+    (3, 'New product', 34, 'active');
 
 INSERT INTO carts (reference_number, quantity, checkout, purchase_date,
                    receipt_id, sale_id, store_id, user_id,
-                   product_id, status_id)
+                   product_id, status)
 	VALUES 
-    ('REFID_0123', 3, 1, '2025-06-23', 1, 1, 1, 1, 3, 5),
-    ('REFID_0123', 2, 1, '2025-06-23', 1, 1, 2, 2, 1, 5),
-    ('REFID_0123', 6, 1, '2025-06-23', 1, 1, 1, 3, 2, 5);
+    ('REFID_0123', 3, 1, '2025-06-23', 1, 1, 1, 1, 3, 'finished'),
+    ('REFID_0123', 2, 1, '2025-06-23', 1, 1, 2, 2, 1, 'finished'),
+    ('REFID_0123', 6, 1, '2025-06-23', 1, 1, 1, 3, 2, 'finished');
 
 INSERT INTO carts (reference_number, quantity, checkout, purchase_date,
                    receipt_id, sale_id, store_id, user_id,
-                   product_id, status_id)
+                   product_id, status)
 	VALUES 
-    ('REFID_0456', 1, 1, '2025-06-23', 2, 2, 1, 1, 3, 5),
-    ('REFID_0456', 4, 1, '2025-06-23', 2, 2, 2, 2, 1, 5),
-    ('REFID_0456', 2, 1, '2025-06-23', 2, 2, 1, 3, 2, 5);
+    ('REFID_0456', 1, 1, '2025-06-23', 2, 2, 1, 1, 3, 'finished'),
+    ('REFID_0456', 4, 1, '2025-06-23', 2, 2, 2, 2, 1, 'finished'),
+    ('REFID_0456', 2, 1, '2025-06-23', 2, 2, 1, 3, 2, 'finished');
 
 INSERT INTO receipts (receipt_number, description, total_amount)
 	VALUES 

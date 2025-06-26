@@ -16,7 +16,7 @@ CREATE TABLE user_documents(
 );
 ALTER TABLE product_receipts
 	ADD cart_id;
-DROP TABLE status;
+
 DROP TABLE sizes;
 DROP TABLE breeds;
 DROP TABLE stores;
@@ -32,12 +32,6 @@ DROP TABLE carts;
 */
 -- SQLite
 
-CREATE TABLE status (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name CHAR(65) NOT NULL,
-    description CHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now'))
-);
 
 CREATE TABLE sizes (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -83,11 +77,10 @@ CREATE TABLE user_registrations (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	user_id INT UNIQUE NOT NULL,
     role_id CHAR(65) NOT NULL,
-    status_id CHAR(65) NOT NULL,
+    status VARCHAR(65) NOT NULL,
     lasttime_modified TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(role_id) REFERENCES roles(id),
-    FOREIGN KEY(status_id) REFERENCES status(id)
+    FOREIGN KEY(role_id) REFERENCES roles(id)
 );
 
 CREATE TABLE products (
@@ -108,12 +101,11 @@ CREATE TABLE products (
 CREATE TABLE inventory (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
     product_id INT NOT NULL,
-    status_id INT NOT NULL,
+    status VARCHAR(65) NOT NULL,
     description CHAR(65) NOT NULL,
     quantity INT DEFAULT 0,
     lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(product_id) REFERENCES products(id),
-    FOREIGN KEY(status_id) REFERENCES status(id)
+    FOREIGN KEY(product_id) REFERENCES products(id)
 );
 
 CREATE TABLE product_registrations (
@@ -154,12 +146,11 @@ CREATE TABLE carts (
     store_id INT NOT NULL,
     user_id INT NOT NULL,
     product_id INT NOT NULL,
-    status_id INT NOT NULL,
+    status VARCHAR(65) NOT NULL,
     lasttime_modified TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(receipt_id) REFERENCES receipts(id),
     FOREIGN KEY(sale_id) REFERENCES sales(id),
     FOREIGN KEY(store_id) REFERENCES stores(id),
     FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(product_id) REFERENCES products(id),
-    FOREIGN KEY(status_id) REFERENCES status(id)
+    FOREIGN KEY(product_id) REFERENCES products(id)
 );

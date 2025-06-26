@@ -25,7 +25,7 @@ INNER JOIN product_receipts ON product_receipts.cart_id = carts.id
 INNER JOIN products ON products.id = product_receipts.product_id
 ORDER BY products.id;
 */
-SELECT * FROM status;
+
 SELECT * FROM sizes;
 SELECT * FROM breeds;
 SELECT * FROM stores;
@@ -99,8 +99,7 @@ SELECT
     products.brand AS brand_name,
     products.expiration_date AS expiration_date,
     inventory.quantity AS quantity,
-    status.name AS status
+    inventory.status AS status
 FROM product_registrations AS pr
 INNER JOIN products ON pr.product_id = products.id
-INNER JOIN inventory ON pr.inventory_id = inventory.id
-INNER JOIN status ON inventory.status_id = status.id;
+INNER JOIN inventory ON pr.inventory_id = inventory.id;
