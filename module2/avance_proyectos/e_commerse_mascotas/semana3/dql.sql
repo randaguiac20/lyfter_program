@@ -37,31 +37,24 @@ SELECT * FROM inventory;
 SELECT * FROM product_registrations;
 SELECT * FROM receipts;
 SELECT * FROM sales;
-SELECT * FROM carts;
+SELECT * FROM shooping_carts;
+SELECT * FROM shoopping_cart_items;
 
 /*
 THIS QUERY WILL GIVE YOU INFORMATION FOR THE FOLLOWING TABLES
-  receipts
-  carts
-  sales
-  users
+  shooping_carts
   stores
 */
 
 SELECT
-    receipts.receipt_number AS receipt_number,
-    sales.cart_reference_number AS cart_number,
-    users.email AS user_email,
     stores.name AS store_name,
     stores.email AS store_email,
-    products.name as product_name,
-    products.price as price
-FROM carts
-INNER JOIN receipts ON sales.receipt_id = receipts.id
-INNER JOIN sales ON sales.cart_reference_number = carts.reference_number
-INNER JOIN users ON carts.user_id = users.id
-INNER JOIN stores ON carts.store_id = stores.id
-INNER JOIN products ON carts.store_id = products.id;
+    shooping_carts.user_email AS user_email,
+    shooping_carts.status AS status,
+    receipts.total_amount
+FROM receipts
+INNER JOIN stores ON receipts.store_id = stores.id
+INNER JOIN shooping_carts ON receipts.cart_id = shooping_carts.id;
 
 
 /*
@@ -73,33 +66,12 @@ THIS QUERY WILL GIVE YOU THE TOTAL AMOUNT FROM INFORMATION FOR THE FOLLOWING TAB
 */
 
 SELECT
-    receipts.receipt_number AS receipt_number,
-    sales.cart_reference_number AS cart_number,
-    products.name as product_name,
-    receipts.total_amount as total_amount
-FROM carts
-INNER JOIN receipts ON sales.receipt_id = receipts.id
-INNER JOIN sales ON sales.cart_reference_number = carts.reference_number
-INNER JOIN stores ON carts.store_id = stores.id
-INNER JOIN products ON carts.store_id = products.id
-WHERE receipt_number = 'REP0123'
-GROUP BY receipt_number;
-
-/*
-THIS QUERY WILL GIVE YOU INFORMATION FOR THE FOLLOWING TABLES
-  products
-  inventory
-  product_registrations
-*/
-SELECT
-    pr.ingress_date,
-    products.sku AS sku,
+    sales.receipt_id,
+    sales.product_id,
     products.name AS name,
-    products.price AS price,
-    products.brand AS brand_name,
-    products.expiration_date AS expiration_date,
-    inventory.quantity AS quantity,
-    inventory.status AS status
-FROM product_registrations AS pr
-INNER JOIN products ON pr.product_id = products.id
-INNER JOIN inventory ON pr.inventory_id = inventory.id;
+    sales.quantity,
+    sales.price,
+    sales.total_price
+FROM sales
+INNER JOIN products ON sales.product_id = products.id;
+

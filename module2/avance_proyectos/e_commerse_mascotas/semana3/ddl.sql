@@ -28,9 +28,11 @@ DROP TABLE inventory;
 DROP TABLE product_registrations;
 DROP TABLE receipts;
 DROP TABLE sales;
-DROP TABLE carts;
+DROP TABLE shooping_carts;
+DROP TABLE shoopping_cart_items;
 */
 -- SQLite
+
 
 
 CREATE TABLE sizes (
@@ -52,7 +54,7 @@ CREATE TABLE breeds (
 CREATE TABLE stores (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
     name CHAR(65) NOT NULL,
-    email CHAR(65) UNIQUE NOT NULL,
+    email VARCHAR(65) UNIQUE NOT NULL,
     description CHAR(65) NOT NULL,
     lasttime_modified TEXT DEFAULT (datetime('now'))
 );
@@ -121,36 +123,45 @@ CREATE TABLE product_registrations (
 
 CREATE TABLE receipts (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    receipt_number VARCHAR(25) UNIQUE NOT NULL,
+    user_id INT NOT NULL,
+    cart_id INT NOT NULL,
+    store_id INT NOT NULL,
     description CHAR(65) NOT NULL,
+    payment_method VARCHAR(65) NOT NULL,
     total_amount FLOAT DEFAULT 0,
-    lasttime_modified TEXT DEFAULT (datetime('now'))
+    purchase_date TEXT DEFAULT (date('now')),
+    lasttime_modified TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(cart_id) REFERENCES shooping_carts(id)
 );
 
 CREATE TABLE sales (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
     receipt_id INT NOT NULL,
-    cart_reference_number VARCHAR(25) UNIQUE NOT NULL,
+    product_id INT NOT NULL,
+    quantity INT DEFAULT 0,
+    price FLOAT DEFAULT 0,
+    total_price FLOAT DEFAULT 0,
     lasttime_modified TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(receipt_id) REFERENCES receipts(id)
 );
 
-CREATE TABLE carts (
+CREATE TABLE shoopping_cart_items (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    reference_number VARCHAR(50) NOT NULL,
+    cart_id INT,
+    product_id INT,
     quantity INT DEFAULT 0,
-    checkout INT DEFAULT 0,
-    purchase_date TEXT DEFAULT (datetime('now')),
-    receipt_id INT,
-    sale_id INT,
-    store_id INT NOT NULL,
-    user_id INT NOT NULL,
-    product_id INT NOT NULL,
-    status VARCHAR(65) NOT NULL,
+    price FLOAT DEFAULT 0,
     lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(receipt_id) REFERENCES receipts(id),
-    FOREIGN KEY(sale_id) REFERENCES sales(id),
-    FOREIGN KEY(store_id) REFERENCES stores(id),
-    FOREIGN KEY(user_id) REFERENCES users(id),
+    FOREIGN KEY(cart_id) REFERENCES shooping_carts(id),
     FOREIGN KEY(product_id) REFERENCES products(id)
+);
+
+CREATE TABLE shooping_carts (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INT NOT NULL,
+    user_email VARCHAR(25) NOT NULL,
+    status VARCHAR(65) NOT NULL,
+    purchase_date TEXT DEFAULT (date('now')),
+    lasttime_modified TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(user_id) REFERENCES users(id)
 );

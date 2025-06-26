@@ -84,28 +84,35 @@ INSERT INTO inventory (product_id, description, quantity, status)
     (2, 'New product', 56, 'active'),
     (3, 'New product', 34, 'active');
 
-INSERT INTO carts (reference_number, quantity, checkout, purchase_date,
-                   receipt_id, sale_id, store_id, user_id,
-                   product_id, status)
+INSERT INTO shooping_carts (user_id, user_email, status, purchase_date)
 	VALUES 
-    ('REFID_0123', 3, 1, '2025-06-23', 1, 1, 1, 1, 3, 'finished'),
-    ('REFID_0123', 2, 1, '2025-06-23', 1, 1, 2, 2, 1, 'finished'),
-    ('REFID_0123', 6, 1, '2025-06-23', 1, 1, 1, 3, 2, 'finished');
+    (1, 'r9delima@gmail.com', 'finished', '2025-06-23'),
+    (3, 'scurry@gmail.com', 'finished', '2025-06-23');
 
-INSERT INTO carts (reference_number, quantity, checkout, purchase_date,
-                   receipt_id, sale_id, store_id, user_id,
-                   product_id, status)
+INSERT INTO shoopping_cart_items (cart_id, product_id, quantity, price)
 	VALUES 
-    ('REFID_0456', 1, 1, '2025-06-23', 2, 2, 1, 1, 3, 'finished'),
-    ('REFID_0456', 4, 1, '2025-06-23', 2, 2, 2, 2, 1, 'finished'),
-    ('REFID_0456', 2, 1, '2025-06-23', 2, 2, 1, 3, 2, 'finished');
+    (1, 3, 2, 3548.00),
+    (1, 2, 5, 5890.00),
+    (1, 1, 3, 2450.00);
 
-INSERT INTO receipts (receipt_number, description, total_amount)
+INSERT INTO shoopping_cart_items (cart_id, product_id, quantity, price)
 	VALUES 
-    ('REP0123', 'Dog treats', 50884),
-    ('REP0456', 'Dog treats', 25128);
+    (2, 1, 1, 2450.00),
+    (2, 2, 3, 5890.00),
+    (2, 3, 2, 3548.00);
 
-INSERT INTO sales (receipt_id, cart_reference_number)
+INSERT INTO receipts (user_id, cart_id, store_id, description,
+                      payment_method, total_amount, purchase_date)
 	VALUES 
-    (1, 'REFID_0123'),
-    (2, 'REFID_0456');
+    (1, 1, 1,'Dog treats', 'credit card', 43896.0, '2025-06-23'),
+    (3, 2, 2,'Dog treats', 'debit card', 27216.0, '2025-06-23');
+
+INSERT INTO sales (receipt_id, product_id, quantity, price,
+                   total_price)
+	VALUES 
+    (1, 3, 2, 3548.00, 7096.00),
+    (1, 2, 5, 5890.00, 29450.00),
+    (1, 1, 3, 2450.00, 7350.00),
+    (2, 1, 1, 2450.00, 2450.00),
+    (2, 2, 3, 5890.00, 17670.00),
+    (2, 3, 2, 3548.00, 7096.00);
