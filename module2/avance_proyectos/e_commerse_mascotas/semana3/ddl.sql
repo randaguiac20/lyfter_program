@@ -17,53 +17,30 @@ CREATE TABLE user_documents(
 ALTER TABLE product_receipts
 	ADD cart_id;
 
-DROP TABLE sizes;
 DROP TABLE breeds;
-DROP TABLE stores;
 DROP TABLE users;
 DROP TABLE roles;
-DROP TABLE user_registrations;
 DROP TABLE products;
-DROP TABLE inventory;
-DROP TABLE product_registrations;
 DROP TABLE receipts;
-DROP TABLE sales;
 DROP TABLE shooping_carts;
-DROP TABLE shoopping_cart_items;
+DROP TABLE shoopping_cart_products;
 */
 -- SQLite
 
 
-
-CREATE TABLE sizes (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    size CHAR(65) NOT NULL,
-    description CHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now'))
-);
-
 CREATE TABLE breeds (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
     name CHAR(65) NOT NULL,
-    size_id INT NOT NULL,
+    size VARCHAR(25) NOT NULL,
     description CHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(size_id) REFERENCES sizes(id)
-);
-
-CREATE TABLE stores (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name CHAR(65) NOT NULL,
-    email VARCHAR(65) UNIQUE NOT NULL,
-    description CHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now'))
+    updated_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE roles (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
     name CHAR(65) NOT NULL,
     description CHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now'))
+    updated_at TEXT DEFAULT (datetime('now'))
 );
 
 CREATE TABLE users (
@@ -72,16 +49,9 @@ CREATE TABLE users (
     name CHAR(65) NOT NULL,
     lastname CHAR(65) NOT NULL,
     description CHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now'))
-);
-
-CREATE TABLE user_registrations (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	user_id INT UNIQUE NOT NULL,
-    role_id CHAR(65) NOT NULL,
-    status VARCHAR(65) NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(user_id) REFERENCES users(id),
+    role_id INT NOT NULL,
+    status VARCHAR(25) NOT NULL,
+    updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(role_id) REFERENCES roles(id)
 );
 
@@ -89,69 +59,37 @@ CREATE TABLE products (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	sku VARCHAR(25) UNIQUE NOT NULL,
     name CHAR(65) NOT NULL,
+    size VARCHAR(25) NOT NULL,
     description CHAR(65) NOT NULL,
-    brand CHAR(65) NOT NULL,
     price FLOAT NOT NULL,
-    expiration_date TEXT DEFAULT (date('now')),
-    size_id INT NOT NULL,
+    brand CHAR(65) NOT NULL,
     breed_size_id INT NOT NULL,
-    lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(size_id) REFERENCES sizes(id),
-    FOREIGN KEY(breed_size_id) REFERENCES breeds(id)
-);
-
-CREATE TABLE inventory (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INT NOT NULL,
-    status VARCHAR(65) NOT NULL,
-    description CHAR(65) NOT NULL,
     quantity INT DEFAULT 0,
-    lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(product_id) REFERENCES products(id)
-);
-
-CREATE TABLE product_registrations (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    product_id INT NOT NULL,
-    inventory_id INT NOT NULL,
-    description CHAR(65) NOT NULL,
     ingress_date TEXT DEFAULT (date('now')),
-    lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(product_id) REFERENCES products(id),
-    FOREIGN KEY(inventory_id) REFERENCES inventory(id)
+    expiration_date TEXT DEFAULT (date('now')),
+    status VARCHAR(25) NOT NULL,
+    updated_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(breed_size_id) REFERENCES breeds(id)
 );
 
 CREATE TABLE receipts (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INT NOT NULL,
     cart_id INT NOT NULL,
-    store_id INT NOT NULL,
     description CHAR(65) NOT NULL,
     payment_method VARCHAR(65) NOT NULL,
     total_amount FLOAT DEFAULT 0,
     purchase_date TEXT DEFAULT (date('now')),
-    lasttime_modified TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(cart_id) REFERENCES shooping_carts(id)
 );
 
-CREATE TABLE sales (
+CREATE TABLE shoopping_cart_products (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    receipt_id INT NOT NULL,
     product_id INT NOT NULL,
+    cart_id INT NOT NULL,
     quantity INT DEFAULT 0,
-    price FLOAT DEFAULT 0,
-    total_price FLOAT DEFAULT 0,
-    lasttime_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(receipt_id) REFERENCES receipts(id)
-);
-
-CREATE TABLE shoopping_cart_items (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-    cart_id INT,
-    product_id INT,
-    quantity INT DEFAULT 0,
-    price FLOAT DEFAULT 0,
-    lasttime_modified TEXT DEFAULT (datetime('now')),
+    checkout INT DEFAULT 0,
+    updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(cart_id) REFERENCES shooping_carts(id),
     FOREIGN KEY(product_id) REFERENCES products(id)
 );
@@ -159,9 +97,8 @@ CREATE TABLE shoopping_cart_items (
 CREATE TABLE shooping_carts (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INT NOT NULL,
-    user_email VARCHAR(25) NOT NULL,
-    status VARCHAR(65) NOT NULL,
     purchase_date TEXT DEFAULT (date('now')),
-    lasttime_modified TEXT DEFAULT (datetime('now')),
+    status VARCHAR(25) NOT NULL,
+    updated_at TEXT DEFAULT (datetime('now')),
     FOREIGN KEY(user_id) REFERENCES users(id)
 );
