@@ -10,7 +10,8 @@ for number in number_list[:]:
     print(number)
     if number % 2 == 1:
         number_list.remove(number)
-
+# Better way
+#even_numbers = [num for num in number_list if num % 2 == 0]
 print(f"Even numbers only: {number_list}")
 
 

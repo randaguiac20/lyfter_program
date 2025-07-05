@@ -16,5 +16,10 @@ for index in range(0, 10):
     if number > greater_number:
         greater_number = number
 
+# Better way of doing it
+# for i in range(10):
+#     num = int(input(f"{i+1}. Enter number: "))
+#     number_list.append(num)
+#greater_number = max(number_list)
 print(f"\nAll 10 numbers entered by the user: {number_list}")
 print(f"\nGreater number is: {greater_number}\n")
