@@ -9,7 +9,8 @@ my_list = [20, 4, 3, 6, 1, 7, 12, 25]
 print(f"Current list: {my_list}")
 first_index = my_list.pop(0)
 last_index = my_list.pop(-1)
-
+# Intercambiar primero y último better way
+#my_list[0], my_list[-1] = my_list[-1], my_list[0]
 my_list.append(first_index)
 my_list.insert(0, last_index)
 print(f"Updated list: {my_list}")
