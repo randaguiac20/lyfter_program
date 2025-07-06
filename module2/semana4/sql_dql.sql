@@ -38,7 +38,10 @@ ORDER BY products.id;
 */
 
 /* 1. Obtenga todos los libros y sus autores*/
-SELECT * FROM books;
+SELECT b.name AS book_name,
+    a.name AS author_name
+    FROM books b
+LEFT JOIN authors a ON a.id = b.author_id;
 /* 2. Obtenga todos los libros que no tienen autor*/
 SELECT * FROM books
     WHERE author_id IS NULL;
