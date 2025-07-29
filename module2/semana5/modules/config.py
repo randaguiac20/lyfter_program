@@ -1,0 +1,6 @@
+DB_NAME = "lyfter"
+DB_USER = "randall_aguilar"
+DB_PASSWORD = ""
+DB_HOST = "localhost"
+DB_PORT = "5432"
+SQL_FILE = "database/schema.sql"
