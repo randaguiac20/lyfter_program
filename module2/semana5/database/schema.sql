@@ -1,51 +1,25 @@
--- Conditionally create database "lyfter"
-DO
-$$
-BEGIN
-   IF NOT EXISTS (
-      SELECT FROM pg_database WHERE datname = 'lyfter'
-   ) THEN
-      EXECUTE format('CREATE DATABASE lyfter
-         WITH OWNER = randall_aguilar
-              ENCODING = ''UTF8''
-              LC_COLLATE = ''en_US.UTF-8''
-              LC_CTYPE = ''en_US.UTF-8''
-              TEMPLATE = template0;');
-   END IF;
-END
-$$;
+-- Create schema if needed (optional)
+CREATE SCHEMA IF NOT EXISTS lyfter_car_rental AUTHORIZATION randall_aguilar;
 
--- Conditionally create schema "myschema"
-DO
-$$
-BEGIN
-   IF NOT EXISTS (
-      SELECT schema_name
-      FROM information_schema.schemata
-      WHERE schema_name = 'lyfter_car_rental'
-   ) THEN
-      EXECUTE 'CREATE SCHEMA lyfter_car_rental AUTHORIZATION randall_aguilar;';
-   END IF;
-END
-$$;
-$$ LANGUAGE plpgsql;
+-- Ensure subsequent objects are created only in this schema by default
+SET search_path TO lyfter_car_rental;
 
-CREATE TABLE IF NOT EXISTS users (
-    id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    first_name VARCHAR(255) NOT NULL,
-    last_name VARCHAR(50) NOT NULL,
-    email VARCHAR(254) UNIQUE NOT NULL CHECK (
-    email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
-  )
-    username VARCHAR(50) NOT NULL,
-    password VARCHAR(50) NOT NULL,
-    account_status VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE IF NOT EXISTS lyfter_car_rental.users (
+   id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+   first_name VARCHAR(255) NOT NULL,
+   last_name VARCHAR(50) NOT NULL,
+   email VARCHAR(254) UNIQUE NOT NULL CHECK (
+      email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+   ),
+   username VARCHAR(50) NOT NULL,
+   password VARCHAR(50) NOT NULL,
+   account_status VARCHAR(50) NOT NULL,
+   birthday DATE NOT NULL,
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-INSERT INTO users (first_name, last_name, email, username, password, birthday, account_status) VALUES
+INSERT INTO lyfter_car_rental.users (first_name, last_name, email, username, password, birthday, account_status) VALUES
 ('Sofía', 'Ramírez', 'sofia.ramirez@example.com', 'sramirez', 'p@55w0rd1!', '1991-07-15', 'active'),
 ('Mateo', 'López', 'mateo.lopez@example.com', 'mlopez', 'p@55w0rd2!', '1989-03-22', 'active'),
 ('Valentina', 'Hernández', 'valentina.hernandez@example.com', 'vhernandez', 'p@55w0rd3!', '1995-09-12', 'inactive'),
@@ -95,26 +69,26 @@ INSERT INTO users (first_name, last_name, email, username, password, birthday, a
 ('Alan', 'Solís', 'alan.solis@example.com', 'asolis', 'p@55w0rd47!', '1986-07-19', 'suspended'),
 ('Elena', 'Vega', 'elena.vega@example.com', 'evega', 'p@55w0rd48!', '1991-03-06', 'active'),
 ('Franco', 'Ávila', 'franco.avila@example.com', 'favila', 'p@55w0rd49!', '1989-05-23', 'inactive'),
-('Julia', 'Ponce', 'julia.ponce@example.com', 'jponce', 'p@55w0rd50!', '1990-10-18', 'active');
+('Julia', 'Ponce', 'julia.ponce@example.com', 'jponce', 'p@55w0rd50!', '1990-10-18', 'active')
+ON CONFLICT (email) DO NOTHING;
 
 
-CREATE TABLE IF NOT EXISTS cars (
+CREATE TABLE IF NOT EXISTS lyfter_car_rental.cars (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     brand VARCHAR(50) NOT NULL,
     model VARCHAR(50) NOT NULL,
     manufactured_year DATE NOT NULL,
     state VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE IF NOT EXISTS rentcar_users (
+CREATE TABLE IF NOT EXISTS lyfter_car_rental.rentcar_users (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id INT NOT NULL,
-    car_id INT NOT NULL,
+    user_id INT NOT NULL REFERENCES lyfter_car_rental.users(id) ON DELETE CASCADE,
+    car_id INT NOT NULL REFERENCES lyfter_car_rental.cars(id) ON DELETE CASCADE,
     status VARCHAR(25) NOT NULL,
-    ren_date DATE NOT NULL,
+    rent_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
