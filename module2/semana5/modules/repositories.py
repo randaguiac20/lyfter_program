@@ -1,15 +1,21 @@
 from abc import ABC, abstractmethod
 from flask.views import MethodView
+from flask import (Flask, request, jsonify)
 from modules.config import user_repo_queries
+
 
 
 class Repository(ABC):
     @abstractmethod
-    def create(self):
+    def get(self):
         pass
     
     @abstractmethod
-    def update(self):
+    def post(self):
+        pass
+
+    @abstractmethod
+    def put(self):
         pass
 
     @abstractmethod
@@ -38,18 +44,35 @@ class UserRepository(MethodView):
         if id is None:
             query = "SELECT * FROM lyfter_car_rental.users;"
             results = self.manager.execute_query(query)
-            for row in results or []:
-                users.append(self._format_user(row))
+            for result in results or []:
+                users.append(self._format_user(result))
         else:
-            query = f"SELECT * FROM lyfter_car_rental.users WHERE id = {id};"
-            results = self.manager.execute_query(query, id)
+            query = f"SELECT * FROM lyfter_car_rental.users WHERE id = %s;"
+            results = self.manager.execute_query(query, (id,))
             if results:
                 users.append(self._format_user(results[0]))
-        return users
+        return jsonify(users)
 
     def post(self):
+        # first_name = request.json.get("first_name")
+        # last_name = request.json.get("last_name")
+        email = request.json.get("email")
+        # username = request.json.get("username")
+        # password = request.json.get("password")
+        # birthday = request.json.get("birthday")
+        account_status = request.json.get("account_status")
         # Placeholder for create logic using self.manager
-        return {"message": "Not implemented"}, 501
+        query = f"SELECT * FROM lyfter_car_rental.users WHERE email = %s;"
+        _result = self.manager.execute_query(query, (email,))
+        if _result:
+            return jsonify(self._format_user(_result[0]))
+        query = """INSERT INTO lyfter_car_rental.users 
+                   (first_name, last_name, email, username, password, birthday, account_status) 
+                   VALUES (%s, %s, %s, %s, %s, %s, %s)"""
+        self.manager.execute_query(query, (request.json))
+        request.json.pop("password")
+        result = request.json
+        return jsonify(result)
     
     def put(self):
         pass

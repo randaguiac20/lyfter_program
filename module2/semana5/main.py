@@ -34,9 +34,19 @@ def register_api(app, name, db_manager):
     """
     
     # users
-    user_repo = UserRepository.as_view("user_repo", db_manager)
-    app.add_url_rule(f"/{name}/user_repo", view_func=user_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/user_repo/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+    user_repo = UserRepository.as_view("users", db_manager)
+    app.add_url_rule(f"/{name}/users", view_func=user_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/users/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+
+    # cars
+    # car_repo = CarRepository.as_view("cars", db_manager)
+    # app.add_url_rule(f"/{name}/cars", view_func=car_repo, methods=["GET", "POST"])
+    # app.add_url_rule(f"/{name}/cars/<id>", view_func=car_repo, methods=["GET", "PUT", "DELETE"])
+
+    # rent cars
+    # rentcars_repo = RentCarUsers.as_view("rentcars", db_manager)
+    # app.add_url_rule(f"/{name}/rentcars", view_func=rentcars_repo, methods=["GET", "POST"])
+    # app.add_url_rule(f"/{name}/rentcars/<id>", view_func=rentcars_repo, methods=["GET", "PUT", "DELETE"])
 
 
 if __name__ == "__main__":
