@@ -14,9 +14,3 @@ CACHE_DEFAULT_TIMEOUT = 300  # Cache timeout in seconds
 # Cert directory
 ROOT_DIR = os.getcwd()
 CERTS_DIR = f"{ROOT_DIR}/certs"
-
-# User repo queries
-user_repo_queries = {
-    "GET_ALL": "SELECT * FROM lyfter_car_rental.users;",
-    "GET_USER_BY_ID": "SELECT * FROM lyfter_car_rental.users WHERE id = (%s);"
-}

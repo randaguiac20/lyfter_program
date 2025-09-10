@@ -36,17 +36,17 @@ def register_api(app, name, db_manager):
     # users
     user_repo = UserRepository.as_view("users", db_manager)
     app.add_url_rule(f"/{name}/users", view_func=user_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/users/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+    app.add_url_rule(f"/{name}/users/<option>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
 
     # cars
-    # car_repo = CarRepository.as_view("cars", db_manager)
-    # app.add_url_rule(f"/{name}/cars", view_func=car_repo, methods=["GET", "POST"])
-    # app.add_url_rule(f"/{name}/cars/<id>", view_func=car_repo, methods=["GET", "PUT", "DELETE"])
+    car_repo = CarRepository.as_view("cars", db_manager)
+    app.add_url_rule(f"/{name}/cars", view_func=car_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/cars/<option>", view_func=car_repo, methods=["GET", "PUT", "DELETE"])
 
     # rent cars
-    # rentcars_repo = RentCarUsers.as_view("rentcars", db_manager)
-    # app.add_url_rule(f"/{name}/rentcars", view_func=rentcars_repo, methods=["GET", "POST"])
-    # app.add_url_rule(f"/{name}/rentcars/<id>", view_func=rentcars_repo, methods=["GET", "PUT", "DELETE"])
+    rentcars_repo = RentCarUsers.as_view("rentcars", db_manager)
+    app.add_url_rule(f"/{name}/rentcars", view_func=rentcars_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/rentcars/<option>", view_func=rentcars_repo, methods=["GET", "PUT", "DELETE"])
 
 
 if __name__ == "__main__":
@@ -60,6 +60,8 @@ if __name__ == "__main__":
     app.config['CACHE_DEFAULT_TIMEOUT'] = CACHE_DEFAULT_TIMEOUT
     cache.init_app(app)
     manager = db_manager()
+    manager.initialize_schema()
+    manager.create_database_if_not_exists()
     register_api(app, "lyfter_car_rental", manager)
     app.run(ssl_context=ssl_context, host="0.0.0.0",
             port=5001, debug=True)

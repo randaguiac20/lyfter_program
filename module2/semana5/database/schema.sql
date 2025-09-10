@@ -79,9 +79,40 @@ CREATE TABLE IF NOT EXISTS lyfter_car_rental.cars (
     model VARCHAR(50) NOT NULL,
     manufactured_year DATE NOT NULL,
     state VARCHAR(50) NOT NULL,
+    status VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- EXAMPLES
+
+/*sql
+brand VARCHAR(50) NOT NULL,
+model VARCHAR(50) NOT NULL,
+manufactured_year DATE NOT NULL,
+state VARCHAR(50) NOT NULL
+```
+
+```
+
+## Ejemplos de registros
+
+| brand      | model   | manufactured_year | state     |
+| ---------- | ------- | ------------------ | --------- |
+| Toyota     | Corolla | 2018-05-01         | Excelente |
+| Honda      | Civic   | 2016-03-15         | Muy bueno |
+| Ford       | Focus   | 2014-07-20         | Bueno     |
+| Nissan     | Sentra  | 2017-09-10         | Regular   |
+| Kia        | Rio     | 2013-01-30         | Malo      |
+| Chevrolet  | Aveo    | 2015-11-11         | Muy bueno |
+| Hyundai    | Elantra | 2019-08-25         | Excelente |
+| Volkswagen | Jetta   | 2012-06-18         | Bueno     |
+| Mazda      | 3       | 2015-12-22         | Regular   |
+| Suzuki     | Swift   | 2020-02-05         | Excelente |
+
+```
+*/
+
 
 CREATE TABLE IF NOT EXISTS lyfter_car_rental.rentcar_users (
     id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

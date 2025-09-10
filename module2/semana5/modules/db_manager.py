@@ -7,7 +7,7 @@ from modules.config import (DB_NAME, DB_USERNAME, DB_PASSWORD,
 class db_manager:
     def __init__(self, dbname=None):
         # Target DB from arg, env, or config
-        self.target_dbname = dbname or os.environ.get("DB_NAME", DB_NAME)
+        self.target_dbname = os.environ.get("DB_NAME", DB_NAME) or dbname
         self.user = DB_USERNAME
         self.password = DB_PASSWORD
         self.host = DB_HOST
@@ -34,10 +34,10 @@ class db_manager:
             print(f"Error connecting to the database '{dbname}': {error}")
             return None
 
-    def execute_query(self, query, *args):
+    def execute_query(self, query, params=None):
         if not self.connection or not self.cursor:
             raise RuntimeError("No active database connection")
-        self.cursor.execute(query, args)
+        self.cursor.execute(query, params)
         self.connection.commit()
         if self.cursor.description:
             return self.cursor.fetchall()
@@ -70,17 +70,17 @@ class db_manager:
             else:
                 print(f"Database {self.target_dbname} already exists.")
 
-        # Reconnect to target DB
-        self.close_connection()
-        self.connection = self.create_connection(self.target_dbname)
-        if self.connection:
-            self.cursor = self.connection.cursor()
-            print(f"Connected to target database '{self.target_dbname}'!")
-            return True
-        else:
-            print(f"Failed to connect to target database '{self.target_dbname}'!")
-            self.cursor = None
-            return False
+        # # Reconnect to target DB
+        # self.close_connection()
+        # self.connection = self.create_connection()
+        # if self.connection:
+        #     self.cursor = self.connection.cursor()
+        #     print(f"Connected to target database '{self.target_dbname}'!")
+        #     return True
+        # else:
+        #     print(f"Failed to connect to target database '{self.target_dbname}'!")
+        #     self.cursor = None
+        #     return False
 
     def initialize_schema(self):
         if not self.connection:
