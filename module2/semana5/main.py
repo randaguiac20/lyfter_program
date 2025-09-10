@@ -60,8 +60,8 @@ if __name__ == "__main__":
     app.config['CACHE_DEFAULT_TIMEOUT'] = CACHE_DEFAULT_TIMEOUT
     cache.init_app(app)
     manager = db_manager()
-    manager.initialize_schema()
     manager.create_database_if_not_exists()
+    manager.initialize_schema()
     register_api(app, "lyfter_car_rental", manager)
     app.run(ssl_context=ssl_context, host="0.0.0.0",
             port=5001, debug=True)
