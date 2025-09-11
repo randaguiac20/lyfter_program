@@ -120,6 +120,7 @@ CREATE TABLE IF NOT EXISTS lyfter_car_rental.rentcar_users (
     car_id INT NOT NULL REFERENCES lyfter_car_rental.cars(id) ON DELETE CASCADE,
     status VARCHAR(25) NOT NULL,
     rent_date DATE NOT NULL,
+    return_date DATE NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -70,18 +70,6 @@ class db_manager:
             else:
                 print(f"Database {self.target_dbname} already exists.")
 
-        # # Reconnect to target DB
-        # self.close_connection()
-        # self.connection = self.create_connection()
-        # if self.connection:
-        #     self.cursor = self.connection.cursor()
-        #     print(f"Connected to target database '{self.target_dbname}'!")
-        #     return True
-        # else:
-        #     print(f"Failed to connect to target database '{self.target_dbname}'!")
-        #     self.cursor = None
-        #     return False
-
     def initialize_schema(self):
         if not self.connection:
             print("No connection to target database. Cannot initialize schema.")

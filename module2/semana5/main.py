@@ -35,17 +35,17 @@ def register_api(app, name, db_manager):
     
     # users
     user_repo = UserRepository.as_view("users", db_manager)
-    app.add_url_rule(f"/{name}/users", view_func=user_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/users/<option>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+    app.add_url_rule(f"/{name}/users", view_func=user_repo, methods=["GET", "POST", "PUT"])
+    app.add_url_rule(f"/{name}/users/<option>", view_func=user_repo, methods=["GET", "DELETE"])
 
     # cars
     car_repo = CarRepository.as_view("cars", db_manager)
-    app.add_url_rule(f"/{name}/cars", view_func=car_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/cars", view_func=car_repo, methods=["GET", "POST", "PUT"])
     app.add_url_rule(f"/{name}/cars/<option>", view_func=car_repo, methods=["GET", "PUT", "DELETE"])
 
     # rent cars
     rentcars_repo = RentCarUsers.as_view("rentcars", db_manager)
-    app.add_url_rule(f"/{name}/rentcars", view_func=rentcars_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/rentcars", view_func=rentcars_repo, methods=["GET", "POST", "PUT"])
     app.add_url_rule(f"/{name}/rentcars/<option>", view_func=rentcars_repo, methods=["GET", "PUT", "DELETE"])
 
 

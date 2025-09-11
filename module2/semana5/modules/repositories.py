@@ -37,6 +37,7 @@ class UserRepository(MethodView):
             "last_name": user_record[2],
             "email": user_record[3],
             "username": user_record[4],
+            "account_status": user_record[6]
         }
 
     def get(self, option=None):
@@ -80,8 +81,18 @@ class UserRepository(MethodView):
         return jsonify(result)
     
     def put(self):
-        pass
-    
+        username = request.json.get("username")
+        account_status = request.json.get("account_status")
+        user = self.get(username)
+        query = "UPDATE lyfter_car_rental.users SET account_status = %s WHERE id = %s;"
+        try:
+            user_id = user.json[0].get("id")
+        except IndexError:
+            return jsonify({"info":"No user with this username in our records."})
+        self.manager.execute_query(query, (account_status, user_id,))
+        user = self.get(username)
+        return jsonify(user.json)
+
     def delete(self):
         pass
 
@@ -142,7 +153,17 @@ class CarRepository(MethodView):
         return jsonify(result)
     
     def put(self):
-        pass
+        model = request.json.get("model")
+        status = request.json.get("status")
+        car = self.get(model)
+        query = "UPDATE lyfter_car_rental.cars SET status = %s WHERE id = %s;"
+        try:
+            car_id = car.json[0].get("id")
+        except IndexError:
+            return jsonify({"info":"Car model NOT found in our records."})
+        self.manager.execute_query(query, (status, car_id,))
+        car = self.get(model)
+        return jsonify(car.json)
     
     def delete(self):
         pass
@@ -154,7 +175,7 @@ class RentCarUsers(MethodView):
         self.manager = db_manager
 
     def _format_rentcar(self, rentcar_record):
-        rent_date = rentcar_record[3]
+        rent_date = rentcar_record[4]
         # Convert date object to string format YYYY-MM-DD
         if isinstance(rent_date, date):
             rent_date = rent_date.strftime('%Y-%m-%d')
@@ -201,6 +222,7 @@ class RentCarUsers(MethodView):
         model = request.json.get("model")
         status = request.json.get("status")
         rent_date = request.json.get("rent_date")
+        return_date = request.json.get("return_date")
         user_id = self.get_user(username)
         if user_id is None:
             return jsonify({"info":"No user with this username in our records."})
@@ -216,7 +238,18 @@ class RentCarUsers(MethodView):
         return jsonify(result)
     
     def put(self):
-        pass
+        id = request.json.get("id")
+        status = request.json.get("status")
+        return_date = request.json.get("return_date")
+        rentcar = self.get(id)
+        query = "UPDATE lyfter_car_rental.rentcar_users SET status = %s, return_date = %s WHERE id = %s;"
+        try:
+            rent_id = rentcar.json[0].get("id")
+        except IndexError:
+            return jsonify({"info":"Car rent NOT found in our records."})
+        self.manager.execute_query(query, (status, return_date, rent_id,))
+        rentcar = self.get(id)
+        return jsonify(rentcar.json)
     
     def delete(self):
         pass
