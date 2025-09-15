@@ -14,3 +14,8 @@ CACHE_DEFAULT_TIMEOUT = 300  # Cache timeout in seconds
 # Cert directory
 ROOT_DIR = os.getcwd()
 CERTS_DIR = f"{ROOT_DIR}/certs"
+
+# Table keys
+user_fields = ["id", "first_name", "last_name", "email", "username", "account_status", "birthday"]
+car_fields = ["id", "brand", "model", "manufactured_year", "state", "status"]
+rentacar_fields = ["id", "user_id", "car_id", "rent_date", "return_date", "status"]
