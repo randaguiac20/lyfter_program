@@ -5,7 +5,7 @@ import os, csv
 
 
 
-class db_backup_manager:
+class DBBackupManager:
     def __init__(self):
         self.conn = None
         self.tables = ["lyfter_car_rental.users", "lyfter_car_rental.cars",
@@ -53,5 +53,5 @@ class db_backup_manager:
             self.conn.close()
 
 if __name__ == "__main__":
-    db_backup = db_backup_manager()
+    db_backup = DBBackupManager()
     db_backup.backup_data()
