@@ -97,7 +97,7 @@ state VARCHAR(50) NOT NULL
 
 ## Ejemplos de registros
 
-| brand      | model   | manufactured_year | state     |
+| brand      | model   | manufactured_year  | state     |
 | ---------- | ------- | ------------------ | --------- |
 | Toyota     | Corolla | 2018-05-01         | Excelente |
 | Honda      | Civic   | 2016-03-15         | Muy bueno |

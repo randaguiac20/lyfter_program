@@ -26,6 +26,7 @@ class HealthDBChecker:
             print("Connected to the DB....")
         except psycopg2.Error as e:
             print(f"DB Connection error: {e}")
+            return
         print("Starting health validation....\n")
         for table in self.tables:
             self.cursor.execute(f"SELECT * FROM {table};")
@@ -42,6 +43,7 @@ class HealthDBChecker:
         if self.conn:
             self.cursor.close()
             self.conn.close()
+
 
 if __name__ == "__main__":
     db_backup = HealthDBChecker()
