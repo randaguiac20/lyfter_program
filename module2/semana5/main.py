@@ -13,8 +13,9 @@ Modules imported:
 """
 
 from flask import Flask, Blueprint
-from modules.repositories import (UserRepository, CarRepository,
-                                  RentCarUsers)
+from module2.semana5.modules.user_repository import UserRepository
+from module2.semana5.modules.car_repository import CarRepository
+from module2.semana5.modules.rental_repository import RentCarUsers
 from modules.config import CACHE_TYPE, CACHE_DEFAULT_TIMEOUT
 from modules.https_config import ssl_context
 from modules.cache_config import cache
