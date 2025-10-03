@@ -2,7 +2,7 @@ import json
 from flask import (Flask, request, jsonify)
 from modules.config import user_fields
 from datetime import date
-from repository import Repository
+from modules.repository import Repository
 
 
 

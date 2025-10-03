@@ -2,10 +2,10 @@ import json
 from flask import (Flask, request, jsonify)
 from modules.config import rentacar_fields
 from datetime import date
-from repository import Repository
+from modules.repository import Repository
 
 
-class RentCarUsers(MethodView):
+class RentCarUsers(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
