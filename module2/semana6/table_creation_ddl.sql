@@ -30,7 +30,6 @@ DROP TABLE receipts;
 */
 -- SQLite
 
-
 CREATE TABLE customers (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	customer_id VARCHAR(25) NOT NULL,
