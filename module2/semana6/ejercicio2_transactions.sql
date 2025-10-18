@@ -1,15 +1,5 @@
 BEGIN TRANSACTION;
 
--- Check if order already exists
-SELECT 
-    CASE 
-        WHEN COUNT(*) > 0 THEN 'ERROR: Order O001 already exists'
-        ELSE 'Order ID available'
-    END as order_check,
-    COUNT(*) as existing_orders
-FROM orders 
-WHERE order_id = 'O001';
-
 -- Check if customer exists
 SELECT 
     CASE 
@@ -84,13 +74,13 @@ SELECT
         WHEN COUNT(*) > 0 THEN 'WARNING: Shipping record for order O001 already exists'
         ELSE 'No existing shipping record found'
     END as shipping_check
-FROM shipping 
+FROM shipping_orders 
 WHERE order_id = 'O001';
 
-INSERT INTO shipping (order_id, address, status)
-SELECT 'O001', '123 Main St', 'Pending'
+INSERT INTO shipping_orders (order_id, product_id, customer_address, status)
+SELECT 'O001', 'P001', '123 Main St', 'Pending'
 WHERE NOT EXISTS (
-    SELECT 1 FROM shipping WHERE order_id = 'O001'
+    SELECT 1 FROM shipping_orders WHERE order_id = 'O001'
 )
 AND EXISTS (
     SELECT 1 FROM orders WHERE order_id = 'O001'
@@ -106,18 +96,18 @@ AND EXISTS (SELECT 1 FROM orders WHERE order_id = 'O001');
 SELECT 
     o.order_id,
     o.status as order_status,
-    s.address,
+    c.address as customer_address,
     s.status as shipping_status,
     i.quantity as remaining_stock,
     c.last_purchase,
     CASE 
-        WHEN s.address IS NULL THEN 'ERROR: Address is NULL'
-        WHEN s.address = '' THEN 'ERROR: Address is empty string'
-        WHEN trim(s.address) = '' THEN 'ERROR: Address is only whitespace'
+        WHEN s.customer_address IS NULL THEN 'ERROR: Address is NULL'
+        WHEN s.customer_address = '' THEN 'ERROR: Address is empty string'
+        WHEN trim(s.customer_address) = '' THEN 'ERROR: Address is only whitespace'
         ELSE 'SUCCESS: Transaction completed successfully'
     END as final_status
 FROM orders o
-LEFT JOIN shipping s ON o.order_id = s.order_id
+LEFT JOIN shipping_orders s ON o.order_id = s.order_id
 LEFT JOIN inventory i ON i.product_id = 'P001'
 LEFT JOIN customers c ON o.customer_id = c.customer_id
 WHERE o.order_id = 'O001';

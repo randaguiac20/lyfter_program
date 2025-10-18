@@ -8,12 +8,12 @@ WHERE product_id = 'P001'
 AND EXISTS (
     SELECT 1 FROM orders 
     WHERE order_id = 'O001'
-    AND status = 'Pending'
+    AND status = 'pending'
 );
 
 -- Actualizar factura
 UPDATE orders
-SET status = 'Returned'
+SET status = 'returned'
 WHERE order_id = 'O001';
 
 -- If there are any critical errors, rollback to savepoint

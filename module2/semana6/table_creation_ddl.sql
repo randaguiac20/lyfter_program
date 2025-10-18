@@ -59,17 +59,20 @@ CREATE TABLE inventory (
 CREATE TABLE orders (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	order_id VARCHAR(10) NOT NULL,
-	customer_id INT NOT NULL,
+	customer_id VARCHAR(25) NOT NULL,
     total BIGINT(25) DEFAULT 0,
     status VARCHAR(10) DEFAULT 'in_progress',
     FOREIGN KEY(customer_id) REFERENCES customer(customer_id)
 );
 
-CREATE TABLE shipping (
-	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	order_id VARCHAR(10) NOT NULL,
-    address VARCHAR(255) UNIQUE NOT NULL,
-	status VARCHAR(10) DEFAULT 'in_progress',
-	last_modified TEXT DEFAULT (datetime('now')),
-    FOREIGN KEY(order_id) REFERENCES orders(order_id)
+CREATE TABLE shipping_orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id VARCHAR(10) NOT NULL,
+    product_id CHAR(50) NOT NULL,
+    customer_address VARCHAR(255) NOT NULL,
+    status VARCHAR(10) DEFAULT 'in_progress',
+    last_modified TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY(order_id) REFERENCES orders(order_id),
+    FOREIGN KEY(product_id) REFERENCES products(product_id),
+    UNIQUE(order_id, product_id)
 );

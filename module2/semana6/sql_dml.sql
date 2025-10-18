@@ -33,15 +33,24 @@ WHERE id = 2;
 DELETE FROM students
 	WHERE id = 3;
 */
+
+
 INSERT INTO customers (customer_id, name, last_name, address)
-	VALUES ('C001', 'Alek', 'Castillo', '123 Main St');
+	VALUES ('C001', 'Alek', 'Castillo', 'NY, NY, 123 Main St'),
+	       ('C002', 'Andre', 'Solis', 'MI, FL, 456 Wall St');
 
 INSERT INTO products (product_id, name, brand)
 	VALUES ('P001', 'bully sticks', 'organic products'),
-           ('P002', 'salmon treats', 'montebello');
+           ('P002', 'salmon treats', 'montebello'),
+		   ('P003', 'chicken treats', 'montebello'),
+		   ('P004', 'pork treats', 'montebello'),
+		   ('P005', 'beef treats', 'montebello');
 
 INSERT INTO inventory (product_id, quantity)
 	VALUES ('P001', 8),
-           ('P002', 3);
+           ('P002', 3),
+		   ('P003', 15),
+		   ('P004', 12),
+		   ('P005', 4);
 
 

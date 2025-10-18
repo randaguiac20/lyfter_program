@@ -36,10 +36,10 @@ DROP TABLE customers;
 DROP TABLE products;
 DROP TABLE inventory;
 DROP TABLE orders;
-DROP TABLE shipping;
+DROP TABLE shipping_orders;
 
 SELECT * FROM customers;
 SELECT * FROM products;
 SELECT * FROM inventory;
 SELECT * FROM orders;
-SELECT * FROM shipping;
+SELECT * FROM shipping_orders;
