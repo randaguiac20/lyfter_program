@@ -114,8 +114,20 @@ class DBManager:
         except Exception as e:
             raise e
 
-    def delete(self):
-        pass
+    def delete(self, model_name, filter):
+        session = self.sessionlocal()
+        try:
+            # Get the model class
+            model_class = self.get_model(model_name)
+            record = session.query(model_class).filter_by(id=filter).first()
+            if not record:
+                raise ValueError(f"{model_name} with filter {filter} not found")
+            session.delete(record)
+            session.commit()
+            msg = f"{record} has been DELETED"
+            return msg
+        except Exception as e:
+            raise e
 
     def close(self):
         session = self.sessionlocal()

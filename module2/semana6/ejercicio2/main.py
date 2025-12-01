@@ -112,4 +112,6 @@ if __name__ == '__main__':
     for car in cars:
         print(car)
     print("="*lines)
+    user_deleted = db.delete("user", 1)
+    print(user_deleted)
     db.close()
