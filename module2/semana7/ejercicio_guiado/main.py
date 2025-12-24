@@ -58,5 +58,8 @@ def me():
             return Response(status=403)
     except Exception as e:
         return Response(status=500)
-    
-app.run(host="localhost", port=5000, debug=True)
+
+if __name__ == '__main__':
+    db_manager = DB_Manager()
+    jwt_manager = JWT_Manager('trespatitos', 'HS256')
+    app.run(host="localhost", port=5000, debug=True)

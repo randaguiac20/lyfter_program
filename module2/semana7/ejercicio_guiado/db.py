@@ -1,8 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy import MetaData
-from sqlalchemy import Table, Column, Integer, String
+from sqlalchemy import Table, Column, Integer, String, text
 from sqlalchemy import insert, select
-from config import _metadata
+from config import (_metadata, SCHEMA, DB_USERNAME, DB_PASSWORD,
+                    DB_HOST, DB_PORT, DB_NAME, Base)
+
 
 metadata_obj = _metadata
 
@@ -17,8 +19,24 @@ user_table = Table(
 
 class DB_Manager:
     def __init__(self):
-        self.engine = create_engine('postgresql+psycopg2://postgres:fasd89fa7gs98@localhost:5432/postgres')
+        self.db_uri = f'postgresql+psycopg2://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        self.engine = create_engine(self.db_uri, echo=False)
+        self.schema = SCHEMA
+        self.base = Base
+        self._ensure_schema()
         metadata_obj.create_all(self.engine)
+        self.drop_tables()
+        self.create_tables()
+
+    def _ensure_schema(self):
+          with self.engine.begin() as conn:
+            conn.execute(text(f'CREATE SCHEMA IF NOT EXISTS "{self.schema}"'))
+
+    def create_tables(self):
+        self.base.metadata.create_all(self.engine)
+
+    def drop_tables(self):
+        self.base.metadata.drop_all(self.engine)
         
     def insert_user(self, username, password):
         stmt = insert(user_table).returning(user_table.c.id).values(username=username, password=password)
