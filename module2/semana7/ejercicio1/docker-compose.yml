@@ -10,7 +10,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5451:5432"
+      - "${DB_PORT}:5432"
     networks:
       - lifter-network
     healthcheck:
