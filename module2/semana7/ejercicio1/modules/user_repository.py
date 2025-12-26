@@ -4,6 +4,7 @@ from datetime import date
 from modules.repository import Repository
 from modules.models import _models
 from sqlalchemy.orm import joinedload
+from modules.jwt_manager import require_jwt
 
 
 
@@ -15,11 +16,12 @@ class UserRepository(Repository):
         self.model_name = 'user'
         self.model_class = _models.get(self.model_name)
 
-    def get_model(self):
+    def _get_model(self):
         if not self.model_class:
             raise ValueError(f"Model '{self.model_name}' not found")
         return self.model_class
 
+    @require_jwt("administrator")
     def get(self, id=None, with_relationships=True):
         """
         Get user records.
@@ -28,7 +30,7 @@ class UserRepository(Repository):
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related user data
         """
-        model_class = self.get_model()
+        model_class = self._get_model()
         session = self.manager.sessionlocal()
         
         # If id is provided, try to get by ID
@@ -79,9 +81,10 @@ class UserRepository(Repository):
         
         return jsonify(registration_list)
 
+    @require_jwt("administrator")
     def post(self):
         session = self.manager.sessionlocal()
-        model_class = self.get_model()
+        model_class = self._get_model()
         data = request.get_json()
         new_record = model_class(**data)
         record = self.manager.insert(new_record, session)
@@ -92,11 +95,12 @@ class UserRepository(Repository):
             "created_at": str(record.created_at)
         })
     
+    @require_jwt("administrator")
     def put(self, id):
         """
         Update User information (e.g., change role or password).
         """
-        model_class = self.get_model()
+        model_class = self._get_model()
         if not id:
             return jsonify({"error": "User ID is required"}), 400
         try:
@@ -126,12 +130,13 @@ class UserRepository(Repository):
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
-
+    
+    @require_jwt("administrator")
     def delete(self, id):
         if not id:
             return jsonify({"error": "User ID is required"}), 400
         try:
-            model_class = self.get_model()
+            model_class = self._get_model()
             session = self.manager.sessionlocal()
             message = self.manager.delete(session, model_class, id)
             return jsonify({"message": message}), 200

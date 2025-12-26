@@ -10,7 +10,7 @@ class UserRegistration(Base):
 
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
-    password = Column(String(8))
+    password = Column(String(255))
     role = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

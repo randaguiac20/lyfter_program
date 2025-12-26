@@ -4,6 +4,8 @@ from datetime import date
 from modules.repository import Repository
 from modules.models import _models
 from sqlalchemy.orm import joinedload
+from modules.jwt_manager import require_jwt
+from modules.secret_keys import password_hash
 
 
 
@@ -15,11 +17,12 @@ class RegistrationRepository(Repository):
         self.model_name = 'register_user'
         self.model_class = _models.get(self.model_name)
 
-    def get_model(self):
+    def _get_model(self):
         if not self.model_class:
             raise ValueError(f"Model '{self.model_name}' not found")
         return self.model_class
-
+    
+    @require_jwt("administrator")
     def get(self, id=None, with_relationships=True):
         """
         Get registration records.
@@ -28,7 +31,7 @@ class RegistrationRepository(Repository):
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related user data
         """
-        model_class = self.get_model()
+        model_class = self._get_model()
         session = self.manager.sessionlocal()
         
         # If id is provided, try to get by ID
@@ -75,20 +78,23 @@ class RegistrationRepository(Repository):
             return jsonify(registration_list[0])
         
         return jsonify(registration_list)
-
+    
+    @require_jwt("administrator")
     def post(self):
         data = request.get_json()
         fields = ["email", "password", "role"]
         for field in fields:
             if field not in data:
                 return jsonify({"error": f"Missing required field: {field}"}), 400
-        # Validate password length
-        if len(data['password']) > 8:
-            return jsonify({"error": "Password must be 8 characters or less"}), 400
+        
+        # Hash the password before storing
+        hashed_data = data.copy()
+        hashed_data['password'] = password_hash(data['password'])
+        
         try:
             session = self.manager.sessionlocal()
-            model_class = self.get_model()
-            new_record = model_class(**data)
+            model_class = self._get_model()
+            new_record = model_class(**hashed_data)
             record = self.manager.insert(new_record, session)
             return jsonify({
                 "id": record.id,
@@ -99,11 +105,12 @@ class RegistrationRepository(Repository):
         except Exception as e:
             return jsonify({"error": str(e)}), 400
     
+    @require_jwt("administrator")
     def put(self, id):
         """
         Update registration information (e.g., change role or password).
         """
-        model_class = self.get_model()
+        model_class = self._get_model()
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
@@ -114,9 +121,9 @@ class RegistrationRepository(Repository):
             if not update_data:
                 return jsonify({"error": "No fields to update"}), 400
             
-            # Validate password length if updating password
-            if 'password' in update_data and len(update_data['password']) > 8:
-                return jsonify({"error": "Password must be 8 characters or less"}), 400
+            # Hash password if updating
+            if 'password' in update_data:
+                update_data['password'] = password_hash(update_data['password'])
             
             # Update registration
             updated_reg = self.manager.update(session, model_class,
@@ -134,11 +141,12 @@ class RegistrationRepository(Repository):
         except Exception as e:
             return jsonify({"error": str(e)}), 400
 
+    @require_jwt("administrator")
     def delete(self, id):
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
-            model_class = self.get_model()
+            model_class = self._get_model()
             session = self.manager.sessionlocal()
             message = self.manager.delete(session, model_class, id)
             return jsonify({"message": message}), 200
