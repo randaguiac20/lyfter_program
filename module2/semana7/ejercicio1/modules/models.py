@@ -5,22 +5,40 @@ from modules.config import Base
 
 
 
+class UserRegistration(Base):
+    __tablename__ = "user_registrations"
+
+    id = Column(Integer, primary_key=True)
+    email = Column(String, unique=True)
+    password = Column(String(8))
+    role = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    # UserContact = class name, back_populates = field name i.e user on other table/class
+    user = relationship("User", back_populates="register_user", uselist=False)
+
+    def __repr__(self):
+        return f"Register User id={self.id}, email='{self.email}'"
+
+
+
 class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
+    registration_id = Column(Integer, ForeignKey("user_registrations.id"), nullable=False)
     first_name = Column(String)
     last_name = Column(String)
     email = Column(String, unique=True)
     telephone = Column(String(8))
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
-    role = Column(String)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     # UserContact = class name, back_populates = field name i.e user on other table/class
     contacts = relationship("UserContact", back_populates="user")
     address = relationship("Address", back_populates="user", uselist=False)
     carts = relationship("ShoppingCart", back_populates="user")
+    register_user = relationship("UserRegistration", back_populates="user", uselist=False)
 
     def __repr__(self):
         return f"User id={self.id}, name='{self.first_name} {self.last_name}', email='{self.email}'"
@@ -136,6 +154,7 @@ class ShoppingCartProduct(Base):
 
 
 _models = {
+    "register_user": UserRegistration,
     "user": User,
     "user_contact": UserContact,
     "address": Address,

@@ -19,3 +19,11 @@ Base = declarative_base(metadata=_metadata)
 # SECRETS
 secret = "trespatitos"
 secret_algorithm = "RS256"
+
+# Cache settings for Flask-Caching
+CACHE_TYPE = 'SimpleCache'  # Use SimpleCache for file-based or memory-based caching
+CACHE_DEFAULT_TIMEOUT = 300  # Cache timeout in seconds
+
+# Cert directory
+ROOT_DIR = os.getcwd()
+CERTS_DIR = f"{ROOT_DIR}/certs"

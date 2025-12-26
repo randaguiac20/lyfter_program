@@ -1,66 +1,73 @@
 from modules.db_manager import DB_Manager
 from modules.jwt_manager import JWT_Manager
-from modules.config import secret, secret_algorithm
-from flask import Flask, request, Response, jsonify
+from flask import Flask, Blueprint
+from modules.config import CACHE_TYPE, CACHE_DEFAULT_TIMEOUT
+from modules.https_config import ssl_context
+from modules.cache_config import cache
+from modules.user_repository import UserRepository
+from modules.registration_repository import RegistrationRepository
 
 
-app = Flask("user-service")
-db_manager = DB_Manager()
-jwt_manager = JWT_Manager('trespatitos', 'HS256')
+def register_api(app, name, db_manager):
+    """
+    Registers all API endpoints with the Flask app.
 
+    Args:
+        app (Flask): The Flask application instance.
+        name (str): The base path for all endpoints (e.g., 'fruit_products').
+        db_manager (DB_Manager): Database manager instance.
 
-@app.route("/liveness")
-def liveness():
-    return "<p>We are up and running baby!</p>"
+    Returns:
+        None
+    """
 
-@app.route('/register', methods=['POST'])
-def register():
-    data = request.get_json()  # data is empty
-    if(data.get('user_email') == None or data.get('password') == None):
-        return Response(status=400)
-    else:
-        result = db_manager.insert_user(data.get('user_email'), data.get('password'))
-        user_id = result[0]
+    # register users endpoints
+    register_repo = RegistrationRepository.as_view("register", db_manager)
+    app.add_url_rule(f"/{name}/register", view_func=register_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/register/<id>", view_func=register_repo, methods=["GET", "PUT", "DELETE"])
 
-        token = jwt_manager.encode({'id':user_id})
-        
-        return jsonify(token=token)
+    # users endpoints
+    user_repo = UserRepository.as_view("users", db_manager)
+    app.add_url_rule(f"/{name}/users", view_func=user_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/users/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
 
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()  # data is empty
-    if(data.get('username') == None or data.get('password') == None):
-        return Response(status=400)
-    else:
-        result = db_manager.get_user(data.get('username'), data.get('password'))
-
-        if(result == None):
-            return Response(status=403)
-        else:
-            user_id = result[0]
-            token = jwt_manager.encode({'id':user_id})
-        
-            return jsonify(token=token)
-
-@app.route('/me')
-def me():
-    try:
-        token = request.headers.get('Authorization')
-        if(token is not None):
-            test = token.replace("Bearer ","")
-            print(test)
-            decoded = jwt_manager.decode(test)
-            user_id = decoded['id']
-
-            user = db_manager.get_user_by_id(user_id)
-
-            return jsonify(id=user_id, username=user[1])
-        else:
-            return Response(status=403)
-    except Exception as e:
-        return Response(status=500)
 
 if __name__ == '__main__':
-    db_manager = DB_Manager()
-    jwt_manager = JWT_Manager(secret, secret_algorithm)
-    app.run(host="localhost", port=5000, debug=True)
+    """
+    Main entry point for the application.
+    Initializes the Flask app, configures extensions, creates database manager,
+    registers all API endpoints, sets up session teardown, and runs the server with SSL.
+    """
+    # Initialize Flask app
+    app = Flask(__name__)
+    
+    # Configure cache
+    app.config['CACHE_TYPE'] = CACHE_TYPE
+    app.config['CACHE_DEFAULT_TIMEOUT'] = CACHE_DEFAULT_TIMEOUT
+    cache.init_app(app)
+    
+    # Initialize database manager
+    db_manager = DB_Manager(drop_table=False)
+    
+    # CRITICAL: Register teardown handler for session cleanup
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        """
+        Automatically close database sessions after each request.
+        This runs whether the request succeeded or raised an exception.
+        
+        Args:
+            exception: Any exception that occurred during the request (or None)
+        """
+        db_manager.remove_session()
+    
+    # Register all API endpoints
+    register_api(app, "fruit_products", db_manager)
+    
+    # Run the application with SSL
+    app.run(
+        ssl_context=ssl_context,
+        host="localhost",
+        port=5001,
+        debug=True
+    )
