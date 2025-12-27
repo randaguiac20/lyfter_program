@@ -1,9 +1,10 @@
+import json
 from flask import (request, jsonify)
 from modules.repository import Repository
 from modules.models import _models
 from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt, JWT_Manager
-from modules.secret_keys import password_hash
+from modules.secret_keys import password_hash, verify_password
 
 
 
@@ -92,7 +93,7 @@ class RegistrationRepository(Repository):
             session = self.manager.sessionlocal()
             model_class = self._get_model()
             new_record = model_class(**hashed_data)
-            record = self.manager.insert(new_record, session)
+            record = self.manager.insert(session, new_record)
             
             # Generate JWT token for the newly registered user
             jwt_manager = JWT_Manager()
@@ -109,31 +110,38 @@ class RegistrationRepository(Repository):
                 "token": token
             }), 201
         except Exception as e:
-            return jsonify({"error": str(e)}), 400
+            return jsonify({"error": "User is already registered"}), 400
     
     @require_jwt("administrator")
     def put(self, id):
         """
         Update registration information (e.g., change role or password).
         """
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "No fields to update"}), 400
         model_class = self._get_model()
+        _updated_record = model_class(**data)
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
             session = self.manager.sessionlocal()
-            # Get fields to update (exclude id)
-            update_data = {k: v for k, v in request.json.items() if k != 'id'}
-            
-            if not update_data:
-                return jsonify({"error": "No fields to update"}), 400
-            
-            # Hash password if updating
-            if 'password' in update_data:
-                update_data['password'] = password_hash(update_data['password'])
-            
+            _query = session.query(model_class).filter_by(id=id)
+            records = self.manager.get(_query)
+            record = records[0]
+            if not records:
+                return jsonify({"error": f"User ID {id} has not been found"}), 404
+            # Update fields directly on the existing record
+            if 'email' in data:
+                record.email = data['email']
+            if 'password' in data:
+                # Hash the new password
+                record.password = password_hash(data['password'])
+            if 'role' in data:
+                record.role = data['role']
+
             # Update registration
-            updated_reg = self.manager.update(session, model_class,
-                                              id, **update_data)
+            updated_reg = self.manager.update(session, record)
             
             return jsonify({
                 "id": updated_reg.id,
@@ -154,7 +162,10 @@ class RegistrationRepository(Repository):
         try:
             model_class = self._get_model()
             session = self.manager.sessionlocal()
-            message = self.manager.delete(session, model_class, id)
+            record = session.query(model_class).filter_by(id=id).first()
+            if not record:
+                raise ValueError(f"User ID {id} has not been found")
+            message = self.manager.delete(session, record)
             return jsonify({"message": message}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404

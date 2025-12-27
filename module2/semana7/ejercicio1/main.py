@@ -91,7 +91,7 @@ if __name__ == '__main__':
         data = {"email": "admin@administrator.com",
                 "password": f"{password}", "role": "administrator"}
         new_record = model_class(**data)
-        db_manager.insert(new_record, session)
+        db_manager.insert(session, new_record)
     finally:
         session.close()
 

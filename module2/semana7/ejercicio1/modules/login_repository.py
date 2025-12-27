@@ -1,3 +1,4 @@
+import json
 from flask import (request, jsonify)
 from modules.repository import Repository
 from modules.models import _models
@@ -37,7 +38,6 @@ class LoginRepository(Repository):
             "created_at": str(record.created_at)
         })
 
-    @require_jwt(["administrator", "client"])
     def post(self):
         session = self.manager.sessionlocal()
         model_class = self._get_model()

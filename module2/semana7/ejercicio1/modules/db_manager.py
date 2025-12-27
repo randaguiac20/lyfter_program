@@ -40,9 +40,9 @@ class DB_Manager:
             results = query.all()
             return results
         except Exception as e:
-            raise e
+            raise Exception("Failed to fetch records") from e
 
-    def insert(self, new_record, session):
+    def insert(self, session, new_record):
         try:
             session.add(new_record)
             session.commit()
@@ -50,34 +50,21 @@ class DB_Manager:
             return new_record
         except Exception as e:
             session.rollback()
-            raise e
+            raise Exception("Failed to insert record") from e
 
-    def update(self, session, model_class,
-               filter, **kwargs):
+    def update(self, session, new_record):
         try:
-            # Get the model class
-            model_class = self.get_model(model_class)
-            record = session.query(model_class).filter_by(id=filter).first()
-            if not record:
-                raise ValueError(f"{model_class} with filter {filter} not found")
-            for key, value in kwargs.items():
-                setattr(record, key, value)
             session.commit()
-            session.refresh(record)
-            return record
+            session.refresh(new_record)
+            return new_record
         except Exception as e:
-            raise e
+            raise Exception("Failed to update record") from e
 
-    def delete(self, session,  model_class, filter):
+    def delete(self, session,  record):
         try:
-            # Get the model class
-            model_class = self.get_model(model_class)
-            record = session.query(model_class).filter_by(id=filter).first()
-            if not record:
-                raise ValueError(f"{model_class} with filter {filter} not found")
             session.delete(record)
             session.commit()
-            msg = f"{record} has been DELETED"
+            msg = f"Register user with {record.id}, and email {record.email} has been DELETED"
             return msg
         except Exception as e:
-            raise e
+            raise Exception("Failed to delete record") from e
