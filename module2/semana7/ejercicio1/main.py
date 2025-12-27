@@ -36,8 +36,8 @@ def register_api(app, name, db_manager):
 
     # login and me endpoints
     register_repo = LoginRepository.as_view("login", db_manager)
-    app.add_url_rule(f"/{name}/login", view_func=register_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/me", view_func=register_repo, methods=["GET", "PUT", "DELETE"])
+    app.add_url_rule(f"/{name}/login", view_func=register_repo, methods=["POST"])
+    app.add_url_rule(f"/{name}/me", view_func=register_repo, methods=["GET"])
 
     # register users endpoints
     register_repo = RegistrationRepository.as_view("register", db_manager)

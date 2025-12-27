@@ -49,7 +49,6 @@ class JWT_Manager:
                 'iat': datetime.utcnow(),
                 'type': 'refresh'  # Token type identifier
             }
-            
             if self.secret:
                 encoded = jwt.encode(payload, self.secret, algorithm=self.algorithm)
                 return encoded

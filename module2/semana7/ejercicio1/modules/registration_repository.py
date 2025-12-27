@@ -1,6 +1,4 @@
-import json
 from flask import (request, jsonify)
-from datetime import date
 from modules.repository import Repository
 from modules.models import _models
 from sqlalchemy.orm import joinedload
@@ -47,15 +45,15 @@ class RegistrationRepository(Repository):
         if with_relationships:
             _query = _query.options(joinedload(model_class.user))
         
-        results = self.manager.get(_query)
+        registrations = self.manager.get(_query)
         
         # If querying by ID and no result found
-        if id and not results:
+        if id and not registrations:
             return jsonify({"error": "Registration not found"}), 404
         
         # Convert SQLAlchemy objects to dictionaries
         registration_list = []
-        for reg in results:
+        for reg in registrations:
             reg_data = {
                 "registration_id": reg.id,
                 "email": reg.email,

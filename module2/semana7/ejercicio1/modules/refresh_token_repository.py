@@ -1,11 +1,7 @@
-import json
 from flask import (request, jsonify)
-from datetime import date
 from modules.repository import Repository
 from modules.models import _models
-from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt, JWT_Manager
-from modules.secret_keys import verify_password
 
 
 
@@ -36,9 +32,9 @@ class RefreshTokenRepository(Repository):
         email = decoded.get("email")
         _query = session.query(model_class).filter_by(email=email)
         records = self.manager.get(_query)
+        record = records[0]
         if not records or len(records) == 0:
             return jsonify({"error": "User not found"}), 404
-        record = records[0]
         token_data = {
                 "id": record.id,
                 "email": record.email,
@@ -52,3 +48,12 @@ class RefreshTokenRepository(Repository):
             "refresh_token": refresh_token,
             "created_at": str(record.created_at)
         })
+
+    def get(self):
+        pass
+
+    def put(self):
+        pass
+
+    def delete(self):
+        pass

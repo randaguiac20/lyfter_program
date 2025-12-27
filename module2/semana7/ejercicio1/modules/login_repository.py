@@ -1,9 +1,6 @@
-import json
 from flask import (request, jsonify)
-from datetime import date
 from modules.repository import Repository
 from modules.models import _models
-from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt, JWT_Manager
 from modules.secret_keys import verify_password
 
@@ -30,12 +27,11 @@ class LoginRepository(Repository):
         token = _token.replace("Bearer ","")
         if not token:
             return jsonify({"error": "No token provided"}), 400
-
         jwt_manager = JWT_Manager()
         decoded = jwt_manager.decode(token)
         email = decoded.get("email")
         _query = session.query(model_class).filter_by(email=email)
-        record = self.manager.get(_query)
+        record = self.manager.get(_query)[0]
         return jsonify({
             "email": record.email,
             "created_at": str(record.created_at)
@@ -50,11 +46,12 @@ class LoginRepository(Repository):
         password = data.get("password")
         _query = session.query(model_class).filter_by(email=email)
         records = self.manager.get(_query)
+        record = records[0]
         if not records or len(records) == 0:
             return jsonify({"error": "User not found"}), 404
-        record = records[0]
         hashed = record.password
         is_valid = verify_password(hashed, password)
+        
         if not is_valid:
             return jsonify({"error": "Invalid password"}), 403
         jwt_manager = JWT_Manager()
@@ -69,3 +66,9 @@ class LoginRepository(Repository):
             "token": token,
             "created_at": str(record.created_at)
         })
+
+    def put(self):
+        pass
+
+    def delete(self):
+        pass
