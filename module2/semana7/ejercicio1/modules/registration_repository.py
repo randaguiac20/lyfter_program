@@ -121,7 +121,6 @@ class RegistrationRepository(Repository):
         if not data:
             return jsonify({"error": "No fields to update"}), 400
         model_class = self._get_model()
-        _updated_record = model_class(**data)
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
@@ -137,7 +136,10 @@ class RegistrationRepository(Repository):
             if 'password' in data:
                 # Hash the new password
                 record.password = password_hash(data['password'])
+            ALLOWED_ROLES = ["client", "administrator"]
             if 'role' in data:
+                if not data['role'] in ALLOWED_ROLES:
+                    return jsonify({"error": "Invalid role was provided"}), 400
                 record.role = data['role']
 
             # Update registration

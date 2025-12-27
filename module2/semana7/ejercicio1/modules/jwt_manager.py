@@ -90,9 +90,9 @@ def require_jwt(required_roles=None):
             try:
                 payload = jwt.decode(token, PUBLIC_KEY, algorithms=["RS256"])
                 user_role = payload.get('role')
-                ALLOWED_ROLES = ["client", "administrator"]
+                
                 # Check role if required
-                if required_roles and user_role in ALLOWED_ROLES:
+                if required_roles == user_role:
                     # Convert single string to list
                     roles = [required_roles] if isinstance(required_roles, str) else required_roles
                     

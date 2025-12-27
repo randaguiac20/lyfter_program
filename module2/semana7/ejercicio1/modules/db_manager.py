@@ -64,7 +64,7 @@ class DB_Manager:
         try:
             session.delete(record)
             session.commit()
-            msg = f"Register user with {record.id}, and email {record.email} has been DELETED"
+            msg = f"Register user with ID {record.id}, and email {record.email} has been DELETED"
             return msg
         except Exception as e:
             raise Exception("Failed to delete record") from e
