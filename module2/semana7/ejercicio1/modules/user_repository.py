@@ -59,6 +59,8 @@ class UserRepository(Repository):
                 "id": reg.id,
                 "registration_id": reg.registration_id,
                 "email": reg.email,
+                "first_name": reg.first_name,
+                "last_name": reg.last_name,
                 "created_at": str(reg.created_at) if reg.created_at else None,
                 "updated_at": str(reg.updated_at) if reg.updated_at else None
             }

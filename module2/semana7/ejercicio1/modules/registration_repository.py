@@ -4,7 +4,7 @@ from datetime import date
 from modules.repository import Repository
 from modules.models import _models
 from sqlalchemy.orm import joinedload
-from modules.jwt_manager import require_jwt
+from modules.jwt_manager import require_jwt, JWT_Manager
 from modules.secret_keys import password_hash
 
 
@@ -70,7 +70,6 @@ class RegistrationRepository(Repository):
                     "first_name": reg.user.first_name,
                     "last_name": reg.user.last_name
                 }
-            print(reg_data)
             registration_list.append(reg_data)
         
         # Return single object if querying by ID, otherwise return list
@@ -96,11 +95,20 @@ class RegistrationRepository(Repository):
             model_class = self._get_model()
             new_record = model_class(**hashed_data)
             record = self.manager.insert(new_record, session)
-            return jsonify({
+            
+            # Generate JWT token for the newly registered user
+            jwt_manager = JWT_Manager()
+            token_data = {
                 "id": record.id,
                 "email": record.email,
-                "role": record.role,
-                "created_at": str(record.created_at)
+                "role": record.role
+            }
+            token = jwt_manager.encode(token_data)
+            
+            return jsonify({
+                "id": record.id,
+                "created_at": str(record.created_at),
+                "token": token
             }), 201
         except Exception as e:
             return jsonify({"error": str(e)}), 400

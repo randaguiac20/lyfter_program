@@ -2,7 +2,11 @@ from functools import wraps
 import jwt
 from flask import request, jsonify
 import logging
+from datetime import datetime, timedelta
 from modules.config import FILE_PATH
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 # Read keys
 def read_keys():
@@ -22,17 +26,39 @@ class JWT_Manager:
         self.secret = secret
         self.algorithm = algorithm if self.secret is None else "HS256"
 
-    def encode(self, data):
+    def encode(self, data, expires_in_minutes: int = 15):
         try:
+            payload = data.copy()
+            payload['exp'] = datetime.utcnow() + timedelta(minutes=expires_in_minutes)
+            payload['iat'] = datetime.utcnow()
             if self.secret:
-                encoded = jwt.encode(data, self.secret, algorithm=self.algorithm)
+                encoded = jwt.encode(payload, self.secret, algorithm=self.algorithm)
                 return encoded
-            encoded = jwt.encode(data, self.private_key, algorithm=self.algorithm)
+            encoded = jwt.encode(payload, self.private_key, algorithm=self.algorithm)
             return encoded
         except Exception as e:
-            print(e)
+            logger.warning(f"Encode token error: {e}")
             return None
 
+    def encode_refresh_token(self, email: str, expires_in_days: int = 30):
+        """Generate refresh token with long expiration and minimal data"""
+        try:
+            payload = {
+                'email': email,
+                'exp': datetime.utcnow() + timedelta(days=expires_in_days),
+                'iat': datetime.utcnow(),
+                'type': 'refresh'  # Token type identifier
+            }
+            
+            if self.secret:
+                encoded = jwt.encode(payload, self.secret, algorithm=self.algorithm)
+                return encoded
+            encoded = jwt.encode(payload, self.private_key, algorithm=self.algorithm)
+            return encoded
+        except Exception as e:
+            logger.warning(f"Encode refresh token error: {e}")
+        return None
+    
     def decode(self, token):
         try:
             if self.secret:
@@ -41,12 +67,9 @@ class JWT_Manager:
             decoded = jwt.decode(token, self.public_key, algorithms=[self.algorithm])
             return decoded
         except Exception as e:
-            print(e)
+            logger.warning(f"Decode token error: {e}")
             return None
 
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 def require_jwt(required_roles=None):
     """

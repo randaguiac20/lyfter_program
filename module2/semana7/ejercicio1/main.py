@@ -6,6 +6,8 @@ from modules.https_config import ssl_context
 from modules.cache_config import cache
 from modules.user_repository import UserRepository
 from modules.registration_repository import RegistrationRepository
+from modules.login_repository import LoginRepository
+from modules.refresh_token_repository import RefreshTokenRepository
 from modules.secret_keys import generate_private_key, password_hash
 from modules.models import _models
 from modules.config import FILE_PATH
@@ -28,6 +30,14 @@ def register_api(app, name, db_manager):
     Returns:
         None
     """
+    # login and me endpoints
+    register_repo = RefreshTokenRepository.as_view("refresh-token", db_manager)
+    app.add_url_rule(f"/{name}/refresh-token", view_func=register_repo, methods=["POST"])
+
+    # login and me endpoints
+    register_repo = LoginRepository.as_view("login", db_manager)
+    app.add_url_rule(f"/{name}/login", view_func=register_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/me", view_func=register_repo, methods=["GET", "PUT", "DELETE"])
 
     # register users endpoints
     register_repo = RegistrationRepository.as_view("register", db_manager)
