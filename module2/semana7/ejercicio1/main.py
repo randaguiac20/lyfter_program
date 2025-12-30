@@ -8,6 +8,7 @@ from modules.user_repository import UserRepository
 from modules.registration_repository import RegistrationRepository
 from modules.login_repository import LoginRepository
 from modules.refresh_token_repository import RefreshTokenRepository
+from modules.address_repository import AddressRepository
 from modules.secret_keys import generate_private_key, password_hash
 from modules.models import _models
 from modules.config import FILE_PATH
@@ -30,7 +31,7 @@ def register_api(app, name, db_manager):
     Returns:
         None
     """
-    # login and me endpoints
+    # Token refresh endpoint
     register_repo = RefreshTokenRepository.as_view("refresh-token", db_manager)
     app.add_url_rule(f"/{name}/refresh-token", view_func=register_repo, methods=["POST"])
 
@@ -48,6 +49,12 @@ def register_api(app, name, db_manager):
     user_repo = UserRepository.as_view("users", db_manager)
     app.add_url_rule(f"/{name}/users", view_func=user_repo, methods=["GET", "POST"])
     app.add_url_rule(f"/{name}/users/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+
+    # address endpoints
+    user_repo = AddressRepository.as_view("addresses", db_manager)
+    app.add_url_rule(f"/{name}/addresses", view_func=user_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/addresses/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+
 
 
 if __name__ == '__main__':

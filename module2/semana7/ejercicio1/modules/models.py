@@ -66,14 +66,14 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(Integer, primary_key=True)
-    street = Column(String(255), nullable=False)
-    city = Column(String(100), nullable=False)
+    street = Column(String(255), nullable=False, unique=True)
+    city = Column(String(100), nullable=False, unique=True)
     state = Column(String(100))
-    postal_code = Column(String(20))
+    postal_code = Column(String(20), unique=True)
     country = Column(String(100), default="USA", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    user = relationship("User", back_populates="address")
+    user = relationship("User", back_populates="address", uselist=False)
 
     def __repr__(self):
         user_name = (

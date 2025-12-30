@@ -8,12 +8,12 @@ from modules.jwt_manager import require_jwt
 
 
 
-class UserRepository(Repository):
+class AddressRepository(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.manager = db_manager
-        self.model_name = 'user'
+        self.model_name = 'address'
         self.model_class = _models.get(self.model_name)
 
     def _get_model(self):
@@ -24,7 +24,7 @@ class UserRepository(Repository):
     @require_jwt("administrator")
     def get(self, id=None, with_relationships=True):
         """
-        Get user records.
+        Get address records.
         
         Args:
             id: Optional ID from URL path parameter
@@ -46,41 +46,42 @@ class UserRepository(Repository):
         if with_relationships:
             _query = _query.options(joinedload(model_class.user))
         
-        results = self.manager.get(_query)
+        addresses = self.manager.get(_query)
         
         # If querying by ID and no result found
-        if id and not results:
-            return jsonify({"error": "Registration not found"}), 404
+        if id and not addresses:
+            return jsonify({"error": "Address not found"}), 404
         
         # Convert SQLAlchemy objects to dictionaries
-        registration_list = []
-        for reg in results:
-            reg_data = {
-                "id": reg.id,
-                "registration_id": reg.registration_id,
-                "email": reg.email,
-                "user name": f"{reg.user.first_name} {reg   .user.last_name}",
-                "created_at": str(reg.created_at) if reg.created_at else None,
-                "updated_at": str(reg.updated_at) if reg.updated_at else None
+        address_list = []
+        for address in addresses:
+            address_data = {
+                "id": address.id,
+                "postal_code": address.postal_code,
+                "country": address.country,
+                "state": address.state,
+                "city": address.city,
+                "street": address.street,
+                "created_at": str(address.created_at) if address.created_at else None,
+                "updated_at": str(address.updated_at) if address.updated_at else None
             }
             
             # Include related user data if loaded
-            if with_relationships and hasattr(reg, 'contacts') and reg.contacts:
-                print(reg_data['contacts'])
-                reg_data["user"] = {
-                    "id": reg.contacts.id,
-                    "first_name": reg.contacts.first_name,
-                    "last_name": reg.contacts.last_name,
-                    "email": reg.contacts.email
+            if with_relationships and hasattr(address, 'user') and address.user:
+                import ipdb; ipdb.set_trace()
+                address_data["user"] = {
+                    "id": address.user.id,
+                    "user name": f"{address.user.first_name} {address.user.last_name}",
+                    "email": address.user.email
                 }
             
-            registration_list.append(reg_data)
+            address_list.append(address_data)
         
         # Return single object if querying by ID, otherwise return list
-        if id and registration_list:
-            return jsonify(registration_list[0])
+        if id and address_list:
+            return jsonify(address_list[0])
         
-        return jsonify(registration_list)
+        return jsonify(address_list)
 
     @require_jwt("administrator")
     def post(self):
@@ -91,20 +92,20 @@ class UserRepository(Repository):
         record = self.manager.insert(session, new_record)
         if record is None:
             return jsonify({
-            "error": "User already exists or violates database constraints",
-            "message": "This user may already be registered or the data conflicts with existing records"
+            "error": "Address already exists or violates database constraints",
+            "message": "This postal code may already be registered or the data conflicts with existing records"
         }), 409
         return jsonify({
-            "email": record.email,
-            "first_name": record.first_name,
-            "last_name": record.last_name,
+            "postal_code": record.postal_code,
+            "country": record.country,
+            "state": record.state,
             "created_at": str(record.created_at)
         })
     
     @require_jwt("administrator")
     def put(self, id):
         """
-        Update User information (e.g., change role or password).
+        Update Address information (e.g., change street or city).
         """
         data = request.get_json()
         if not data:
@@ -143,7 +144,7 @@ class UserRepository(Repository):
     @require_jwt("administrator")
     def delete(self, id):
         if not id:
-            return jsonify({"error": "User ID is required"}), 400
+            return jsonify({"error": "Address ID is required"}), 400
         try:
             model_class = self._get_model()
             session = self.manager.sessionlocal()

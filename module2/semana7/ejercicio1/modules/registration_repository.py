@@ -5,6 +5,7 @@ from modules.models import _models
 from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt, JWT_Manager
 from modules.secret_keys import password_hash, verify_password
+from modules.config import ALLOWED_ROLES
 
 
 
@@ -136,7 +137,6 @@ class RegistrationRepository(Repository):
             if 'password' in data:
                 # Hash the new password
                 record.password = password_hash(data['password'])
-            ALLOWED_ROLES = ["client", "administrator"]
             if 'role' in data:
                 if not data['role'] in ALLOWED_ROLES:
                     return jsonify({"error": "Invalid role was provided"}), 400

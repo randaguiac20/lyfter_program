@@ -1,4 +1,5 @@
-from sqlalchemy import (create_engine, MetaData, text)
+from sqlalchemy import (create_engine, text)
+from sqlalchemy.exc import IntegrityError
 from modules.config import (DB_HOST, DB_USERNAME, DB_PORT,
                             DB_PASSWORD, DB_NAME, SCHEMA,
                             Base)
@@ -48,6 +49,9 @@ class DB_Manager:
             session.commit()
             session.refresh(new_record)
             return new_record
+        except IntegrityError as e:
+            session.rollback()
+            return None
         except Exception as e:
             session.rollback()
             raise Exception("Failed to insert record") from e
@@ -57,6 +61,9 @@ class DB_Manager:
             session.commit()
             session.refresh(new_record)
             return new_record
+        except IntegrityError as e:
+            session.rollback()
+            return None
         except Exception as e:
             raise Exception("Failed to update record") from e
 
@@ -66,5 +73,8 @@ class DB_Manager:
             session.commit()
             msg = f"Register user with ID {record.id}, and email {record.email} has been DELETED"
             return msg
+        except IntegrityError as e:
+            session.rollback()
+            return None
         except Exception as e:
             raise Exception("Failed to delete record") from e
