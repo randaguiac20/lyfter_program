@@ -32,13 +32,13 @@ def register_api(app, name, db_manager):
         None
     """
     # Token refresh endpoint
-    register_repo = RefreshTokenRepository.as_view("refresh-token", db_manager)
-    app.add_url_rule(f"/{name}/refresh-token", view_func=register_repo, methods=["POST"])
+    refresh_token_repo = RefreshTokenRepository.as_view("refresh-token", db_manager)
+    app.add_url_rule(f"/{name}/refresh-token", view_func=refresh_token_repo, methods=["POST"])
 
     # login and me endpoints
-    register_repo = LoginRepository.as_view("login", db_manager)
-    app.add_url_rule(f"/{name}/login", view_func=register_repo, methods=["POST"])
-    app.add_url_rule(f"/{name}/me", view_func=register_repo, methods=["GET"])
+    login_repo = LoginRepository.as_view("login", db_manager)
+    app.add_url_rule(f"/{name}/login", view_func=login_repo, methods=["POST"])
+    app.add_url_rule(f"/{name}/me", view_func=login_repo, methods=["GET"])
 
     # register users endpoints
     register_repo = RegistrationRepository.as_view("register", db_manager)
@@ -51,9 +51,9 @@ def register_api(app, name, db_manager):
     app.add_url_rule(f"/{name}/users/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
 
     # address endpoints
-    user_repo = AddressRepository.as_view("addresses", db_manager)
-    app.add_url_rule(f"/{name}/addresses", view_func=user_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/addresses/<id>", view_func=user_repo, methods=["GET", "PUT", "DELETE"])
+    address_repo = AddressRepository.as_view("addresses", db_manager)
+    app.add_url_rule(f"/{name}/addresses", view_func=address_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/addresses/<id>", view_func=address_repo, methods=["GET", "PUT", "DELETE"])
 
 
 

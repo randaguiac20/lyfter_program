@@ -36,7 +36,7 @@ class User(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     # UserContact = class name, back_populates = field name i.e user on other table/class
     contacts = relationship("UserContact", back_populates="user")
-    address = relationship("Address", back_populates="user", uselist=False)
+    address = relationship("Address", back_populates="users", uselist=False)
     carts = relationship("ShoppingCart", back_populates="user")
     register_user = relationship("UserRegistration", back_populates="user", uselist=False)
 
@@ -73,14 +73,13 @@ class Address(Base):
     country = Column(String(100), default="USA", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    user = relationship("User", back_populates="address", uselist=False)
+    users = relationship("User", back_populates="address")
 
     def __repr__(self):
-        user_name = (
-            f"{self.user.first_name} {self.user.last_name}"
-            if self.user else "No user"
+        _users = (
+            f"{self.users}"
         )
-        return f"Address id={self.id}, user name={user_name} city='{self.city}', state='{self.state}', country='{self.country}'"
+        return f"Address id={self.id}, users={_users} city='{self.city}', state='{self.state}', country='{self.country}'"
 
 
 class Product(Base):

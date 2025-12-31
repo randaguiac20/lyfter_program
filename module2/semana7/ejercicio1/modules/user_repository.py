@@ -44,43 +44,45 @@ class UserRepository(Repository):
             _query = session.query(model_class)
         
         if with_relationships:
-            _query = _query.options(joinedload(model_class.user))
+            _query = _query.options(joinedload(model_class.contacts),
+                                    joinedload(model_class.address),
+                                    joinedload(model_class.carts))
         
-        results = self.manager.get(_query)
+        users = self.manager.get(_query)
         
         # If querying by ID and no result found
-        if id and not results:
+        if id and not users:
             return jsonify({"error": "Registration not found"}), 404
         
         # Convert SQLAlchemy objects to dictionaries
-        registration_list = []
-        for reg in results:
-            reg_data = {
-                "id": reg.id,
-                "registration_id": reg.registration_id,
-                "email": reg.email,
-                "user name": f"{reg.user.first_name} {reg   .user.last_name}",
-                "created_at": str(reg.created_at) if reg.created_at else None,
-                "updated_at": str(reg.updated_at) if reg.updated_at else None
+        user_list = []
+        for user in users:
+            user_data = {
+                "id": user.id,
+                "registration_id": user.registration_id,
+                "email": user.email,
+                "user name": f"{user.first_name} {user.last_name}",
+                "created_at": str(user.created_at) if user.created_at else None,
+                "updated_at": str(user.updated_at) if user.updated_at else None
             }
             
             # Include related user data if loaded
-            if with_relationships and hasattr(reg, 'contacts') and reg.contacts:
-                print(reg_data['contacts'])
-                reg_data["user"] = {
-                    "id": reg.contacts.id,
-                    "first_name": reg.contacts.first_name,
-                    "last_name": reg.contacts.last_name,
-                    "email": reg.contacts.email
+            if with_relationships and hasattr(user, 'contacts') and user.contacts:
+                print(user_data['contacts'])
+                user_data["contacts"] = {
+                    "id": user.contacts.id,
+                    "first_name": user.contacts.first_name,
+                    "last_name": user.contacts.last_name,
+                    "email": user.contacts.email
                 }
             
-            registration_list.append(reg_data)
+            user_list.append(user_data)
         
         # Return single object if querying by ID, otherwise return list
-        if id and registration_list:
-            return jsonify(registration_list[0])
+        if id and user_list:
+            return jsonify(user_list[0])
         
-        return jsonify(registration_list)
+        return jsonify(user_list)
 
     @require_jwt("administrator")
     def post(self):
@@ -89,6 +91,7 @@ class UserRepository(Repository):
         data = request.get_json()
         new_record = model_class(**data)
         record = self.manager.insert(session, new_record)
+        
         if record is None:
             return jsonify({
             "error": "User already exists or violates database constraints",

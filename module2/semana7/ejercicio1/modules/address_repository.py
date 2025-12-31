@@ -44,7 +44,7 @@ class AddressRepository(Repository):
             _query = session.query(model_class)
         
         if with_relationships:
-            _query = _query.options(joinedload(model_class.user))
+            _query = _query.options(joinedload(model_class.users))
         
         addresses = self.manager.get(_query)
         
@@ -67,13 +67,16 @@ class AddressRepository(Repository):
             }
             
             # Include related user data if loaded
-            if with_relationships and hasattr(address, 'user') and address.user:
-                import ipdb; ipdb.set_trace()
-                address_data["user"] = {
-                    "id": address.user.id,
-                    "user name": f"{address.user.first_name} {address.user.last_name}",
-                    "email": address.user.email
-                }
+            if with_relationships and hasattr(address, 'users') and address.users:
+                users_list = []
+                for user in address.users:
+                    user_data = {
+                        "id": user.id,
+                        "user_name": f"{user.first_name} {user.last_name}",
+                        "email": user.email
+                    }
+                    users_list.append(user_data)
+                address_data['users'] = users_list
             
             address_list.append(address_data)
         
