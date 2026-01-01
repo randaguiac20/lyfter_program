@@ -42,6 +42,16 @@ class DB_Manager:
             return results
         except Exception as e:
             raise Exception("Failed to fetch records") from e
+        
+    def get_by_id(self, session, model_class, id):
+        try:
+            results = session.query(model_class).filter_by(id=id)
+            return results
+        except IntegrityError as e:
+            session.rollback()
+            return None
+        except Exception as e:
+            raise Exception("Failed to fetch records") from e
 
     def insert(self, session, new_record):
         try:
@@ -71,8 +81,6 @@ class DB_Manager:
         try:
             session.delete(record)
             session.commit()
-            msg = f"Register user with ID {record.id}, and email {record.email} has been DELETED"
-            return msg
         except IntegrityError as e:
             session.rollback()
             return None

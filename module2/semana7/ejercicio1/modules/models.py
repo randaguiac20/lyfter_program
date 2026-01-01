@@ -41,7 +41,11 @@ class User(Base):
     register_user = relationship("UserRegistration", back_populates="user", uselist=False)
 
     def __repr__(self):
-        return f"User id={self.id}, name='{self.first_name} {self.last_name}', email='{self.email}'"
+        fields = []
+        for column in self.__table__.columns:
+            value = getattr(self, column.name)
+            fields.append(f"{column.name}={value!r}")
+        return f"User: {', '.join(fields)}"
 
 
 class UserContact(Base):

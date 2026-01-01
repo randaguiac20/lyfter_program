@@ -109,33 +109,48 @@ class UserRepository(Repository):
         """
         Update User information (e.g., change role or password).
         """
-        data = request.get_json()
-        if not data:
+        new_data = request.get_json()
+        if not new_data:
             return jsonify({"error": "No fields to update"}), 400
         model_class = self._get_model()
-        new_record = model_class(**data)
+        
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
+        
         try:
             session = self.manager.sessionlocal()
-            _query = session.query(model_class).filter_by(id=id)
-            records = self.manager.get(_query)
-            current_record = records[0]
-            import ipdb; ipdb.set_trace()
-            # Get fields to update (exclude id)
-            update_data = {k: v for k, v in request.json.items() if k != 'id'}
+            records = self.manager.get_by_id(session, model_class, id)
+            record = records[0]
+            if not record:
+                return jsonify({"error": f"User ID {id} has not been found"}), 404
             
-            if not update_data:
+            for column in record.__table__.columns:
+                field_name = column.name
+                
+                # Skip fields that shouldn't be updated
+                if field_name in ('id', 'created_at', 'updated_at'):
+                    continue
+                
+                # Check if field is in new_data
+                if field_name in new_data:
+                    old_value = getattr(record, field_name)
+                    new_value = new_data[field_name]
+                    
+                    # Compare values (handle type conversions)
+                    if str(old_value) != str(new_value):
+                        setattr(record, field_name, new_value)
+            
+            if not record:
                 return jsonify({"error": "No fields to update"}), 400
             
+            new_record = record
             # Update registration
-            updated_reg = self.manager.update(session, new_record)
+            updated_user = self.manager.update(session, new_record)
             
             return jsonify({
-                "id": updated_reg.id,
-                "email": updated_reg.email,
-                "role": updated_reg.role,
-                "updated_at": str(updated_reg.updated_at)
+                "id": updated_user.id,
+                "email": updated_user.email,
+                "updated_at": str(updated_user.updated_at)
             })
             
         except ValueError as e:
@@ -150,8 +165,12 @@ class UserRepository(Repository):
         try:
             model_class = self._get_model()
             session = self.manager.sessionlocal()
-            message = self.manager.delete(session, model_class, id)
-            return jsonify({"message": message}), 200
+            record = session.query(model_class).filter_by(id=id).first()
+            if not record:
+                raise ValueError(f"User ID {id} has not been found")
+            self.manager.delete(session, record)
+            msg = f"User with ID {id}, and email {record.email} has been DELETED"
+            return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:

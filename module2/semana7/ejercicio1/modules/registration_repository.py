@@ -167,8 +167,9 @@ class RegistrationRepository(Repository):
             record = session.query(model_class).filter_by(id=id).first()
             if not record:
                 raise ValueError(f"User ID {id} has not been found")
-            message = self.manager.delete(session, record)
-            return jsonify({"message": message}), 200
+            self.manager.delete(session, record)
+            msg = f"Register User with ID {id}, and email {record.email} has been DELETED"
+            return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:

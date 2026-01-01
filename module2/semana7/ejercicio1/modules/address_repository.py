@@ -151,7 +151,10 @@ class AddressRepository(Repository):
         try:
             model_class = self._get_model()
             session = self.manager.sessionlocal()
-            message = self.manager.delete(session, model_class, id)
+            record = session.query(model_class).filter_by(id=id).first()
+            if not record:
+                raise ValueError(f"Address ID {id} has not been found")
+            message = self.manager.delete(session, record)
             return jsonify({"message": message}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
