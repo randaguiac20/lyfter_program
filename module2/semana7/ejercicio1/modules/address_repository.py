@@ -99,6 +99,7 @@ class AddressRepository(Repository):
             "message": "This postal code may already be registered or the data conflicts with existing records"
         }), 409
         return jsonify({
+            "id": record.id,
             "postal_code": record.postal_code,
             "country": record.country,
             "state": record.state,
@@ -147,14 +148,8 @@ class AddressRepository(Repository):
             # Update address
             updated_address = self.manager.update(session, record)
             
-            return jsonify({
-                "id": updated_address.id,
-                "postal_code": updated_address.postal_code,
-                "country": updated_address.country,
-                "state": updated_address.state,
-                "city": updated_address.city,
-                "updated_at": str(updated_address.updated_at)
-            })
+            msg = f"Address with ID {id} has been UPDATED"
+            return jsonify({"message": msg}), 200
             
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
@@ -171,8 +166,9 @@ class AddressRepository(Repository):
             record = session.query(model_class).filter_by(id=id).first()
             if not record:
                 raise ValueError(f"Address ID {id} has not been found")
-            message = self.manager.delete(session, record)
-            return jsonify({"message": message}), 200
+            self.manager.delete(session, record)
+            msg = f"Address with ID {id} has been DELETED"
+            return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
