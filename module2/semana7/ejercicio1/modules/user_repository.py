@@ -142,10 +142,9 @@ class UserRepository(Repository):
             
             if not record:
                 return jsonify({"error": "No fields to update"}), 400
-            
-            new_record = record
-            # Update registration
-            updated_user = self.manager.update(session, new_record)
+
+            # Update user
+            updated_user = self.manager.update(session, record)
             
             return jsonify({
                 "id": updated_user.id,

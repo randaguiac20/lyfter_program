@@ -110,33 +110,50 @@ class AddressRepository(Repository):
         """
         Update Address information (e.g., change street or city).
         """
-        data = request.get_json()
-        if not data:
+        new_data = request.get_json()
+        if not new_data:
             return jsonify({"error": "No fields to update"}), 400
         model_class = self._get_model()
-        new_record = model_class(**data)
+        
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
+        
         try:
             session = self.manager.sessionlocal()
-            _query = session.query(model_class).filter_by(id=id)
-            records = self.manager.get(_query)
-            current_record = records[0]
-            import ipdb; ipdb.set_trace()
-            # Get fields to update (exclude id)
-            update_data = {k: v for k, v in request.json.items() if k != 'id'}
+            records = self.manager.get_by_id(session, model_class, id)
+            record = records[0]
+            if not record:
+                return jsonify({"error": f"User ID {id} has not been found"}), 404
             
-            if not update_data:
+            for column in record.__table__.columns:
+                field_name = column.name
+                
+                # Skip fields that shouldn't be updated
+                if field_name in ('id', 'created_at', 'updated_at'):
+                    continue
+                
+                # Check if field is in new_data
+                if field_name in new_data:
+                    old_value = getattr(record, field_name)
+                    new_value = new_data[field_name]
+                    
+                    # Compare values (handle type conversions)
+                    if str(old_value) != str(new_value):
+                        setattr(record, field_name, new_value)
+            
+            if not record:
                 return jsonify({"error": "No fields to update"}), 400
-            
-            # Update registration
-            updated_reg = self.manager.update(session, new_record)
+
+            # Update address
+            updated_address = self.manager.update(session, record)
             
             return jsonify({
-                "id": updated_reg.id,
-                "email": updated_reg.email,
-                "role": updated_reg.role,
-                "updated_at": str(updated_reg.updated_at)
+                "id": updated_address.id,
+                "postal_code": updated_address.postal_code,
+                "country": updated_address.country,
+                "state": updated_address.state,
+                "city": updated_address.city,
+                "updated_at": str(updated_address.updated_at)
             })
             
         except ValueError as e:
