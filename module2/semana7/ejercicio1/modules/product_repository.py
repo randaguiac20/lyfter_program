@@ -8,12 +8,12 @@ from modules.jwt_manager import require_jwt
 
 
 
-class UserRepository(Repository):
+class ProductRepository(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.manager = db_manager
-        self.model_name = 'user'
+        self.model_name = 'product'
         self.model_class = _models.get(self.model_name)
 
     def _get_model(self):
@@ -24,11 +24,11 @@ class UserRepository(Repository):
     @require_jwt("administrator")
     def get(self, id=None, with_relationships=True):
         """
-        Get user records.
+        Get product records.
         
         Args:
             id: Optional ID from URL path parameter
-            with_relationships: Whether to load related user data
+            with_relationships: Whether to load related product data
         """
         model_class = self._get_model()
         session = self.manager.sessionlocal()
@@ -48,67 +48,46 @@ class UserRepository(Repository):
                                     joinedload(model_class.address),
                                     joinedload(model_class.carts))
         
-        users = self.manager.get(_query)
+        products = self.manager.get(_query)
         
         # If querying by ID and no result found
-        if id and not users:
-            return jsonify({"error": "Registration not found"}), 404
+        if id and not products:
+            return jsonify({"error": "product not found"}), 404
         
         # Convert SQLAlchemy objects to dictionaries
-        user_list = []
-        for user in users:
-            user_data = {
-                "id": user.id,
-                "registration_id": user.registration_id,
-                "email": user.email,
-                "user name": f"{user.first_name} {user.last_name}",
-                "created_at": str(user.created_at) if user.created_at else None,
-                "updated_at": str(user.updated_at) if user.updated_at else None
+        product_list = []
+        for product in products:
+            product_data = {
+                "id": product.id,
+                "name": product.name,
+                "description": product.description,
+                "price": product.price,
+                "size": product.size,
+                "quantity": product.quantity,
+                "created_at": str(product.created_at) if product.created_at else None,
+                "updated_at": str(product.updated_at) if product.updated_at else None
             }
             # Include related address data if loaded
-            if with_relationships and hasattr(user, 'address') and user.address:
-                user_data["address"] = {
-                    "id": user.address.id,
-                    "street": user.address.street,
-                    "city": user.address.city,
-                    "state": user.address.state,
-                    "postal_code": user.address.postal_code,
-                    "country": user.address.country,
-                    "email": user.address.email
-                }
-            # Include related contact data if loaded
-            if with_relationships and hasattr(user, 'contacts') and user.contacts:
-                contact_list = []
-                for contact in user.contacts:
-                    contact_data = {
-                        "id": contact.id,
-                        "first_name": contact.first_name,
-                        "last_name": contact.last_name,
-                        "email": contact.email
-                    }
-                    contact_list.append(contact_data)
-                user_data["contacts"] = contact_list
-            
-            # Include related cart data if loaded
-            if with_relationships and hasattr(user, 'carts') and user.carts:
+            if with_relationships and hasattr(product, 'cart_products') and product.cart_products:
                 cart_list = []
-                for cart in user.carts:
+                for cart in product.cart_products:
                     cart_data = {
-                        "id": cart.id,
-                        "first_name": cart.first_name,
-                        "last_name": cart.last_name,
-                        "email": cart.email
+                        "cart_id": cart.cart_id,
+                        "product_id": cart.product_id,
+                        "quantity": cart.quantity,
+                        "checkout": cart.checkout,
+                        "created_at": str(cart.created_at),
+                        "updated_at": str(cart.updated_at)
                     }
                     cart_list.append(cart_data)
-                user_data['carts'] = cart_list
-            
-            user_list.append(user_data)
-        
+                product_data['cart_prodcuts'] = cart_list
+            product_list.append(product_data)         
+
         # Return single object if querying by ID, otherwise return list
-        if id and user_list:
-            return jsonify(user_list[0])
+        if id and product_list:
+            return jsonify(product_list[0])
         
-        return jsonify(user_list)
+        return jsonify(product_list)
 
     @require_jwt("administrator")
     def post(self):
@@ -120,21 +99,22 @@ class UserRepository(Repository):
         
         if record is None:
             return jsonify({
-            "error": "User already exists or violates database constraints",
+            "error": "Product already exists or violates database constraints",
             "message": "This user may already be registered or the data conflicts with existing records"
         }), 409
         return jsonify({
             "id": record.id,
-            "email": record.email,
-            "first_name": record.first_name,
-            "last_name": record.last_name,
-            "created_at": str(record.created_at)
+            "name": record.name,
+            "price": record.price,
+            "quantity": record.quantity,
+            "size": record.size,
+            "updated_at": str(record.updated_at)
         })
-    
+
     @require_jwt("administrator")
     def put(self, id):
         """
-        Update User information (e.g., change role or password).
+        Update product information (e.g., name, size or quantity).
         """
         new_data = request.get_json()
         if not new_data:
@@ -142,14 +122,14 @@ class UserRepository(Repository):
         model_class = self._get_model()
         
         if not id:
-            return jsonify({"error": "Registration ID is required"}), 400
+            return jsonify({"error": "Product ID is required"}), 400
         
         try:
             session = self.manager.sessionlocal()
             records = self.manager.get_by_id(session, model_class, id)
             record = records[0]
             if not record:
-                return jsonify({"error": f"User ID {id} has not been found"}), 404
+                return jsonify({"error": f"Product ID {id} has not been found"}), 404
             
             for column in record.__table__.columns:
                 field_name = column.name
@@ -170,13 +150,16 @@ class UserRepository(Repository):
             if not record:
                 return jsonify({"error": "No fields to update"}), 400
 
-            # Update user
-            updated_user = self.manager.update(session, record)
+            # Update product
+            updated_product = self.manager.update(session, record)
             
             return jsonify({
-                "id": updated_user.id,
-                "email": updated_user.email,
-                "updated_at": str(updated_user.updated_at)
+                "id": updated_product.id,
+                "name": updated_product.name,
+                "price": updated_product.price,
+                "quantity": updated_product.quantity,
+                "size": updated_product.size,
+                "updated_at": str(updated_product.updated_at)
             })
             
         except ValueError as e:
@@ -187,15 +170,15 @@ class UserRepository(Repository):
     @require_jwt("administrator")
     def delete(self, id):
         if not id:
-            return jsonify({"error": "User ID is required"}), 400
+            return jsonify({"error": "Product ID is required"}), 400
         try:
             model_class = self._get_model()
             session = self.manager.sessionlocal()
             record = session.query(model_class).filter_by(id=id).first()
             if not record:
-                raise ValueError(f"User ID {id} has not been found")
+                raise ValueError(f"Product ID {id} has not been found")
             self.manager.delete(session, record)
-            msg = f"User with ID {id}, and email {record.email} has been DELETED"
+            msg = f"Product with ID {id} with name {record.name} has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404

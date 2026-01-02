@@ -8,12 +8,12 @@ from modules.jwt_manager import require_jwt
 
 
 
-class UserRepository(Repository):
+class CartRepository(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.manager = db_manager
-        self.model_name = 'user'
+        self.model_name = 'shopping_cart'
         self.model_class = _models.get(self.model_name)
 
     def _get_model(self):
