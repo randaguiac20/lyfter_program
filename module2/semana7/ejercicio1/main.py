@@ -9,6 +9,8 @@ from modules.registration_repository import RegistrationRepository
 from modules.login_repository import LoginRepository
 from modules.refresh_token_repository import RefreshTokenRepository
 from modules.address_repository import AddressRepository
+from modules.product_repository import ProductRepository
+from modules.cart_repository import CartRepository
 from modules.secret_keys import generate_private_key, password_hash
 from modules.models import _models
 from modules.config import FILE_PATH
@@ -54,6 +56,16 @@ def register_api(app, name, db_manager):
     address_repo = AddressRepository.as_view("addresses", db_manager)
     app.add_url_rule(f"/{name}/addresses", view_func=address_repo, methods=["GET", "POST"])
     app.add_url_rule(f"/{name}/addresses/<id>", view_func=address_repo, methods=["GET", "PUT", "DELETE"])
+
+    # product endpoints
+    product_repo = ProductRepository.as_view("products", db_manager)
+    app.add_url_rule(f"/{name}/products", view_func=product_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/products/<id>", view_func=product_repo, methods=["GET", "PUT", "DELETE"])
+
+    # shopping cart endpoints
+    cart_repo = CartRepository.as_view("carts", db_manager)
+    app.add_url_rule(f"/{name}/carts", view_func=cart_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/carts/<id>", view_func=cart_repo, methods=["GET", "PUT", "DELETE"])
 
 
 

@@ -1,5 +1,5 @@
 from sqlalchemy import (Column, Integer, String, DateTime, 
-                        Boolean, func, ForeignKey)
+                        Boolean, func, ForeignKey, UniqueConstraint)
 from sqlalchemy.orm import relationship
 from modules.config import Base
 
@@ -21,16 +21,17 @@ class UserRegistration(Base):
         return f"Register User id={self.id}, email='{self.email}'"
 
 
-
 class User(Base):
     __tablename__ = "users"
+    __table_args__ = (
+        UniqueConstraint('first_name', 'last_name', 'telephone', name='unique_user_identity'),
+    )
 
     id = Column(Integer, primary_key=True)
     registration_id = Column(Integer, ForeignKey("user_registrations.id"), nullable=False)
     first_name = Column(String)
     last_name = Column(String)
-    email = Column(String, unique=True)
-    telephone = Column(String(8))
+    telephone = Column(String(8), unique=True)
     address_id = Column(Integer, ForeignKey("addresses.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -52,7 +53,7 @@ class UserContact(Base):
     __tablename__ = "user_contacts"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     user = relationship("User", back_populates="contacts")
@@ -70,10 +71,10 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(Integer, primary_key=True)
-    street = Column(String(255), nullable=False, unique=True)
-    city = Column(String(100), nullable=False, unique=True)
+    street = Column(String(255), nullable=False)
+    city = Column(String(100), nullable=False)
     state = Column(String(100))
-    postal_code = Column(String(20), unique=True)
+    postal_code = Column(String(20))
     country = Column(String(100), default="USA", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
@@ -88,18 +89,22 @@ class Address(Base):
 
 class Product(Base):
     __tablename__ = "products"
+    __table_args__ = (
+        UniqueConstraint('name', 'price', 'size', name='unique_product_identity'),
+    )
 
     id = Column(Integer, primary_key=True)
-    name = Column(String(50))
+    name = Column(String(85))
     description = Column(String(100))
     price = Column(Integer)
+    size = Column(String)
     quantity = Column(Integer)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     cart_products = relationship("ShoppingCartProduct", back_populates="product")
 
     def __repr__(self):
-        return f"Product id={self.id}, Product name={self.name}, Price={self.price}"
+        return f"Product id={self.id}, Product name={self.name}, Price={self.price}, Size={self.size}"
 
 
 class ShoppingCart(Base):
