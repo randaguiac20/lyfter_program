@@ -60,8 +60,7 @@ class UserRepository(Repository):
             user_data = {
                 "id": user.id,
                 "registration_id": user.registration_id,
-                "email": user.email,
-                "user name": f"{user.first_name} {user.last_name}",
+                "user_name": f"{user.first_name} {user.last_name}",
                 "created_at": str(user.created_at) if user.created_at else None,
                 "updated_at": str(user.updated_at) if user.updated_at else None
             }
@@ -73,18 +72,15 @@ class UserRepository(Repository):
                     "city": user.address.city,
                     "state": user.address.state,
                     "postal_code": user.address.postal_code,
-                    "country": user.address.country,
-                    "email": user.address.email
+                    "country": user.address.country
                 }
             # Include related contact data if loaded
             if with_relationships and hasattr(user, 'contacts') and user.contacts:
                 contact_list = []
                 for contact in user.contacts:
                     contact_data = {
-                        "id": contact.id,
-                        "first_name": contact.first_name,
-                        "last_name": contact.last_name,
-                        "email": contact.email
+                        "contact_id": contact.id,
+                        "user_name": f"{user.first_name} {user.last_name}"
                     }
                     contact_list.append(contact_data)
                 user_data["contacts"] = contact_list
@@ -94,10 +90,9 @@ class UserRepository(Repository):
                 cart_list = []
                 for cart in user.carts:
                     cart_data = {
-                        "id": cart.id,
-                        "first_name": cart.first_name,
-                        "last_name": cart.last_name,
-                        "email": cart.email
+                        "cart_id": cart.id,
+                        "status": cart.status,
+                        "purchase_date": cart.purchase_date
                     }
                     cart_list.append(cart_data)
                 user_data['carts'] = cart_list
@@ -125,7 +120,6 @@ class UserRepository(Repository):
         }), 409
         return jsonify({
             "id": record.id,
-            "email": record.email,
             "first_name": record.first_name,
             "last_name": record.last_name,
             "created_at": str(record.created_at)
@@ -175,7 +169,7 @@ class UserRepository(Repository):
             
             return jsonify({
                 "id": updated_user.id,
-                "email": updated_user.email,
+                "user_name": f"{updated_user.first_name} {updated_user.last_name}",
                 "updated_at": str(updated_user.updated_at)
             })
             

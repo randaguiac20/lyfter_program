@@ -10,7 +10,9 @@ from modules.login_repository import LoginRepository
 from modules.refresh_token_repository import RefreshTokenRepository
 from modules.address_repository import AddressRepository
 from modules.product_repository import ProductRepository
-from modules.cart_repository import CartRepository
+from modules.shoppping_cart_repository import ShoppingCartRepository
+from modules.receipt_repository import ReceiptRepository
+from modules.shoppping_cart_product_repository import ShoppingCartProductRepository
 from modules.secret_keys import generate_private_key, password_hash
 from modules.models import _models
 from modules.config import FILE_PATH
@@ -63,9 +65,19 @@ def register_api(app, name, db_manager):
     app.add_url_rule(f"/{name}/products/<id>", view_func=product_repo, methods=["GET", "PUT", "DELETE"])
 
     # shopping cart endpoints
-    cart_repo = CartRepository.as_view("carts", db_manager)
-    app.add_url_rule(f"/{name}/carts", view_func=cart_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/carts/<id>", view_func=cart_repo, methods=["GET", "PUT", "DELETE"])
+    shoping_cart_repo = ShoppingCartRepository.as_view("shopping_carts", db_manager)
+    app.add_url_rule(f"/{name}/shopping_carts", view_func=shoping_cart_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/shopping_carts/<id>", view_func=shoping_cart_repo, methods=["GET", "PUT", "DELETE"])
+
+    # receipt endpoints
+    receipt_repo = ReceiptRepository.as_view("receipts", db_manager)
+    app.add_url_rule(f"/{name}/receipts", view_func=receipt_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/receipts/<id>", view_func=receipt_repo, methods=["GET", "PUT", "DELETE"])
+
+    # shopping cart product endpoints
+    shoping_cart_product_repo = ShoppingCartProductRepository.as_view("shopping_cart_products", db_manager)
+    app.add_url_rule(f"/{name}/shopping_cart_products", view_func=shoping_cart_product_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/shopping_cart_products/<id>", view_func=shoping_cart_product_repo, methods=["GET", "PUT", "DELETE"])
 
 
 
