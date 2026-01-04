@@ -1,6 +1,6 @@
 import json
 from flask import (request, jsonify)
-from modules.repository import Repository
+from repositories.repository import Repository
 from modules.models import _models
 from modules.jwt_manager import require_jwt, JWT_Manager
 

@@ -1,37 +1,43 @@
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date
-from modules.repository import Repository
-from modules.models import _models
+from repositories.repository import Repository
+from repositories.login_repository import LoginRepository
+from repositories.product_repository import ProductRepository
+from repositories.address_repository import AddressRepository
+from repositories.shoppping_cart_repository import ShoppingCartRepository
+from repositories.receipt_repository import ReceiptRepository
+from repositories.shoppping_cart_product_repository import ShoppingCartProductRepository
+from repositories.user_repository import UserRepository
+from repositories.registration_repository import RegistrationRepository
 from sqlalchemy.orm import joinedload
-from modules.jwt_manager import require_jwt
+from modules.jwt_manager import require_jwt, JWT_Manager
 
 
 
-class UserRepository(Repository):
-    def __init__(self, db_manager, *args, **kwargs):
+class BuyFruitRepository(Repository):
+    def __init__(self, db_manager):
         # Ensure MethodView init runs and accept extra args if Flask passes any
-        super().__init__(*args, **kwargs)
-        self.manager = db_manager
-        self.model_name = 'user'
-        self.model_class = _models.get(self.model_name)
+        super().__init__()
+        self.db_manager = db_manager
+        self.jwt_manager = JWT_Manager()
 
     def _get_model(self):
         if not self.model_class:
             raise ValueError(f"Model '{self.model_name}' not found")
         return self.model_class
 
-    @require_jwt("administrator")
-    def get(self, id=None, with_relationships=True):
+    @require_jwt(["administrator", "client"])
+    def get(self, with_relationships=True):
         """
-        Get user records.
+        Get Fruit purchase records.
         
         Args:
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related user data
         """
         model_class = self._get_model()
-        session = self.manager.sessionlocal()
+        session = self.db_manager.sessionlocal()
         
         # If id is provided, try to get by ID
         if id:
@@ -43,16 +49,11 @@ class UserRepository(Repository):
         else:
             _query = session.query(model_class)
         
-        if with_relationships:
-            _query = _query.options(joinedload(model_class.contacts),
-                                    joinedload(model_class.address),
-                                    joinedload(model_class.carts))
-        
-        users = self.manager.get(_query)
+        users = self.db_manager.get(_query)
         
         # If querying by ID and no result found
         if id and not users:
-            return jsonify({"error": "Registration not found"}), 404
+            return jsonify({"error": "Fruit purchase not found"}), 404
         
         # Convert SQLAlchemy objects to dictionaries
         user_list = []
@@ -105,17 +106,29 @@ class UserRepository(Repository):
         
         return jsonify(user_list)
 
-    @require_jwt("administrator")
+    @require_jwt(["administrator", "client"])
     def post(self):
-        session = self.manager.sessionlocal()
-        model_class = self._get_model()
+        self.db_manager.sessionlocal()
+        model_class = self.db_manager._get_model()
         data = request.get_json()
+        _token = request.headers.get("Authorization")
+        token = _token.replace("Bearer ","")
+        if not token:
+            return jsonify({"error": "No token provided"}), 400
+        decoded = self.jwt_manager.decode(token)
+        email = decoded.get("email")
+        _query_by_email = self.db_manager.get_by_email(email)
+        email_records = self.db_manager.get(_query_by_email)
+        email_record = email_records[0]
+        if not email_record:
+            return jsonify({"error": f"No record found for {email}"}), 404
+        import ipdb; ipdb.set_trace()
         new_record = model_class(**data)
-        record = self.manager.insert(session, new_record)
+        record = self.db_manager.insert(new_record)
         
         if record is None:
             return jsonify({
-            "error": "User already exists or violates database constraints",
+            "error": "Fruit purchase already exists or violates database constraints",
             "message": "This user may already be registered or the data conflicts with existing records"
         }), 409
         return jsonify({
@@ -125,10 +138,10 @@ class UserRepository(Repository):
             "created_at": str(record.created_at)
         })
     
-    @require_jwt("administrator")
+    @require_jwt(["administrator", "client"])
     def put(self, id):
         """
-        Update User information (e.g., change role or password).
+        Update Fruit purchase information (e.g., product or quantity).
         """
         new_data = request.get_json()
         if not new_data:
@@ -136,14 +149,14 @@ class UserRepository(Repository):
         model_class = self._get_model()
         
         if not id:
-            return jsonify({"error": "Registration ID is required"}), 400
+            return jsonify({"error": "Fruit purchase ID is required"}), 400
         
         try:
-            session = self.manager.sessionlocal()
-            records = self.manager.get_by_id(session, model_class, id)
+            session = self.db_manager.sessionlocal()
+            records = self.db_manager.get_by_id(session, model_class, id)
             record = records[0]
             if not record:
-                return jsonify({"error": f"User ID {id} has not been found"}), 404
+                return jsonify({"error": f"Fruit purchase ID {id} has not been found"}), 404
             
             for column in record.__table__.columns:
                 field_name = column.name
@@ -165,7 +178,7 @@ class UserRepository(Repository):
                 return jsonify({"error": "No fields to update"}), 400
 
             # Update user
-            updated_user = self.manager.update(session, record)
+            updated_user = self.db_manager.update(session, record)
             
             return jsonify({
                 "id": updated_user.id,
@@ -181,15 +194,15 @@ class UserRepository(Repository):
     @require_jwt("administrator")
     def delete(self, id):
         if not id:
-            return jsonify({"error": "User ID is required"}), 400
+            return jsonify({"error": "Fruit purchase ID is required"}), 400
         try:
             model_class = self._get_model()
-            session = self.manager.sessionlocal()
+            session = self.db_manager.sessionlocal()
             record = session.query(model_class).filter_by(id=id).first()
             if not record:
-                raise ValueError(f"User ID {id} has not been found")
-            self.manager.delete(session, record)
-            msg = f"User with ID {id}, and email {record.email} has been DELETED"
+                raise ValueError(f"Fruit purchase ID {id} has not been found")
+            self.db_manager.delete(session, record)
+            msg = f"Fruit purchase with ID {id} has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404

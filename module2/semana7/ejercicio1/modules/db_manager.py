@@ -4,22 +4,31 @@ from modules.config import (DB_HOST, DB_USERNAME, DB_PORT,
                             DB_PASSWORD, DB_NAME, SCHEMA,
                             Base)
 from sqlalchemy.orm import (sessionmaker, scoped_session)
+from modules.models import _models
 
 
 
-class DB_Manager:
-    def __init__(self, drop_table=False):
+class DBManager:
+    def __init__(self, model_name=None):
         self.db_uri = f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
         self.engine = create_engine(self.db_uri, echo=False)
         self.schema = SCHEMA
         self.base = Base
         self.sessionlocal = sessionmaker(bind=self.engine)
+        self.session = self.sessionlocal()
         self._session = scoped_session(self.sessionlocal)
+        self._models = _models
         self._ensure_schema()
-        if drop_table:
-            self.drop_tables()
-        self.create_tables()
 
+    def _get_model_name(self, model_name):
+        self.model_name = model_name
+        self.model_class = self._models.get(self.model_name)
+
+    def _get_model(self):
+        if not self.model_class:
+            return f"Model '{self.model_name}' not found or provided"
+        return self.model_class
+    
     def get_session(self):
         return self._session()
     
@@ -36,17 +45,33 @@ class DB_Manager:
     def drop_tables(self):
         self.base.metadata.drop_all(self.engine)
 
-    def get(self, query):
+    def get(self, session):
         try:
-            results = query.all()
-            return results
+            query = session.query(self.model_class).all()
+            return self.get_query(query)
         except Exception as e:
             raise Exception("Failed to fetch records") from e
         
-    def get_by_id(self, session, model_class, id):
+    def get_query(self, query):
         try:
-            results = session.query(model_class).filter_by(id=id)
-            return results
+            return query.all()
+        except Exception as e:
+            raise Exception("Failed to fetch records") from e
+        
+    def get_by_id(self, session, id):
+        try:
+            query = session.query(self.model_class).filter_by(id=id)
+            return self.get_query(query)
+        except IntegrityError as e:
+            session.rollback()
+            return None
+        except Exception as e:
+            raise Exception("Failed to fetch records") from e
+        
+    def get_by_email(self, session, email):
+        try:
+            query = session.query(self.model_class).filter_by(email=email)
+            return self.get_query(query)
         except IntegrityError as e:
             session.rollback()
             return None

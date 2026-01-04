@@ -31,6 +31,7 @@ class JWT_Manager:
             payload = data.copy()
             payload['exp'] = datetime.utcnow() + timedelta(minutes=expires_in_minutes)
             payload['iat'] = datetime.utcnow()
+            payload['type'] = 'access' # Token type identifier
             if self.secret:
                 encoded = jwt.encode(payload, self.secret, algorithm=self.algorithm)
                 return encoded
@@ -47,7 +48,7 @@ class JWT_Manager:
                 'email': email,
                 'exp': datetime.utcnow() + timedelta(days=expires_in_days),
                 'iat': datetime.utcnow(),
-                'type': 'refresh'  # Token type identifier
+                'type': 'refresh' # Token type identifier
             }
             if self.secret:
                 encoded = jwt.encode(payload, self.secret, algorithm=self.algorithm)

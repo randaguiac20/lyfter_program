@@ -1,18 +1,19 @@
-from modules.db_manager import DB_Manager
+from modules.db_manager import DBManager
 from modules.jwt_manager import JWT_Manager
 from flask import Flask, Blueprint
 from modules.config import CACHE_TYPE, CACHE_DEFAULT_TIMEOUT, DEFAULT_ADMIN
 from modules.https_config import ssl_context
 from modules.cache_config import cache
-from modules.user_repository import UserRepository
-from modules.registration_repository import RegistrationRepository
-from modules.login_repository import LoginRepository
-from modules.refresh_token_repository import RefreshTokenRepository
-from modules.address_repository import AddressRepository
-from modules.product_repository import ProductRepository
-from modules.shoppping_cart_repository import ShoppingCartRepository
-from modules.receipt_repository import ReceiptRepository
-from modules.shoppping_cart_product_repository import ShoppingCartProductRepository
+from repositories.user_repository import UserRepository
+from repositories.registration_repository import RegistrationRepository
+from repositories.login_repository import LoginRepository
+from repositories.refresh_token_repository import RefreshTokenRepository
+from repositories.address_repository import AddressRepository
+from repositories.product_repository import ProductRepository
+from repositories.shoppping_cart_repository import ShoppingCartRepository
+from repositories.receipt_repository import ReceiptRepository
+from repositories.shoppping_cart_product_repository import ShoppingCartProductRepository
+from repositories.buy_fruits_repository import BuyFruitRepository
 from modules.secret_keys import generate_private_key, password_hash
 from modules.models import _models
 from modules.config import FILE_PATH
@@ -79,6 +80,11 @@ def register_api(app, name, db_manager):
     app.add_url_rule(f"/{name}/shopping_cart_products", view_func=shoping_cart_product_repo, methods=["GET", "POST"])
     app.add_url_rule(f"/{name}/shopping_cart_products/<id>", view_func=shoping_cart_product_repo, methods=["GET", "PUT", "DELETE"])
 
+    # buy fruits endpoints
+    buy_fruit_repo = BuyFruitRepository.as_view("buy-fruits", db_manager)
+    app.add_url_rule(f"/{name}/buy-fruits", view_func=buy_fruit_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/buy-fruits/<id>", view_func=buy_fruit_repo, methods=["GET", "PUT", "DELETE"])
+
 
 
 if __name__ == '__main__':
@@ -99,8 +105,11 @@ if __name__ == '__main__':
     cache.init_app(app)
     
     # Initialize database manager
-    db_manager = DB_Manager(drop_table=True)
-    
+    db_manager = DBManager()
+    db_manager.drop_tables()
+    db_manager.create_tables()
+    db_manager._get_model_name("register_user")
+
     # CRITICAL: Register teardown handler for session cleanup
     @app.teardown_appcontext
     def shutdown_session(exception=None):
@@ -116,8 +125,7 @@ if __name__ == '__main__':
     # Create Admin User
     session = db_manager.sessionlocal()
     try:
-        model_name = 'register_user'
-        model_class = _models.get(model_name)
+        model_class = db_manager._get_model()
         password = password_hash(DEFAULT_ADMIN)
         data = {"email": "admin@administrator.com",
                 "password": f"{password}", "role": "administrator"}
