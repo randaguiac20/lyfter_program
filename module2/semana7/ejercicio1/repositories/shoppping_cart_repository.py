@@ -12,14 +12,9 @@ class ShoppingCartRepository(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
-        self.manager = db_manager
-        self.model_name = 'shopping_cart'
-        self.model_class = _models.get(self.model_name)
-
-    def _get_model(self):
-        if not self.model_class:
-            raise ValueError(f"Model '{self.model_name}' not found")
-        return self.model_class
+        self.db_manager = db_manager
+        self.model_name = self.db_manager._get_model_name('shopping_cart')
+        self.model_class = self.db_manager._get_model()
 
     @require_jwt("administrator")
     def get(self, id=None, with_relationships=True):
@@ -30,24 +25,24 @@ class ShoppingCartRepository(Repository):
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related cart data
         """
-        model_class = self._get_model()
-        session = self.manager.sessionlocal()
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
         
         # If id is provided, try to get by ID
         if id:
             try:
-                record_id = int(id)
-                _query = session.query(model_class).filter_by(id=record_id)
+                id = int(id)
+                shopping_carts = self.db_manager.get_by_id(session, id)
             except ValueError:
                 return jsonify({"error": "Invalid ID format"}), 400
         else:
-            _query = session.query(model_class)
+            shopping_carts = self.db_manager.get_query(session)
         
         if with_relationships:
-            _query = _query.options(joinedload(model_class.receipt),
+            _query = session.query(model_class)
+            _query_with_options = _query.options(joinedload(model_class.receipt),
                                     joinedload(model_class.cart_products))
-        
-        shopping_carts = self.manager.get(_query)
+            shopping_carts = self.db_manager.get_query(_query_with_options)
         
         # If querying by ID and no result found
         if id and not shopping_carts:
@@ -98,11 +93,12 @@ class ShoppingCartRepository(Repository):
 
     @require_jwt("administrator")
     def post(self):
-        session = self.manager.sessionlocal()
-        model_class = self._get_model()
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
+        
         data = request.get_json()
         new_record = model_class(**data)
-        record = self.manager.insert(session, new_record)
+        record = self.db_manager.insert(session, new_record)
         
         if record is None:
             return jsonify({
@@ -126,14 +122,12 @@ class ShoppingCartRepository(Repository):
         new_data = request.get_json()
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
-        model_class = self._get_model()
-        
         if not id:
             return jsonify({"error": "Shopping Cart ID is required"}), 400
         
         try:
-            session = self.manager.sessionlocal()
-            records = self.manager.get_by_id(session, model_class, id)
+            session = self.db_manager.sessionlocal()
+            records = self.db_manager.get_by_id(session, id)
             record = records[0]
             if not record:
                 return jsonify({"error": f"Shopping Cart ID {id} has not been found"}), 404
@@ -158,7 +152,7 @@ class ShoppingCartRepository(Repository):
                 return jsonify({"error": "No fields to update"}), 400
 
             # Update user
-            updated_scp = self.manager.update(session, record)
+            updated_scp = self.db_manager.update(session, record)
             
             return jsonify({
                 "id": updated_scp.id,
@@ -179,12 +173,12 @@ class ShoppingCartRepository(Repository):
         if not id:
             return jsonify({"error": "Shopping Cart ID is required"}), 400
         try:
-            model_class = self._get_model()
-            session = self.manager.sessionlocal()
-            record = session.query(model_class).filter_by(id=id).first()
+            session = self.db_manager.sessionlocal()
+            records = self.db_manager.get_by_id(session, id)
+            record = records[0]
             if not record:
                 raise ValueError(f"Shopping Cart ID {id} has not been found")
-            self.manager.delete(session, record)
+            self.db_manager.delete(session, record)
             msg = f"Shopping Cart with ID {id}  has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:

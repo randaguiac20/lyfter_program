@@ -10,19 +10,15 @@ class RefreshTokenRepository(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
-        self.manager = db_manager
-        self.model_name = 'register_user'
-        self.model_class = _models.get(self.model_name)
-
-    def _get_model(self):
-        if not self.model_class:
-            raise ValueError(f"Model '{self.model_name}' not found")
-        return self.model_class
+        self.db_manager = db_manager
+        self.model_name = self.db_manager._get_model_name('register_user')
+        self.model_class = self.db_manager._get_model()
 
     @require_jwt(["administrator", "client"])
     def post(self):
-        session = self.manager.sessionlocal()
-        model_class = self._get_model()
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
+        
         _token = request.headers.get("Authorization")
         _token = _token.replace("Bearer ","")
         if not _token:
@@ -32,7 +28,7 @@ class RefreshTokenRepository(Repository):
         decoded = jwt_manager.decode(_token)
         email = decoded.get("email")
         _query = session.query(model_class).filter_by(email=email)
-        records = self.manager.get(_query)
+        records = self.db_manager.get_query(_query)
         record = records[0]
         if not records or len(records) == 0:
             return jsonify({"error": "User not found"}), 404

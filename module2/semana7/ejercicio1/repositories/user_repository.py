@@ -12,14 +12,9 @@ class UserRepository(Repository):
     def __init__(self, db_manager, *args, **kwargs):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
-        self.manager = db_manager
-        self.model_name = 'user'
-        self.model_class = _models.get(self.model_name)
-
-    def _get_model(self):
-        if not self.model_class:
-            raise ValueError(f"Model '{self.model_name}' not found")
-        return self.model_class
+        self.db_manager = db_manager
+        self.model_name = self.db_manager._get_model_name('user')
+        self.model_class = self.db_manager._get_model()
 
     @require_jwt("administrator")
     def get(self, id=None, with_relationships=True):
@@ -30,25 +25,25 @@ class UserRepository(Repository):
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related user data
         """
-        model_class = self._get_model()
-        session = self.manager.sessionlocal()
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
         
         # If id is provided, try to get by ID
         if id:
             try:
-                record_id = int(id)
-                _query = session.query(model_class).filter_by(id=record_id)
+                id = int(id)
+                users = self.db_manager.get_by_id(session, id)
             except ValueError:
                 return jsonify({"error": "Invalid ID format"}), 400
         else:
-            _query = session.query(model_class)
+            users = self.db_manager.get_query(session)
         
         if with_relationships:
-            _query = _query.options(joinedload(model_class.contacts),
-                                    joinedload(model_class.address),
-                                    joinedload(model_class.carts))
-        
-        users = self.manager.get(_query)
+            _query = session.query(model_class)
+            _query_with_options = _query.options(joinedload(model_class.contacts),
+                                                 joinedload(model_class.address),
+                                                 joinedload(model_class.carts))
+            users = self.db_manager.get_query(_query_with_options)
         
         # If querying by ID and no result found
         if id and not users:
@@ -107,11 +102,12 @@ class UserRepository(Repository):
 
     @require_jwt("administrator")
     def post(self):
-        session = self.manager.sessionlocal()
-        model_class = self._get_model()
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
+        
         data = request.get_json()
         new_record = model_class(**data)
-        record = self.manager.insert(session, new_record)
+        record = self.db_manager.insert(session, new_record)
         
         if record is None:
             return jsonify({
@@ -133,14 +129,13 @@ class UserRepository(Repository):
         new_data = request.get_json()
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
-        model_class = self._get_model()
         
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         
         try:
-            session = self.manager.sessionlocal()
-            records = self.manager.get_by_id(session, model_class, id)
+            session = self.db_manager.sessionlocal()
+            records = self.db_manager.get_by_id(session, id)
             record = records[0]
             if not record:
                 return jsonify({"error": f"User ID {id} has not been found"}), 404
@@ -165,13 +160,13 @@ class UserRepository(Repository):
                 return jsonify({"error": "No fields to update"}), 400
 
             # Update user
-            updated_user = self.manager.update(session, record)
-            
-            return jsonify({
-                "id": updated_user.id,
-                "user_name": f"{updated_user.first_name} {updated_user.last_name}",
-                "updated_at": str(updated_user.updated_at)
-            })
+            updated_user = self.db_manager.update(session, record)
+            if updated_user:
+                return jsonify({
+                    "id": updated_user.id,
+                    "user_name": f"{updated_user.first_name} {updated_user.last_name}",
+                    "updated_at": str(updated_user.updated_at)
+                })
             
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
@@ -183,12 +178,12 @@ class UserRepository(Repository):
         if not id:
             return jsonify({"error": "User ID is required"}), 400
         try:
-            model_class = self._get_model()
-            session = self.manager.sessionlocal()
-            record = session.query(model_class).filter_by(id=id).first()
+            session = self.db_manager.sessionlocal()
+            records = self.db_manager.get_by_id(session, id)
+            record = records[0]
             if not record:
                 raise ValueError(f"User ID {id} has not been found")
-            self.manager.delete(session, record)
+            self.db_manager.delete(session, record)
             msg = f"User with ID {id}, and email {record.email} has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:

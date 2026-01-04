@@ -37,10 +37,12 @@ class RegistrationRepository(Repository):
             except ValueError:
                 return jsonify({"error": "Invalid ID format"}), 400
         else:
-            registrations = self.db_manager.get(session)
+            registrations = self.db_manager.get_query(session)
         
         if with_relationships:
-            _query = _query.options(joinedload(model_class.user))
+            _query = session.query(model_class)
+            _query_with_options = _query.options(joinedload(model_class.user))
+            registrations = self.db_manager.get_query(_query_with_options)
         
         # If querying by ID and no result found
         if id and not registrations:
@@ -84,8 +86,9 @@ class RegistrationRepository(Repository):
         hashed_data['password'] = password_hash(data['password'])
         
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            model_class = self.db_manager._get_model()
+            
             new_record = model_class(**hashed_data)
             record = self.db_manager.insert(session, new_record)
             
@@ -121,7 +124,7 @@ class RegistrationRepository(Repository):
         try:
             session = self.db_manager.sessionlocal()
             _query = self.db_manager.get_by_id(id)
-            records = self.db_manager.get(_query)
+            records = self.db_manager.get_query(_query)
             record = records[0]
             if not records:
                 return jsonify({"error": f"User ID {id} has not been found"}), 404
@@ -138,13 +141,13 @@ class RegistrationRepository(Repository):
 
             # Update registration
             updated_reg = self.db_manager.update(session, record)
-            
-            return jsonify({
-                "id": updated_reg.id,
-                "email": updated_reg.email,
-                "role": updated_reg.role,
-                "updated_at": str(updated_reg.updated_at)
-            })
+            if updated_reg:
+                return jsonify({
+                    "id": updated_reg.id,
+                    "email": updated_reg.email,
+                    "role": updated_reg.role,
+                    "updated_at": str(updated_reg.updated_at)
+                })
             
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
@@ -156,9 +159,9 @@ class RegistrationRepository(Repository):
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
-            model_class = self._get_model()
             session = self.db_manager.sessionlocal()
-            record = session.query(model_class).filter_by(id=id).first()
+            records = self.db_manager.get_by_id(session, id)
+            record = records[0]
             if not record:
                 raise ValueError(f"User ID {id} has not been found")
             self.db_manager.delete(session, record)

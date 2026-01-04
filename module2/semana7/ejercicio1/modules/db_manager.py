@@ -45,14 +45,14 @@ class DBManager:
     def drop_tables(self):
         self.base.metadata.drop_all(self.engine)
 
-    def get(self, session):
+    def get_query(self, session):
         try:
-            query = session.query(self.model_class).all()
-            return self.get_query(query)
+            query = session.query(self.model_class)
+            return self.get(query)
         except Exception as e:
             raise Exception("Failed to fetch records") from e
-        
-    def get_query(self, query):
+
+    def get(self, query):
         try:
             return query.all()
         except Exception as e:
@@ -61,7 +61,7 @@ class DBManager:
     def get_by_id(self, session, id):
         try:
             query = session.query(self.model_class).filter_by(id=id)
-            return self.get_query(query)
+            return self.get(query)
         except IntegrityError as e:
             session.rollback()
             return None
@@ -71,7 +71,7 @@ class DBManager:
     def get_by_email(self, session, email):
         try:
             query = session.query(self.model_class).filter_by(email=email)
-            return self.get_query(query)
+            return self.get(query)
         except IntegrityError as e:
             session.rollback()
             return None

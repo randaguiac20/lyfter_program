@@ -33,7 +33,7 @@ class LoginRepository(Repository):
         })
     
     def post(self):
-        session = self.db_manager.session
+        session = self.db_manager.sessionlocal()
         data = request.get_json()
         email = data.get("email")
         password = data.get("password")
