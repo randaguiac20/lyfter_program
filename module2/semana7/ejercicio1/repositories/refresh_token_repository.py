@@ -27,8 +27,7 @@ class RefreshTokenRepository(Repository):
         jwt_manager = JWT_Manager()
         decoded = jwt_manager.decode(_token)
         email = decoded.get("email")
-        _query = session.query(model_class).filter_by(email=email)
-        records = self.db_manager.get_query(_query)
+        records = self.db_manager.get_by_email(session, email)
         record = records[0]
         if not records or len(records) == 0:
             return jsonify({"error": "User not found"}), 404

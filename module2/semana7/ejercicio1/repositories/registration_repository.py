@@ -42,7 +42,7 @@ class RegistrationRepository(Repository):
         if with_relationships:
             _query = session.query(model_class)
             _query_with_options = _query.options(joinedload(model_class.user))
-            registrations = self.db_manager.get_query(_query_with_options)
+            registrations = self.db_manager.get(_query_with_options)
         
         # If querying by ID and no result found
         if id and not registrations:

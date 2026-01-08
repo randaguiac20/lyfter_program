@@ -5,6 +5,28 @@ from modules.config import Base
 
 
 
+def validate_buy_fruits(record_input):
+    """Validate buy-fruits input data"""
+    import ipdb; ipdb.set_trace()
+    if not isinstance(record_input, dict):
+        return False, "Invalid format."
+    reguired_fields = {"name", "size", "quantity"}
+    default_sizes = ["large", "medium", "small"]
+    if set(record_input.keys()) != reguired_fields:
+        return False, f"Must provide the correct fields, correct fields are {reguired_fields}"
+    
+    # Validate types
+    if not isinstance(record_input.get("name"), str):
+        return False, "Invalid value type, 'name' must be a string."
+    
+    if not isinstance(record_input.get("size"), str) or not record_input["size"] in default_sizes:
+        return False, "Invalid value type, 'price' must be a positive integer"
+    
+    if not isinstance(record_input.get("quantity"), int) or record_input["quantity"] <= 0:
+        return False, "Invalid value type, 'quantity' must be a positive integer"
+    return True, "Valid data"
+    
+
 class UserRegistration(Base):
     __tablename__ = "user_registrations"
 

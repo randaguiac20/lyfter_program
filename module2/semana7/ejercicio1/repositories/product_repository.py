@@ -41,7 +41,7 @@ class ProductRepository(Repository):
         if with_relationships:
             _query = session.query(model_class)
             _query_with_options = _query.options(joinedload(model_class.cart_products))
-            products = self.db_manager.get_query(_query_with_options)
+            products = self.db_manager.get(_query_with_options)
         
         # If querying by ID and no result found
         if id and not products:
@@ -88,22 +88,21 @@ class ProductRepository(Repository):
         session = self.db_manager.sessionlocal()
         
         data = request.get_json()
-        new_record = model_class(**data)
-        record = self.db_manager.insert(session, new_record)
-        
-        if record is None:
-            return jsonify({
-            "error": "Product already exists or violates database constraints",
-            "message": "This user may already be registered or the data conflicts with existing records"
-        }), 409
-        return jsonify({
-            "id": record.id,
-            "name": record.name,
-            "price": record.price,
-            "quantity": record.quantity,
-            "size": record.size,
-            "updated_at": str(record.updated_at)
-        })
+        if not isinstance(data, list):
+            return jsonify({"error": "JSON Data is not correct, provide a list of items."}), 400
+        record_list = []
+        for record in data:
+            _new_record = model_class(**record)
+            new_record = self.db_manager.insert(session, _new_record)
+
+            if new_record is None:
+                return jsonify({
+                "error": "Product already exists or violates database constraints",
+                "message": "This user may already be registered or the data conflicts with existing records"
+            }), 409
+            record["created_at"] = new_record.created_at
+            record_list.append(record)
+        return jsonify(record_list)
 
     @require_jwt("administrator")
     def put(self, id):

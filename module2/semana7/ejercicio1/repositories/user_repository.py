@@ -37,13 +37,13 @@ class UserRepository(Repository):
                 return jsonify({"error": "Invalid ID format"}), 400
         else:
             users = self.db_manager.get_query(session)
-        
+            
         if with_relationships:
             _query = session.query(model_class)
             _query_with_options = _query.options(joinedload(model_class.contacts),
                                                  joinedload(model_class.address),
                                                  joinedload(model_class.carts))
-            users = self.db_manager.get_query(_query_with_options)
+            users = self.db_manager.get(_query_with_options)
         
         # If querying by ID and no result found
         if id and not users:

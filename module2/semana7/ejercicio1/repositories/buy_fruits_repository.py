@@ -12,6 +12,7 @@ from repositories.user_repository import UserRepository
 from repositories.registration_repository import RegistrationRepository
 from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt, JWT_Manager
+from modules.models import validate_buy_fruits
 
 
 
@@ -19,8 +20,10 @@ class BuyFruitRepository(Repository):
     def __init__(self, db_manager):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__()
-        self.db_manager = db_manager
         self.jwt_manager = JWT_Manager()
+        self.db_manager = db_manager
+        self.model_name = self.db_manager._get_model_name('register_user')
+        self.model_class = self.db_manager._get_model()
 
     def _get_model(self):
         if not self.model_class:
@@ -108,8 +111,9 @@ class BuyFruitRepository(Repository):
 
     @require_jwt(["administrator", "client"])
     def post(self):
-        self.db_manager.sessionlocal()
-        model_class = self.db_manager._get_model()
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
+        
         data = request.get_json()
         _token = request.headers.get("Authorization")
         token = _token.replace("Bearer ","")
@@ -117,26 +121,30 @@ class BuyFruitRepository(Repository):
             return jsonify({"error": "No token provided"}), 400
         decoded = self.jwt_manager.decode(token)
         email = decoded.get("email")
-        _query_by_email = self.db_manager.get_by_email(email)
-        email_records = self.db_manager.get(_query_by_email)
+        email_records = self.db_manager.get_by_email(session, email)
         email_record = email_records[0]
         if not email_record:
             return jsonify({"error": f"No record found for {email}"}), 404
-        import ipdb; ipdb.set_trace()
-        new_record = model_class(**data)
-        record = self.db_manager.insert(new_record)
-        
+        record_list = []
+        #import ipdb; ipdb.set_trace()
+        for record in data:
+            _new_record, msg = validate_buy_fruits(record)
+            if _new_record is False:
+                return jsonify({
+                    "error": msg
+                }), 400
+        # Add logic to get add/substract quantity from products
+        # based on the purchase
+        #new_record = self.db_manager.insert(session, _new_record)
+            
         if record is None:
             return jsonify({
             "error": "Fruit purchase already exists or violates database constraints",
             "message": "This user may already be registered or the data conflicts with existing records"
         }), 409
-        return jsonify({
-            "id": record.id,
-            "first_name": record.first_name,
-            "last_name": record.last_name,
-            "created_at": str(record.created_at)
-        })
+        record["created_at"] = record.created_at
+        record_list.append(record)
+        return jsonify(record_list)
     
     @require_jwt(["administrator", "client"])
     def put(self, id):
