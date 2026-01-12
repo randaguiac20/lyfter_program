@@ -17,32 +17,12 @@ class RegistrationRepository(Repository):
         self.model_name = self.db_manager._get_model_name('register_user')
         self.model_class = self.db_manager._get_model()
     
-    @require_jwt("administrator")
-    def get(self, id=None, with_relationships=True):
-        """
-        Get registration records.
-        
-        Args:
-            id: Optional ID from URL path parameter
-            with_relationships: Whether to load related user data
-        """
+    def _get(self, id=None, email=None):
         model_class = self.model_class
+        relationship_list = [model_class.user]
         session = self.db_manager.sessionlocal()
-        
-        # If id is provided, try to get by ID
-        if id:
-            try:
-                id = int(id)
-                registrations = self.db_manager.get_by_id(session, id)
-            except ValueError:
-                return jsonify({"error": "Invalid ID format"}), 400
-        else:
-            registrations = self.db_manager.get_query(session)
-        
-        if with_relationships:
-            _query = session.query(model_class)
-            _query_with_options = _query.options(joinedload(model_class.user))
-            registrations = self.db_manager.get(_query_with_options)
+        registrations = self.db_manager.get_query(session, id=id, email=email,
+                                                  relationships=relationship_list)
         
         # If querying by ID and no result found
         if id and not registrations:
@@ -50,32 +30,29 @@ class RegistrationRepository(Repository):
         
         # Convert SQLAlchemy objects to dictionaries
         registration_list = []
-        for reg in registrations:
+        for registration in registrations:
             reg_data = {
-                "registration_id": reg.id,
-                "email": reg.email,
-                "created_at": str(reg.created_at) if reg.created_at else None,
-                "updated_at": str(reg.updated_at) if reg.updated_at else None
+                "registration_id": registration.id,
+                "email": registration.email,
+                "created_at": str(registration.created_at) if registration.created_at else None,
+                "updated_at": str(registration.updated_at) if registration.updated_at else None
             }
             
             # Include related user data if loaded
-            if with_relationships and hasattr(reg, 'user') and reg.user:
+            if hasattr(registration, 'user') and registration.user:
                 reg_data["user"] = {
-                    "id": reg.user.id,
-                    "first_name": reg.user.first_name,
-                    "last_name": reg.user.last_name
+                    "id": registration.user.id,
+                    "user_name": f"{registration.user.first_name} {registration.user.last_name}"
                 }
             registration_list.append(reg_data)
         
         # Return single object if querying by ID, otherwise return list
         if id and registration_list:
-            return jsonify(registration_list[0])
+            return jsonify(registration_list[0]), 200
         
-        return jsonify(registration_list)
-    
-    @require_jwt("administrator")
-    def post(self):
-        data = request.get_json()
+        return jsonify(registration_list), 200
+
+    def _add(self, data):
         fields = ["email", "password", "role"]
         for field in fields:
             if field not in data:
@@ -89,85 +66,110 @@ class RegistrationRepository(Repository):
             model_class = self.model_class
             session = self.db_manager.sessionlocal()
             
-            new_record = model_class(**hashed_data)
-            record = self.db_manager.insert(session, new_record)
+            _registration = model_class(**hashed_data)
+            registration = self.db_manager.insert(session, _registration)
             
             # Generate JWT token for the newly registered user
             jwt_manager = JWT_Manager()
             
             # Create token data
             token_data = {
-                "id": record.id,
-                "email": record.email,
-                "role": record.role
+                "id": registration.id,
+                "email": registration.email,
+                "role": registration.role
             }
             token = jwt_manager.encode(token_data)
             
             return jsonify({
-                "id": record.id,
-                "created_at": str(record.created_at),
+                "id": registration.id,
+                "created_at": str(registration.created_at),
                 "token": token
             }), 201
         except Exception as e:
             return jsonify({"error": "User is already registered"}), 400
-    
-    @require_jwt("administrator")
-    def put(self, id):
-        """
-        Update registration information (e.g., change role or password).
-        """
-        data = request.get_json()
+
+    def _update(self, id, data):
         if not data:
             return jsonify({"error": "No fields to update"}), 400
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
             session = self.db_manager.sessionlocal()
-            _query = self.db_manager.get_by_id(id)
-            records = self.db_manager.get_query(_query)
-            record = records[0]
-            if not records:
+            registrations = self.db_manager.get_query(session, id=id)
+            registration = registrations[0]
+            if not registration:
                 return jsonify({"error": f"User ID {id} has not been found"}), 404
             # Update fields directly on the existing record
             if 'email' in data:
-                record.email = data['email']
+                registration.email = data['email']
             if 'password' in data:
                 # Hash the new password
-                record.password = password_hash(data['password'])
+                registration.password = password_hash(data['password'])
             if 'role' in data:
                 if not data['role'] in ALLOWED_ROLES:
                     return jsonify({"error": "Invalid role was provided"}), 400
-                record.role = data['role']
+                registration.role = data['role']
 
             # Update registration
-            updated_reg = self.db_manager.update(session, record)
+            updated_reg = self.db_manager.update(session, registration)
             if updated_reg:
                 return jsonify({
                     "id": updated_reg.id,
                     "email": updated_reg.email,
                     "role": updated_reg.role,
                     "updated_at": str(updated_reg.updated_at)
-                })
+                }), 200
             
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
 
-    @require_jwt("administrator")
-    def delete(self, id):
+    def _remove(self, id):
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
             session = self.db_manager.sessionlocal()
-            records = self.db_manager.get_by_id(session, id)
-            record = records[0]
-            if not record:
+            registrations = self.db_manager.get_query(session, id=id)
+            registration = registrations[0]
+            if not registration:
                 raise ValueError(f"User ID {id} has not been found")
-            self.db_manager.delete(session, record)
-            msg = f"Register User with ID {id}, and email {record.email} has been DELETED"
+            self.db_manager.delete(session, registration)
+            msg = f"Register User with ID {id}, and email {registration.email} has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
+
+    @require_jwt("administrator")
+    def get(self, id=None, email=None):
+        """
+        Get registration records.
+        
+        Args:
+            id: Optional ID from URL path parameter
+            with_relationships: Whether to load related user data
+        """
+        records, http_code = self._get(id=id, email=email)
+        return records, http_code
+    
+    @require_jwt("administrator")
+    def post(self):
+        data = request.get_json()
+        new_record, http_code = self._add(data)
+        return new_record, http_code
+
+    @require_jwt("administrator")
+    def put(self, id):
+        """
+        Update registration information (e.g., change role or password).
+        """
+        data = request.get_json()
+        updated_record, http_code = self._update(id, data)
+        return updated_record, http_code
+
+    @require_jwt("administrator")
+    def delete(self, id):
+        deleted_record, http_code = self._remove(id)
+        return deleted_record, http_code

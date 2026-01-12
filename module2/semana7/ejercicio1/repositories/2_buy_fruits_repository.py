@@ -29,7 +29,7 @@ class BuyFruitRepository(Repository):
         self.product = ProductRepository()
 
     @require_jwt(["administrator", "client"])
-    def get(self, with_relationships=True):
+    def get(self, id=None, with_relationships=True):
         """
         Get Fruit purchase records.
         
@@ -37,9 +37,10 @@ class BuyFruitRepository(Repository):
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related user data
         """
-        db_manager = self.db_manager
-        session = db_manager.get_session()
-        
+        _registrations = self.registration
+        _users = self.user
+        _receipts = self.receipt
+        _shopping_carts = self.shopping_cart
         _token = request.headers.get("Authorization")
         token = _token.replace("Bearer ","")
         if not token:
@@ -48,19 +49,13 @@ class BuyFruitRepository(Repository):
         decoded = self.jwt_manager.decode(token)
         email = decoded.get("email")
 
-        db_manager._get_model_name("register_user")
-        db_manager._get_model()
-
-        email_records = db_manager.get_by_email(session, email)
+        email_records = _registrations._get(email=email)
         email_record = email_records[0]
         if not email_record:
             return jsonify({"error": f"No record found for {email}"}), 404
         
         # Matched user gotten from token
-        db_manager._get_model_name("user")
-        db_manager._get_model()
-
-        users = db_manager.get_query(session)
+        users = _users._get()
         if not users:
             return jsonify({"error": "No users records found"}), 404
         
@@ -69,28 +64,17 @@ class BuyFruitRepository(Repository):
             if email_record.id == user.registration_id:
                 user_id = user.id
         # If id is provided, try to get by ID
-        db_manager._get_model_name("receipt")
-        receipt_model_class = db_manager._get_model()
-
         if id:
-            try:
-                id = int(id)
-                receipts = db_manager.get_by_id(session, id)
-            except ValueError:
-                return jsonify({"error": "Invalid ID format"}), 400
+            receipts = _receipts._get(id=id)
         else:
-            receipts = db_manager.get_query(session)
-
-        if with_relationships:
-            _query = session.query(receipt_model_class)
-            _query_with_options = _query.options(joinedload(receipt_model_class.cart))
-            receipts = db_manager.get_query(_query_with_options)
+            receipts = _receipts._get()
         # If querying by ID and no result found
         if id and not receipts:
             return jsonify({"error": "Receipt was not found"}), 404
 
         # Convert SQLAlchemy objects to dictionaries
         receipt_list = []
+        cart_list = []
         for receipt in receipts:
             receipt_data = {
                 "id": receipt.id,
@@ -100,28 +84,18 @@ class BuyFruitRepository(Repository):
                 "updated_at": str(receipt.updated_at) if receipt.updated_at else None
             }
             # Include related address data if loaded
-
-            db_manager._get_model_name("shopping_cart")
-            sc_model_class = db_manager._get_model()
-
-            if with_relationships and hasattr(receipt, 'cart') and receipt.cart:
-                cart_list = []
-                _query = session.query(sc_model_class)
-                _query_with_options = _query.options(joinedload(sc_model_class.user))
-                carts = db_manager.get_query(_query_with_options)
-                for cart in carts:
-                    if cart.id == receipt.id and cart.user_id == user_id:
-                        cart_data = {
-                            "id": cart.id,
-                            "user_id": cart.user_id,
-                            "status": cart.status,
-                            "purchase_date": cart.purchase_date,
-                            "created_at": str(cart.created_at) if cart.created_at else None,
-                            "updated_at": str(cart.updated_at) if cart.updated_at else None
-                        }
-                        cart_list.append(cart_data)
-                    receipt_data["carts"] = cart_list
-            
+            cart = _shopping_carts._get(receipt.cart_id)
+            if cart.id == receipt.cart_id and cart.user_id == user_id:
+                cart_data = {
+                    "id": cart.id,
+                    "user_id": cart.user_id,
+                    "status": cart.status,
+                    "purchase_date": cart.purchase_date,
+                    "created_at": str(cart.created_at) if cart.created_at else None,
+                    "updated_at": str(cart.updated_at) if cart.updated_at else None
+                }
+                cart_list.append(cart_data)
+                receipt_data["carts"] = cart_list            
             receipt_list.append(receipt_data)
         
         # Return single object if querying by ID, otherwise return list
@@ -132,9 +106,13 @@ class BuyFruitRepository(Repository):
 
     @require_jwt(["administrator", "client"])
     def post(self):
-        
-        db_manager = self.db_manager
-        session = db_manager.get_session()
+        _registrations = self.registration
+        _users = self.user
+        _receipts = self.receipt
+        _products = self.product
+        _shopping_carts = self.shopping_cart
+        #db_manager = self.db_manager
+        #session = db_manager.get_session()
 
         data = request.get_json()
         if not isinstance(data, list):
@@ -146,10 +124,7 @@ class BuyFruitRepository(Repository):
         decoded = self.jwt_manager.decode(token)
         email = decoded.get("email")
 
-        db_manager._get_model_name("register_user")
-        db_manager._get_model()
-
-        email_records = db_manager.get_by_email(session, email)
+        email_records = _registrations._get(email=email)
         email_record = email_records[0]
         if not email_record:
             return jsonify({"error": f"No record found for {email}"}), 404
@@ -161,11 +136,8 @@ class BuyFruitRepository(Repository):
                     "error": msg
                 }), 400
         
-         # Matched user gotten from token
-        db_manager._get_model_name("user")
-        db_manager._get_model()
-        
-        users = db_manager.get_query(session)
+        # Matched user gotten from token      
+        users = _users._get()
         if not users:
             return jsonify({"error": "No users records found"}), 404
         
@@ -175,14 +147,11 @@ class BuyFruitRepository(Repository):
                 user_id = user.id
         
         # Add logic to get add/substract quantity from products based on the purchase
-        # 1. Validate the product exist and matches
-        db_manager._get_model_name("product")
-        db_manager._get_model()
-        
+        # 1. Validate the product exist and matches        
         record_list = []
         for record in data:
-
-            products = db_manager.get_by_name(session, record["name"])
+            name = record["name"]
+            products = _products._get(name=name)
             product = products[0]
 
             # 1. Validate product exist in the stock
@@ -196,14 +165,10 @@ class BuyFruitRepository(Repository):
                 return jsonify({"error": f"Insuficient product in the stock, current amount {product.quantity}"}), 400
 
         # 3. Create shooping cart
-        db_manager._get_model_name("shopping_cart")
-        sc_model_class = db_manager._get_model()
-
         sc_cart = {
             "user_id": user_id,
         }
-        _new_record = sc_model_class(**sc_cart)
-        new_record = db_manager.insert(session, _new_record)
+        new_record = _shopping_carts._add()
         if new_record is None:
             return jsonify({
                 "error": "Shooping cart already exists or violates database constraints",

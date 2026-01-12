@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from modules.config import (DB_HOST, DB_USERNAME, DB_PORT,
                             DB_PASSWORD, DB_NAME, SCHEMA,
                             Base)
-from sqlalchemy.orm import (sessionmaker, scoped_session)
+from sqlalchemy.orm import (sessionmaker, scoped_session, joinedload)
 from modules.models import _models
 
 
@@ -18,11 +18,13 @@ class DBManager:
         self.session = self.sessionlocal()
         self._session = scoped_session(self.sessionlocal)
         self._models = _models
+        self._model_name = model_name
         self._ensure_schema()
 
     def _get_model_name(self, model_name):
-        self.model_name = model_name
+        self.model_name = self._model_name if self._model_name else model_name
         self.model_class = self._models.get(self.model_name)
+        return self
 
     def _get_model(self):
         if not self.model_class:
@@ -45,10 +47,34 @@ class DBManager:
     def drop_tables(self):
         self.base.metadata.drop_all(self.engine)
 
-    def get_query(self, session):
+    def get_query(self, session, id=None, name=None,
+                  email=None, relationships=[]):
         try:
-            query = session.query(self.model_class)
+            query= None
+            _query = session.query(self.model_class)
+            if relationships:
+                for relationship in relationships:
+                    query = _query.options(joinedload(relationship))
+            if not query:
+                query = _query
+                print("No relationship found for this query")
+            if id:
+                try:
+                    id = int(id)
+                except ValueError:
+                    raise ValueError(f"Invalid ID format: {id}")
+                query = query.filter_by(id=id)
+            elif name:
+                query = query.filter_by(name=name)
+            elif email:
+                query = query.filter_by(email=email)
+                      
             return self.get(query)
+        except IntegrityError as e:
+            session.rollback()
+            return None
+        except ValueError:
+            raise  # Re-raise ValueError as-is
         except Exception as e:
             raise Exception("Failed to fetch records") from e
 
@@ -61,6 +87,16 @@ class DBManager:
     def get_by_id(self, session, id):
         try:
             query = session.query(self.model_class).filter_by(id=id)
+            return self.get(query)
+        except IntegrityError as e:
+            session.rollback()
+            return None
+        except Exception as e:
+            raise Exception("Failed to fetch records") from e
+        
+    def get_by_name(self, session, name):
+        try:
+            query = session.query(self.model_class).filter_by(name=name)
             return self.get(query)
         except IntegrityError as e:
             session.rollback()

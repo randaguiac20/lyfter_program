@@ -16,38 +16,15 @@ class UserRepository(Repository):
         self.model_name = self.db_manager._get_model_name('user')
         self.model_class = self.db_manager._get_model()
 
-    @require_jwt("administrator")
-    def get(self, id=None, with_relationships=True):
-        """
-        Get user records.
-        
-        Args:
-            id: Optional ID from URL path parameter
-            with_relationships: Whether to load related user data
-        """
+    def _get(self, id=None, name=None):
         model_class = self.model_class
+        relationship_list = [model_class.contacts, model_class.address, model_class.carts]
         session = self.db_manager.sessionlocal()
-        
-        # If id is provided, try to get by ID
-        if id:
-            try:
-                id = int(id)
-                users = self.db_manager.get_by_id(session, id)
-            except ValueError:
-                return jsonify({"error": "Invalid ID format"}), 400
-        else:
-            users = self.db_manager.get_query(session)
-            
-        if with_relationships:
-            _query = session.query(model_class)
-            _query_with_options = _query.options(joinedload(model_class.contacts),
-                                                 joinedload(model_class.address),
-                                                 joinedload(model_class.carts))
-            users = self.db_manager.get(_query_with_options)
-        
+        users = self.db_manager.get_query(session, id=id, name=name,
+                                          relationships=relationship_list)
         # If querying by ID and no result found
         if id and not users:
-            return jsonify({"error": "Registration not found"}), 404
+            return jsonify({"error": "User not found"}), 404
         
         # Convert SQLAlchemy objects to dictionaries
         user_list = []
@@ -60,7 +37,7 @@ class UserRepository(Repository):
                 "updated_at": str(user.updated_at) if user.updated_at else None
             }
             # Include related address data if loaded
-            if with_relationships and hasattr(user, 'address') and user.address:
+            if hasattr(user, 'address') and user.address:
                 user_data["address"] = {
                     "id": user.address.id,
                     "street": user.address.street,
@@ -70,7 +47,7 @@ class UserRepository(Repository):
                     "country": user.address.country
                 }
             # Include related contact data if loaded
-            if with_relationships and hasattr(user, 'contacts') and user.contacts:
+            if hasattr(user, 'contacts') and user.contacts:
                 contact_list = []
                 for contact in user.contacts:
                     contact_data = {
@@ -81,7 +58,7 @@ class UserRepository(Repository):
                 user_data["contacts"] = contact_list
             
             # Include related cart data if loaded
-            if with_relationships and hasattr(user, 'carts') and user.carts:
+            if hasattr(user, 'carts') and user.carts:
                 cart_list = []
                 for cart in user.carts:
                     cart_data = {
@@ -96,51 +73,45 @@ class UserRepository(Repository):
         
         # Return single object if querying by ID, otherwise return list
         if id and user_list:
-            return jsonify(user_list[0])
+            return jsonify(user_list[0]), 200
         
-        return jsonify(user_list)
+        return jsonify(user_list), 200
 
-    @require_jwt("administrator")
-    def post(self):
-        model_class = self.model_class
+    def _add(self, data):
         session = self.db_manager.sessionlocal()
-        
+        model_class = self.model_class
+
         data = request.get_json()
-        new_record = model_class(**data)
-        record = self.db_manager.insert(session, new_record)
+        _user = model_class(**data)
+        user = self.db_manager.insert(session, _user)
         
-        if record is None:
+        if user is None:
             return jsonify({
             "error": "User already exists or violates database constraints",
             "message": "This user may already be registered or the data conflicts with existing records"
         }), 409
         return jsonify({
-            "id": record.id,
-            "first_name": record.first_name,
-            "last_name": record.last_name,
-            "created_at": str(record.created_at)
-        })
-    
-    @require_jwt("administrator")
-    def put(self, id):
-        """
-        Update User information (e.g., change role or password).
-        """
-        new_data = request.get_json()
+            "id": user.id,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "created_at": str(user.created_at)
+        }), 200
+
+    def _update(self, id, new_data):
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
         
         if not id:
-            return jsonify({"error": "Registration ID is required"}), 400
+            return jsonify({"error": "User ID is required"}), 400
         
         try:
             session = self.db_manager.sessionlocal()
-            records = self.db_manager.get_by_id(session, id)
-            record = records[0]
-            if not record:
+            users = self.db_manager.get_query(session, id=id)
+            user = users[0]
+            if not user:
                 return jsonify({"error": f"User ID {id} has not been found"}), 404
             
-            for column in record.__table__.columns:
+            for column in user.__table__.columns:
                 field_name = column.name
                 
                 # Skip fields that shouldn't be updated
@@ -149,18 +120,18 @@ class UserRepository(Repository):
                 
                 # Check if field is in new_data
                 if field_name in new_data:
-                    old_value = getattr(record, field_name)
+                    old_value = getattr(user, field_name)
                     new_value = new_data[field_name]
                     
                     # Compare values (handle type conversions)
                     if str(old_value) != str(new_value):
-                        setattr(record, field_name, new_value)
+                        setattr(user, field_name, new_value)
             
-            if not record:
+            if not user:
                 return jsonify({"error": "No fields to update"}), 400
 
             # Update user
-            updated_user = self.db_manager.update(session, record)
+            updated_user = self.db_manager.update(session, user)
             if updated_user:
                 return jsonify({
                     "id": updated_user.id,
@@ -172,21 +143,52 @@ class UserRepository(Repository):
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
-    
-    @require_jwt("administrator")
-    def delete(self, id):
+
+    def _remove(self, id):
         if not id:
             return jsonify({"error": "User ID is required"}), 400
         try:
             session = self.db_manager.sessionlocal()
-            records = self.db_manager.get_by_id(session, id)
-            record = records[0]
-            if not record:
+            users = self.db_manager.get_query(session, id=id)
+            user = users[0]
+            if not user:
                 raise ValueError(f"User ID {id} has not been found")
-            self.db_manager.delete(session, record)
-            msg = f"User with ID {id}, and email {record.email} has been DELETED"
+            self.db_manager.delete(session, user)
+            msg = f"User with ID {id} has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
+
+    @require_jwt("administrator")
+    def get(self, id=None):
+        """
+        Get user records.
+        
+        Args:
+            id: Optional ID from URL path parameter
+            with_relationships: Whether to load related user data
+        """
+        records, http_code = self._get(id=id)
+        return records, http_code
+
+    @require_jwt("administrator")
+    def post(self):
+        data = request.get_json()
+        new_record, http_code = self._add(data)
+        return new_record, http_code
+    
+    @require_jwt("administrator")
+    def put(self, id):
+        """
+        Update User information (e.g., change role or password).
+        """
+        data = request.get_json()
+        updated_record, http_code = self._update(id, data)
+        return updated_record, http_code
+    
+    @require_jwt("administrator")
+    def delete(self, id):
+        deleted_record, http_code = self._remove(id)
+        return deleted_record, http_code

@@ -16,34 +16,12 @@ class ShoppingCartProductRepository(Repository):
         self.model_name = self.db_manager._get_model_name('shopping_cart_product')
         self.model_class = self.db_manager._get_model()
 
-    @require_jwt("administrator")
-    def get(self, id=None, with_relationships=True):
-        """
-        Get Shopping Cart Product records.
-        
-        Args:
-            id: Optional ID from URL path parameter
-            with_relationships: Whether to load related cart data
-        """
+    def _get(self, id=None):
         model_class = self.model_class
+        relationship_list = [model_class.produc, model_class.carts]
         session = self.db_manager.sessionlocal()
-        
-        # If id is provided, try to get by ID
-        if id:
-            try:
-                id = int(id)
-                shopping_cart_products = self.db_manager.get_by_id(session, id)
-            except ValueError:
-                return jsonify({"error": "Invalid ID format"}), 400
-        else:
-            shopping_cart_products = self.db_manager.get_query(session)
-        
-        if with_relationships:
-            _query = session.query(model_class)
-            _query_with_options = _query.options(joinedload(model_class.product),
-                                                 joinedload(model_class.carts))
-            shopping_cart_products = self.db_manager.get(_query_with_options)
-        
+        shopping_cart_products = self.db_manager.get_query(session, id=id,
+                                                           relationships=relationship_list)
         # If querying by ID and no result found
         if id and not shopping_cart_products:
             return jsonify({"error": "Shopping Cart Product not found"}), 404
@@ -60,7 +38,7 @@ class ShoppingCartProductRepository(Repository):
                 "updated_at": str(shopping_cart_product.updated_at) if shopping_cart_product.updated_at else None
             }
             # Include related address data if loaded
-            if with_relationships and hasattr(shopping_cart_product, 'product') and shopping_cart_product.product:
+            if hasattr(shopping_cart_product, 'product') and shopping_cart_product.product:
                 scp_address = shopping_cart_product.product
                 scp_data["product"] = {
                     "product_id": scp_address.id,
@@ -71,7 +49,7 @@ class ShoppingCartProductRepository(Repository):
                     "quantity": scp_address.quantity
                 }
             # Include related cart data if loaded
-            if with_relationships and hasattr(shopping_cart_product, 'cart') and shopping_cart_product.cart:
+            if hasattr(shopping_cart_product, 'cart') and shopping_cart_product.cart:
                 cart_list = []
                 for cart in shopping_cart_product.cart:
                     cart_data = {
@@ -88,54 +66,46 @@ class ShoppingCartProductRepository(Repository):
         
         # Return single object if querying by ID, otherwise return list
         if id and shopping_cart_product_list:
-            return jsonify(shopping_cart_product_list[0])
+            return jsonify(shopping_cart_product_list[0]), 200
         
-        return jsonify(shopping_cart_product_list)
+        return jsonify(shopping_cart_product_list), 200
 
-    @require_jwt("administrator")
-    def post(self):
-        model_class = self.model_class
+    def _add(self, data):
         session = self.db_manager.sessionlocal()
+        model_class = self.model_class
+
+        _shopping_cart_product = model_class(**data)
+        shopping_cart_product = self.db_manager.insert(session, _shopping_cart_product)
         
-        data = request.get_json()
-        new_record = model_class(**data)
-        record = self.db_manager.insert(session, new_record)
-        
-        if record is None:
+        if shopping_cart_product is None:
             return jsonify({
-            "error": "Shopping Cart Product already exists or violates database constraints",
-            "message": "This user may already be registered or the data conflicts with existing records"
-        }), 409
+                "error": "Shopping Cart Product already exists or violates database constraints",
+                "message": "This user may already be registered or the data conflicts with existing records"
+            }), 409
         return jsonify({
-            "id": record.id,
-            "cart_id": record.cart_id,
-            "product_id": record.product_id,
-            "quantity": record.quantity,
-            "checkout": record.checkout,
-            "created_at": str(record.created_at)
-        })
-    
-    @require_jwt("administrator")
-    def put(self, id):
-        """
-        Update Shopping Cart Product information (e.g., quantity or checkout).
-        """
-        new_data = request.get_json()
+                "id": shopping_cart_product.id,
+                "cart_id": shopping_cart_product.cart_id,
+                "product_id": shopping_cart_product.product_id,
+                "quantity": shopping_cart_product.quantity,
+                "checkout": shopping_cart_product.checkout,
+                "created_at": str(shopping_cart_product.created_at)
+            }), 200
+
+    def _update(self, id, new_data):
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
-        model_class = self._get_model()
-        
+
         if not id:
             return jsonify({"error": "Shopping Cart Product ID is required"}), 400
         
         try:
             session = self.db_manager.sessionlocal()
-            records = self.db_manager.get_by_id(session, model_class, id)
-            record = records[0]
-            if not record:
+            shopping_cart_products = self.db_manager.get_query(session, id=id)
+            shopping_cart_product = shopping_cart_products[0]
+            if not shopping_cart_product:
                 return jsonify({"error": f"Shopping Cart Product ID {id} has not been found"}), 404
             
-            for column in record.__table__.columns:
+            for column in shopping_cart_product.__table__.columns:
                 field_name = column.name
                 
                 # Skip fields that shouldn't be updated
@@ -144,18 +114,18 @@ class ShoppingCartProductRepository(Repository):
                 
                 # Check if field is in new_data
                 if field_name in new_data:
-                    old_value = getattr(record, field_name)
+                    old_value = getattr(shopping_cart_product, field_name)
                     new_value = new_data[field_name]
                     
                     # Compare values (handle type conversions)
                     if str(old_value) != str(new_value):
-                        setattr(record, field_name, new_value)
+                        setattr(shopping_cart_product, field_name, new_value)
             
-            if not record:
+            if not shopping_cart_product:
                 return jsonify({"error": "No fields to update"}), 400
 
             # Update user
-            updated_scp = self.db_manager.update(session, record)
+            updated_scp = self.db_manager.update(session, shopping_cart_product)
             if updated_scp:
                 return jsonify({
                     "id": updated_scp.id,
@@ -164,27 +134,59 @@ class ShoppingCartProductRepository(Repository):
                     "quantity": updated_scp.quantity,
                     "checkout": updated_scp.checkout,
                     "created_at": str(updated_scp.created_at)
-                })
+                }), 200
             
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
-    
-    @require_jwt("administrator")
-    def delete(self, id):
+
+    def _remove(self, id):
         if not id:
             return jsonify({"error": "Shopping Cart Product ID is required"}), 400
         try:
             session = self.db_manager.sessionlocal()
-            records = self.db_manager.get_by_id(session, id)
-            record = records[0]
-            if not record:
+            shopping_cart_products = self.db_manager.get_query(session, id=id)
+            shopping_cart_product = shopping_cart_products[0]
+            if not shopping_cart_product:
                 raise ValueError(f"Shopping Cart Product ID {id} has not been found")
-            self.db_manager.delete(session, record)
+            self.db_manager.delete(session, shopping_cart_product)
             msg = f"Shopping Cart Product with ID {id}  has been DELETED"
             return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
         except Exception as e:
             return jsonify({"error": str(e)}), 400
+
+    @require_jwt("administrator")
+    def get(self, id=None):
+        """
+        Get Shopping Cart Product records.
+        
+        Args:
+            id: Optional ID from URL path parameter
+            with_relationships: Whether to load related cart data
+        """
+        records, http_code = self._get(id=id)
+        return records, http_code
+
+    @require_jwt("administrator")
+    def post(self):
+        data = request.get_json()
+        new_record, http_code = self._add(data)
+        return new_record, http_code
+
+    @require_jwt("administrator")
+    def put(self, id):
+        """
+        Update Shopping Cart Product information (e.g., quantity or checkout).
+        """
+        data = request.get_json()
+        updated_record, http_code = self._update(id, data)
+        return updated_record, http_code
+
+    @require_jwt("administrator")
+    def delete(self, id):
+        deleted_record, http_code = self._remove(id)
+        return deleted_record, http_code
+

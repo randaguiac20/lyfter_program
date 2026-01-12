@@ -1,13 +1,13 @@
-from sqlalchemy import (Column, Integer, String, DateTime, 
+from sqlalchemy import (Enum, Column, Integer, String, DateTime, 
                         Boolean, func, ForeignKey, UniqueConstraint)
 from sqlalchemy.orm import relationship
 from modules.config import Base
+import enum
 
 
 
 def validate_buy_fruits(record_input):
     """Validate buy-fruits input data"""
-    import ipdb; ipdb.set_trace()
     if not isinstance(record_input, dict):
         return False, "Invalid format."
     reguired_fields = {"name", "size", "quantity"}
@@ -27,6 +27,12 @@ def validate_buy_fruits(record_input):
     return True, "Valid data"
     
 
+class CartStatus(enum.Enum):
+    ACTIVE = "active"
+    PENDING = "pending"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
 class UserRegistration(Base):
     __tablename__ = "user_registrations"
 
@@ -37,7 +43,8 @@ class UserRegistration(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     # UserContact = class name, back_populates = field name i.e user on other table/class
-    user = relationship("User", back_populates="register_user", uselist=False)
+    user = relationship("User", back_populates="register_user", uselist=False,
+                        cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"Register User id={self.id}, email='{self.email}'"
@@ -50,7 +57,7 @@ class User(Base):
     )
 
     id = Column(Integer, primary_key=True)
-    registration_id = Column(Integer, ForeignKey("user_registrations.id"), nullable=False)
+    registration_id = Column(Integer, ForeignKey("user_registrations.id", ondelete="CASCADE"), nullable=False)
     first_name = Column(String)
     last_name = Column(String)
     telephone = Column(String(8), unique=True)
@@ -58,9 +65,11 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     # UserContact = class name, back_populates = field name i.e user on other table/class
-    contacts = relationship("UserContact", back_populates="user")
+    contacts = relationship("UserContact", back_populates="user",
+                            cascade="all, delete-orphan")
     address = relationship("Address", back_populates="users", uselist=False)
-    carts = relationship("ShoppingCart", back_populates="user")
+    carts = relationship("ShoppingCart", back_populates="user",
+                         cascade="all, delete-orphan")
     register_user = relationship("UserRegistration", back_populates="user", uselist=False)
 
     def __repr__(self):
@@ -91,6 +100,9 @@ class UserContact(Base):
 
 class Address(Base):
     __tablename__ = "addresses"
+    __table_args__ = (
+        UniqueConstraint('street', 'city', 'postal_code', name='unique_address'),
+    )
 
     id = Column(Integer, primary_key=True)
     street = Column(String(255), nullable=False)
@@ -134,7 +146,7 @@ class ShoppingCart(Base):
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    status = Column(String(50))
+    status = Column(Enum(CartStatus), default=CartStatus.ACTIVE, nullable=False)
     purchase_date = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
