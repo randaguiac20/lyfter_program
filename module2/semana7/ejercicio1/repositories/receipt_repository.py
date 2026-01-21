@@ -216,9 +216,11 @@ class ReceiptRepository(Repository):
             id: Optional ID from URL path parameter
             with_relationships: Whether to load related cart data
         """
-        receipts, http_code = self._get(id=id,
-                                        with_relationships=relationships)
-        return receipts, http_code
+        result = self._get(id=id)
+        # Handle both tuple returns and single Response returns
+        if isinstance(result, tuple):
+            return result
+        return result, 200
 
     @require_jwt("administrator")
     def post(self):

@@ -193,7 +193,7 @@ class UserRepository(Repository):
                     "id": updated_user.id,
                     "user_name": f"{updated_user.first_name} {updated_user.last_name}",
                     "updated_at": str(updated_user.updated_at)
-                })
+                }), 200
             
         except ValueError as e:
             return jsonify({"error": str(e)}), 404
@@ -259,8 +259,11 @@ class UserRepository(Repository):
         Update User information (e.g., change role or password).
         """
         data = request.get_json()
-        updated_record, http_code = self._update(id, data)
-        return updated_record, http_code
+        result = self._update(id, data)
+        # Handle both tuple returns and single Response returns
+        if isinstance(result, tuple):
+            return result
+        return result, 200
     
     @require_jwt("administrator")
     def delete(self, id):

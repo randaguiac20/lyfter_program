@@ -53,7 +53,7 @@ class ShoppingCartProductRepository(Repository):
             tuple: (JSON response with cart product data, HTTP status code)
         """
         model_class = self.model_class
-        relationship_list = [model_class.produc, model_class.carts]
+        relationship_list = [model_class.product, model_class.carts]
         session = self.db_manager.sessionlocal()
         shopping_cart_products = self.db_manager.get_query(session, model_class, id=id,
                                                            relationships=relationship_list)

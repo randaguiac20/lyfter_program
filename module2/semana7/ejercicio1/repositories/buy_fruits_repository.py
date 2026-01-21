@@ -55,6 +55,8 @@ def get_records(model=None, email=None, id=None, name=None):
         
     Returns:
         Query results from the model's _get method.
+        Note: If _get returns a tuple (response, status_code), this function
+        returns the tuple. Callers should handle both cases.
     """
     if email:
         records = model._get(email=email)
@@ -64,6 +66,13 @@ def get_records(model=None, email=None, id=None, name=None):
         records = model._get(name=name)
     else:
         records = model._get()
+    # Handle tuple returns from _get methods - extract just the records
+    if isinstance(records, tuple):
+        response, status_code = records
+        # If it's a Flask Response with JSON, extract the data
+        if hasattr(response, 'get_json'):
+            return response.get_json()
+        return response
     return records
 
 def get_product(data=None, model=None):
