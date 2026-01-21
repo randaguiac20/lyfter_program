@@ -1,3 +1,23 @@
+"""config.py
+
+Application configuration module containing database settings, authentication
+configuration, caching options, and file paths for the Fruit Products API.
+
+Constants:
+    DB_NAME: PostgreSQL database name.
+    DB_USERNAME: Database username.
+    DB_PASSWORD: Database password.
+    DB_HOST: Database host address.
+    DB_PORT: Database port number.
+    SCHEMA: Database schema name.
+    ALLOWED_ROLES: List of valid user roles.
+    DEFAULT_ADMIN: Default administrator password.
+    CACHE_TYPE: Flask-Caching backend type.
+    CACHE_DEFAULT_TIMEOUT: Cache timeout in seconds.
+    CERTS_DIR: Directory for SSL certificates.
+    FILE_PATH: Directory for secret keys and tokens.
+"""
+
 import os
 from sqlalchemy.orm import (declarative_base)
 from sqlalchemy import MetaData

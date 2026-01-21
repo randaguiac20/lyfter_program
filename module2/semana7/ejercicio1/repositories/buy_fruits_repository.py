@@ -1,3 +1,10 @@
+"""buy_fruits_repository.py
+
+Public API repository for customer fruit purchases.
+Orchestrates the creation of shopping carts, cart products, and receipts
+for customer purchase transactions.
+"""
+
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date
@@ -18,6 +25,16 @@ from modules.models import validate_buy_fruits
 
 
 def get_email_from_token(jwt_manager, _token):
+    """
+    Extract email address from JWT token.
+    
+    Args:
+        jwt_manager: JWT manager instance for decoding.
+        _token (str): Authorization header value with Bearer prefix.
+        
+    Returns:
+        str: Email address from decoded token, or error response.
+    """
     token = _token.replace("Bearer ","")
     if not token:
         return jsonify({"error": "No token provided"}), 400
@@ -27,6 +44,18 @@ def get_email_from_token(jwt_manager, _token):
     return email
 
 def get_records(model=None, email=None, id=None, name=None):
+    """
+    Generic record retrieval helper function.
+    
+    Args:
+        model: Repository instance to query.
+        email (str, optional): Filter by email.
+        id (int, optional): Filter by ID.
+        name (str, optional): Filter by name.
+        
+    Returns:
+        Query results from the model's _get method.
+    """
     if email:
         records = model._get(email=email)
     elif id:
@@ -38,6 +67,16 @@ def get_records(model=None, email=None, id=None, name=None):
     return records
 
 def get_product(data=None, model=None):
+    """
+    Validate products exist and have sufficient stock.
+    
+    Args:
+        data (list): List of product dictionaries with name and quantity.
+        model: Product repository instance.
+        
+    Returns:
+        tuple: (None, 200) if valid, (error response, error code) if invalid.
+    """
     for record in data:
         name = record["name"]
         products = get_records(model=model, name=name)
@@ -55,6 +94,16 @@ def get_product(data=None, model=None):
     return None, 200
 
 def add_cart(model=None, user_id=None):
+    """
+    Create a new shopping cart for a user.
+    
+    Args:
+        model: Shopping cart repository instance.
+        user_id (int): User ID to associate with the cart.
+        
+    Returns:
+        tuple: (cart data dict, HTTP status code)
+    """
     sc_cart_data = {
             "user_id": user_id,
         }
@@ -66,6 +115,15 @@ def add_cart(model=None, user_id=None):
     return cart, 200
 
 def validate_products(data=None):
+    """
+    Validate product data against schema requirements.
+    
+    Args:
+        data (list): List of product dictionaries to validate.
+        
+    Returns:
+        tuple: (validated data, message) or (False, error message)
+    """
     for record in data:
         _new_record, msg = validate_buy_fruits(record)
         if _new_record is False:
@@ -75,7 +133,17 @@ def validate_products(data=None):
     return _new_record, msg
 
 def get_product_details(model=None, name=None, size=None):
-    """Get product_id and price from product name and size"""
+    """
+    Get product_id and price from product name and size.
+    
+    Args:
+        model: Product repository instance.
+        name (str): Product name to search for.
+        size (str): Product size to match.
+        
+    Returns:
+        tuple: (product_id, price) or (None, None) if not found.
+    """
     response, http_code = model._get(name=name)
     if http_code != 200:
         return None, None
@@ -86,7 +154,18 @@ def get_product_details(model=None, name=None, size=None):
     return None, None
 
 def add_cart_product(model=None, cart_id=None, product_id=None, quantity=None):
-    """Create a shopping cart product entry"""
+    """
+    Create a shopping cart product entry.
+    
+    Args:
+        model: Shopping cart product repository instance.
+        cart_id (int): Cart ID to associate with.
+        product_id (int): Product ID to add.
+        quantity (int): Quantity of the product.
+        
+    Returns:
+        tuple: (cart product data dict, HTTP status code)
+    """
     cart_product_data = {
         "cart_id": cart_id,
         "product_id": product_id,
@@ -100,7 +179,18 @@ def add_cart_product(model=None, cart_id=None, product_id=None, quantity=None):
     return cart_product, 200
 
 def add_receipt(model=None, cart_id=None, payment_method="cash", total_amount=0):
-    """Create a receipt for the shopping cart"""
+    """
+    Create a receipt for the shopping cart.
+    
+    Args:
+        model: Receipt repository instance.
+        cart_id (int): Cart ID to associate with.
+        payment_method (str): Payment method (default: 'cash').
+        total_amount (float): Total purchase amount.
+        
+    Returns:
+        tuple: (receipt data dict, HTTP status code)
+    """
     receipt_data = {
         "cart_id": cart_id,
         "payment_method": payment_method,
@@ -114,7 +204,29 @@ def add_receipt(model=None, cart_id=None, payment_method="cash", total_amount=0)
 
 
 class BuyFruitRepository(Repository):
+    """
+    Repository for managing fruit purchase transactions.
+    
+    Orchestrates the complete purchase workflow: creating shopping carts,
+    adding products to carts, and generating receipts.
+    
+    Attributes:
+        jwt_manager: JWT manager for token validation.
+        shopping_cart: Shopping cart repository instance.
+        receipt: Receipt repository instance.
+        registration: Registration repository instance.
+        user: User repository instance.
+        product: Product repository instance.
+        cart_product: Shopping cart product repository instance.
+    """
+    
     def __init__(self, db_manager):
+        """
+        Initialize the buy fruit repository.
+        
+        Args:
+            db_manager: Database manager instance.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__()
         self.jwt_manager = JWT_Manager()
@@ -197,6 +309,17 @@ class BuyFruitRepository(Repository):
 
     @require_jwt(["administrator", "client"])
     def post(self):
+        """
+        Process a fruit purchase transaction.
+        
+        Creates a shopping cart, adds cart products for each item,
+        and generates a receipt with the total amount.
+        
+        Requires administrator or client role.
+        
+        Returns:
+            tuple: (JSON response with cart, products, receipt, HTTP 201)
+        """
         data = request.get_json()
         if not isinstance(data, list):
             return jsonify({"error": "JSON Data is not correct, provide a list of items."}), 400
@@ -335,6 +458,17 @@ class BuyFruitRepository(Repository):
     
     @require_jwt("administrator")
     def delete(self, id):
+        """
+        Delete a fruit purchase record.
+        
+        Requires administrator role.
+        
+        Args:
+            id (int): Purchase record ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         if not id:
             return jsonify({"error": "Fruit purchase ID is required"}), 400
         try:

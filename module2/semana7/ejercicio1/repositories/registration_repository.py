@@ -1,3 +1,9 @@
+"""registration_repository.py
+
+User registration repository for managing user authentication records.
+Handles CRUD operations for user registration including email, password, and role management.
+"""
+
 import json
 from flask import (request, jsonify)
 from repositories.repository import Repository
@@ -11,13 +17,42 @@ from modules.models import _models
 
 
 class RegistrationRepository(Repository):
+    """
+    Repository for managing user registrations.
+    
+    Handles user authentication data including email, hashed passwords, and roles.
+    Provides CRUD operations with JWT token generation on registration.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_class: The UserRegistration model class.
+    """
+    
     def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the registration repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
         self.model_class = _models.get('register_user')
     
     def _get(self, id=None, email=None):
+        """
+        Internal method to retrieve registration records.
+        
+        Args:
+            id (int, optional): Filter by registration ID.
+            email (str, optional): Filter by email address.
+            
+        Returns:
+            tuple: (JSON response, HTTP status code)
+        """
         model_class = self.model_class
         relationship_list = [model_class.user]
         session = self.db_manager.sessionlocal()
@@ -53,6 +88,18 @@ class RegistrationRepository(Repository):
         return jsonify(registration_list), 200
 
     def _add(self, data):
+        """
+        Internal method to create a new registration.
+        
+        Validates required fields, hashes password, creates registration,
+        and generates JWT token.
+        
+        Args:
+            data (dict): Registration data with 'email', 'password', and 'role'.
+            
+        Returns:
+            tuple: (JSON response with id, created_at, and token, HTTP status code)
+        """
         fields = ["email", "password", "role"]
         for field in fields:
             if field not in data:
@@ -89,6 +136,18 @@ class RegistrationRepository(Repository):
             return jsonify({"error": "User is already registered"}), 400
 
     def _update(self, id, data):
+        """
+        Internal method to update a registration record.
+        
+        Allows updating email, password (re-hashed), and role.
+        
+        Args:
+            id (int): Registration ID to update.
+            data (dict): Fields to update.
+            
+        Returns:
+            tuple: (JSON response, HTTP status code)
+        """
         if not data:
             return jsonify({"error": "No fields to update"}), 400
         if not id:
@@ -127,6 +186,15 @@ class RegistrationRepository(Repository):
             return jsonify({"error": str(e)}), 400
 
     def _remove(self, id):
+        """
+        Internal method to delete a registration record.
+        
+        Args:
+            id (int): Registration ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
@@ -158,6 +226,15 @@ class RegistrationRepository(Repository):
     
     @require_jwt("administrator")
     def post(self):
+        """
+        Create a new user registration.
+        
+        Requires administrator role. Creates registration with email,
+        password, and role.
+        
+        Returns:
+            tuple: (JSON response with new registration data, HTTP status code)
+        """
         data = request.get_json()
         new_record, http_code = self._add(data)
         return new_record, http_code

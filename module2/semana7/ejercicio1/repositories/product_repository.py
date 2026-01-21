@@ -1,3 +1,10 @@
+"""product_repository.py
+
+Product repository for managing fruit product records.
+Handles CRUD operations for products with name, description,
+price, size, and quantity attributes.
+"""
+
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date
@@ -7,13 +14,41 @@ from modules.models import _models
 
 
 class ProductRepository(Repository):
+    """
+    Repository for managing product records.
+    
+    Handles fruit products with relationships to shopping cart products.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_class: The Product model class.
+    """
+    
     def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the product repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
         self.model_class = _models.get('product')
 
     def _get(self, id=None, name=None):
+        """
+        Internal method to retrieve product records.
+        
+        Args:
+            id (int, optional): Filter by product ID.
+            name (str, optional): Filter by product name.
+            
+        Returns:
+            tuple: (JSON response with product data, HTTP status code)
+        """
         model_class = self.model_class
         relationship_list = [model_class.cart_products]
         session = self.db_manager.sessionlocal()
@@ -60,6 +95,16 @@ class ProductRepository(Repository):
         return jsonify(product_list), 200
 
     def _add(self, data):
+        """
+        Internal method to create new products.
+        
+        Args:
+            data (list): List of product dictionaries with name,
+                        description, price, size, and quantity.
+            
+        Returns:
+            tuple: (JSON response with new products, HTTP status code)
+        """
         session = self.db_manager.sessionlocal()
         model_class = self.model_class
         
@@ -89,6 +134,16 @@ class ProductRepository(Repository):
         return jsonify(record_list), 200
 
     def _update(self, id, new_data):
+        """
+        Internal method to update a product.
+        
+        Args:
+            id (int): Product ID to update.
+            new_data (dict): Fields to update.
+            
+        Returns:
+            tuple: (JSON response, HTTP status code)
+        """
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
         
@@ -140,6 +195,15 @@ class ProductRepository(Repository):
             return jsonify({"error": str(e)}), 400
 
     def _remove(self, id):
+        """
+        Internal method to delete a product.
+        
+        Args:
+            id (int): Product ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         if not id:
             return jsonify({"error": "Product ID is required"}), 400
         try:
@@ -171,6 +235,14 @@ class ProductRepository(Repository):
 
     @require_jwt("administrator")
     def post(self):
+        """
+        Create new products.
+        
+        Requires administrator role. Expects a list of products.
+        
+        Returns:
+            tuple: (JSON response with new products, HTTP status code)
+        """
         data = request.get_json()
         new_record, http_code = self._add(data)
         return new_record, http_code
@@ -186,5 +258,16 @@ class ProductRepository(Repository):
 
     @require_jwt("administrator")
     def delete(self, id):
+        """
+        Delete a product.
+        
+        Requires administrator role.
+        
+        Args:
+            id (int): Product ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         deleted_record, http_code = self._remove(id)
         return deleted_record, http_code

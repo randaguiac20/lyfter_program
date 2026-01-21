@@ -1,3 +1,11 @@
+"""3_buy_fruits_repository.py
+
+DEPRECATED: This is an older version of the buy_fruits_repository.
+Please use buy_fruits_repository.py instead.
+
+This file is kept for reference purposes only.
+"""
+
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date

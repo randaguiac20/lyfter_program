@@ -1,3 +1,9 @@
+"""refresh_token_repository.py
+
+Refresh token repository for generating new JWT access and refresh tokens.
+Allows authenticated users to obtain new tokens without re-authenticating.
+"""
+
 import json
 from flask import (request, jsonify)
 from repositories.repository import Repository
@@ -7,7 +13,26 @@ from modules.jwt_manager import require_jwt, JWT_Manager
 
 
 class RefreshTokenRepository(Repository):
+    """
+    Repository for handling token refresh operations.
+    
+    Generates new access and refresh tokens for authenticated users.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_name: The model name for user registration.
+        model_class: The SQLAlchemy model class.
+    """
+    
     def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the refresh token repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
@@ -16,6 +41,16 @@ class RefreshTokenRepository(Repository):
 
     @require_jwt(["administrator", "client"])
     def post(self):
+        """
+        Generate new access and refresh tokens.
+        
+        Extracts user info from current token and generates new token pair.
+        Requires valid JWT token with 'administrator' or 'client' role.
+        
+        Returns:
+            tuple: JSON response with email, access_token, refresh_token,
+                   and created_at, with HTTP status code.
+        """
         model_class = self.model_class
         session = self.db_manager.sessionlocal()
         

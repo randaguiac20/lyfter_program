@@ -1,3 +1,20 @@
+"""models.py
+
+SQLAlchemy ORM models for the Fruit Products API.
+
+Defines all database models including:
+    - UserRegistration: Authentication credentials and roles.
+    - User: User profile information.
+    - UserContact: User contact details.
+    - Address: User addresses.
+    - Product: Product inventory.
+    - ShoppingCart: Shopping cart with status tracking.
+    - Receipt: Purchase receipts.
+    - ShoppingCartProduct: Junction table for cart-product relationships.
+
+Also includes the CartStatus enum and input validation functions.
+"""
+
 from sqlalchemy import (Enum, Column, Integer, String, DateTime, 
                         Boolean, func, ForeignKey, UniqueConstraint)
 from sqlalchemy.orm import relationship
@@ -7,7 +24,17 @@ import enum
 
 
 def validate_buy_fruits(record_input):
-    """Validate buy-fruits input data"""
+    """
+    Validate input data for the buy-fruits endpoint.
+    
+    Args:
+        record_input (dict): Dictionary containing product purchase details.
+            Required keys: 'name' (str), 'size' (str), 'quantity' (int).
+            
+    Returns:
+        tuple: (bool, str) - (True, "Valid data") if valid,
+               (False, error_message) if invalid.
+    """""
     if not isinstance(record_input, dict):
         return False, "Invalid format."
     reguired_fields = {"name", "size", "quantity"}
@@ -28,12 +55,37 @@ def validate_buy_fruits(record_input):
     
 
 class CartStatus(enum.Enum):
+    """
+    Enumeration for shopping cart status values.
+    
+    Values:
+        ACTIVE: Cart is active and can be modified.
+        PENDING: Cart is pending checkout.
+        COMPLETED: Purchase has been completed.
+        CANCELLED: Cart has been cancelled.
+    """
     ACTIVE = "active"
     PENDING = "pending"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
 
+
 class UserRegistration(Base):
+    """
+    User registration model for authentication credentials.
+    
+    Stores email, hashed password, and role for user authentication.
+    Has a one-to-one relationship with User model.
+    
+    Attributes:
+        id (int): Primary key.
+        email (str): Unique email address.
+        password (str): Hashed password.
+        role (str): User role ('administrator' or 'client').
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        user: Related User object.
+    """
     __tablename__ = "user_registrations"
 
     id = Column(Integer, primary_key=True)
@@ -51,6 +103,25 @@ class UserRegistration(Base):
 
 
 class User(Base):
+    """
+    User profile model containing personal information.
+    
+    Stores user details and links to registration, address, contacts, and carts.
+    
+    Attributes:
+        id (int): Primary key.
+        registration_id (int): Foreign key to UserRegistration.
+        first_name (str): User's first name.
+        last_name (str): User's last name.
+        telephone (str): Unique phone number (8 digits).
+        address_id (int): Foreign key to Address.
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        contacts: Related UserContact objects.
+        address: Related Address object.
+        carts: Related ShoppingCart objects.
+        register_user: Related UserRegistration object.
+    """
     __tablename__ = "users"
     __table_args__ = (
         UniqueConstraint('first_name', 'last_name', 'telephone', name='unique_user_identity'),
@@ -81,6 +152,16 @@ class User(Base):
 
 
 class UserContact(Base):
+    """
+    User contact model for storing additional contact information.
+    
+    Attributes:
+        id (int): Primary key.
+        user_id (int): Foreign key to User.
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        user: Related User object.
+    """
     __tablename__ = "user_contacts"
 
     id = Column(Integer, primary_key=True)
@@ -99,6 +180,23 @@ class UserContact(Base):
 
 
 class Address(Base):
+    """
+    Address model for storing user addresses.
+    
+    Stores street address, city, state, postal code, and country.
+    Multiple users can share the same address.
+    
+    Attributes:
+        id (int): Primary key.
+        street (str): Street address.
+        city (str): City name.
+        state (str): State/province name.
+        postal_code (str): Postal/ZIP code.
+        country (str): Country name (default: USA).
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        users: List of related User objects.
+    """
     __tablename__ = "addresses"
     __table_args__ = (
         UniqueConstraint('street', 'city', 'postal_code', name='unique_address'),
@@ -122,6 +220,23 @@ class Address(Base):
 
 
 class Product(Base):
+    """
+    Product model for the fruit inventory.
+    
+    Stores product information including name, description, price, size, and quantity.
+    Unique constraint on combination of name, price, and size.
+    
+    Attributes:
+        id (int): Primary key.
+        name (str): Product name.
+        description (str): Product description.
+        price (int): Price in cents/smallest currency unit.
+        size (str): Product size ('large', 'medium', 'small').
+        quantity (int): Available inventory quantity.
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        cart_products: Related ShoppingCartProduct objects.
+    """
     __tablename__ = "products"
     __table_args__ = (
         UniqueConstraint('name', 'price', 'size', name='unique_product_identity'),
@@ -142,6 +257,23 @@ class Product(Base):
 
 
 class ShoppingCart(Base):
+    """
+    Shopping cart model for tracking user purchases.
+    
+    Represents a shopping session with status tracking.
+    Links to user, receipt, and cart products.
+    
+    Attributes:
+        id (int): Primary key.
+        user_id (int): Foreign key to User.
+        status (CartStatus): Cart status enum.
+        purchase_date (datetime): Date of purchase.
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        user: Related User object.
+        receipt: Related Receipt object.
+        cart_products: List of ShoppingCartProduct objects.
+    """
     __tablename__ = "shopping_carts"
 
     id = Column(Integer, primary_key=True)
@@ -163,6 +295,21 @@ class ShoppingCart(Base):
 
 
 class Receipt(Base):
+    """
+    Receipt model for purchase records.
+    
+    Stores payment information and total amount for completed purchases.
+    
+    Attributes:
+        id (int): Primary key.
+        cart_id (int): Foreign key to ShoppingCart.
+        description (str): Receipt description.
+        payment_method (str): Payment method used.
+        total_amount (int): Total purchase amount.
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        cart: Related ShoppingCart object.
+    """
     __tablename__ = "receipts"
 
     id = Column(Integer, primary_key=True)
@@ -179,6 +326,22 @@ class Receipt(Base):
 
 
 class ShoppingCartProduct(Base):
+    """
+    Junction model linking shopping carts to products.
+    
+    Stores the quantity and checkout status for each product in a cart.
+    
+    Attributes:
+        id (int): Primary key.
+        cart_id (int): Foreign key to ShoppingCart.
+        product_id (int): Foreign key to Product.
+        quantity (int): Quantity of the product.
+        checkout (bool): Whether item has been checked out.
+        created_at (datetime): Record creation timestamp.
+        updated_at (datetime): Record update timestamp.
+        product: Related Product object.
+        cart: Related ShoppingCart object.
+    """
     __tablename__ = "cart_products"
 
     id = Column(Integer, primary_key=True)

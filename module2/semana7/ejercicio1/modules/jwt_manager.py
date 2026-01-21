@@ -1,3 +1,9 @@
+"""jwt_manager.py
+
+JWT (JSON Web Token) management module for authentication and authorization.
+Provides token encoding/decoding using RS256 algorithm and role-based access control.
+"""
+
 from functools import wraps
 import jwt
 from flask import request, jsonify
@@ -8,8 +14,13 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# Read keys
 def read_keys():
+    """
+    Read RSA key pair from PEM files.
+    
+    Returns:
+        tuple: (private_key, public_key) as bytes.
+    """
     with open(f'{FILE_PATH}/private.pem', 'rb') as f:
         private_key = f.read()
 
@@ -20,13 +31,43 @@ def read_keys():
 
 
 class JWT_Manager:
+    """
+    JWT Manager class for token operations.
+    
+    Handles encoding and decoding of JWT tokens using RS256 (asymmetric)
+    or HS256 (symmetric) algorithms.
+    
+    Attributes:
+        private_key (bytes): RSA private key for signing tokens.
+        public_key (bytes): RSA public key for verifying tokens.
+        secret (str, optional): Secret key for HS256 algorithm.
+        algorithm (str): JWT algorithm (RS256 or HS256).
+    """
+    
     def __init__(self, secret=None, algorithm="RS256"):
+        """
+        Initialize JWT Manager.
+        
+        Args:
+            secret (str, optional): Secret key for HS256. If provided, uses HS256.
+            algorithm (str): Default algorithm (RS256 for asymmetric).
+        """
         self.private_key = read_keys()[0]
         self.public_key = read_keys()[1]
         self.secret = secret
         self.algorithm = algorithm if self.secret is None else "HS256"
 
     def encode(self, data, expires_in_minutes: int = 15):
+        """
+        Encode data into a JWT access token.
+        
+        Args:
+            data (dict): Payload data to encode (user info, role, etc.).
+            expires_in_minutes (int): Token expiration time in minutes.
+            
+        Returns:
+            str: Encoded JWT token, or None if encoding fails.
+        """
         try:
             payload = data.copy()
             payload['exp'] = datetime.utcnow() + timedelta(minutes=expires_in_minutes)
@@ -60,6 +101,15 @@ class JWT_Manager:
         return None
     
     def decode(self, token):
+        """
+        Decode and verify a JWT token.
+        
+        Args:
+            token (str): The JWT token to decode.
+            
+        Returns:
+            dict: Decoded payload data, or None if decoding fails.
+        """
         try:
             if self.secret:
                 decoded = jwt.decode(token, self.secret, algorithms=[self.algorithm])

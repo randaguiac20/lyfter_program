@@ -1,3 +1,9 @@
+"""address_repository.py
+
+Address repository for managing user address records.
+Handles CRUD operations for delivery and billing addresses.
+"""
+
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date
@@ -8,13 +14,41 @@ from modules.models import _models
 
 
 class AddressRepository(Repository):
+    """
+    Repository for managing address records.
+    
+    Handles delivery and billing addresses with fields like
+    country, state, city, zip code, and street.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_class: The Address model class.
+    """
+    
     def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the address repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
         self.model_class = _models.get('address')
 
     def _get(self, id=None):
+        """
+        Internal method to retrieve address records.
+        
+        Args:
+            id (int, optional): Filter by address ID.
+            
+        Returns:
+            tuple: (JSON response with address data, HTTP status code)
+        """
         model_class = self.model_class
         relationship_list = [model_class.users]
         session = self.db_manager.sessionlocal()
@@ -57,6 +91,16 @@ class AddressRepository(Repository):
         return jsonify(address_list), 200
 
     def _add(self, data):
+        """
+        Internal method to create a new address.
+        
+        Args:
+            data (dict): Address data with country, state, city,
+                        zip_code, and street.
+            
+        Returns:
+            tuple: (JSON response with new address data, HTTP status code)
+        """
         session = self.db_manager.sessionlocal()
         model_class = self.model_class
 
@@ -76,6 +120,16 @@ class AddressRepository(Repository):
         }), 200
 
     def _update(self, id, new_data):
+        """
+        Internal method to update an address.
+        
+        Args:
+            id (int): Address ID to update.
+            new_data (dict): Fields to update.
+            
+        Returns:
+            tuple: (JSON response, HTTP status code)
+        """
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
         
@@ -121,6 +175,15 @@ class AddressRepository(Repository):
             return jsonify({"error": str(e)}), 400
 
     def _remove(self, id):
+        """
+        Internal method to delete an address.
+        
+        Args:
+            id (int): Address ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         if not id:
             return jsonify({"error": "Address ID is required"}), 400
         try:
@@ -152,6 +215,14 @@ class AddressRepository(Repository):
 
     @require_jwt("administrator")
     def post(self):
+        """
+        Create a new address.
+        
+        Requires administrator role.
+        
+        Returns:
+            tuple: (JSON response with new address data, HTTP status code)
+        """
         data = request.get_json()
         new_record, http_code = self._add(data)
         return new_record, http_code
@@ -167,5 +238,16 @@ class AddressRepository(Repository):
 
     @require_jwt("administrator")
     def delete(self, id):
+        """
+        Delete an address.
+        
+        Requires administrator role.
+        
+        Args:
+            id (int): Address ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         deleted_record, http_code = self._remove(id)
         return deleted_record, http_code

@@ -1,3 +1,10 @@
+"""user_repository.py
+
+User repository for managing user profile records.
+Handles CRUD operations for user personal information including name,
+telephone, and relationships to addresses and shopping carts.
+"""
+
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date
@@ -8,13 +15,42 @@ from modules.jwt_manager import require_jwt
 
 
 class UserRepository(Repository):
+    """
+    Repository for managing user profiles.
+    
+    Handles user personal data with relationships to addresses,
+    contacts, and shopping carts.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_class: The User model class.
+    """
+    
     def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the user repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
         self.model_class = _models.get('user')
 
     def _get(self, id=None, name=None):
+        """
+        Internal method to retrieve user records with relationships.
+        
+        Args:
+            id (int, optional): Filter by user ID.
+            name (str, optional): Filter by name.
+            
+        Returns:
+            tuple: (JSON response with user data, HTTP status code)
+        """
         model_class = self.model_class
         relationship_list = [model_class.contacts, model_class.address, model_class.carts]
         session = self.db_manager.sessionlocal()
@@ -77,6 +113,16 @@ class UserRepository(Repository):
         return jsonify(user_list), 200
 
     def _add(self, data):
+        """
+        Internal method to create a new user profile.
+        
+        Args:
+            data (dict): User data with registration_id, first_name,
+                        last_name, telephone, and address_id.
+            
+        Returns:
+            tuple: (JSON response with new user data, HTTP status code)
+        """
         session = self.db_manager.sessionlocal()
         model_class = self.model_class
 
@@ -97,6 +143,16 @@ class UserRepository(Repository):
         }), 200
 
     def _update(self, id, new_data):
+        """
+        Internal method to update a user profile.
+        
+        Args:
+            id (int): User ID to update.
+            new_data (dict): Fields to update.
+            
+        Returns:
+            tuple: (JSON response, HTTP status code)
+        """
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
         
@@ -145,6 +201,15 @@ class UserRepository(Repository):
             return jsonify({"error": str(e)}), 400
 
     def _remove(self, id):
+        """
+        Internal method to delete a user profile.
+        
+        Args:
+            id (int): User ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         if not id:
             return jsonify({"error": "User ID is required"}), 400
         try:
@@ -176,6 +241,14 @@ class UserRepository(Repository):
 
     @require_jwt("administrator")
     def post(self):
+        """
+        Create a new user profile.
+        
+        Requires administrator role.
+        
+        Returns:
+            tuple: (JSON response with new user data, HTTP status code)
+        """
         data = request.get_json()
         new_record, http_code = self._add(data)
         return new_record, http_code

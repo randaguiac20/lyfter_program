@@ -1,3 +1,10 @@
+"""main.py
+
+Main entry point for the Fruit Products REST API application.
+Initializes the Flask app, configures extensions, creates database manager,
+registers all API endpoints, and runs the server with HTTPS.
+"""
+
 from modules.db_manager import DBManager
 from modules.jwt_manager import JWT_Manager
 from flask import Flask, Blueprint
@@ -21,6 +28,12 @@ from modules.config import FILE_PATH
 
 
 def write_token(token):
+    """
+    Write an authentication token to a file.
+    
+    Args:
+        token (str): The JWT token to write to file.
+    """
     with open(f'{FILE_PATH}/token', 'w') as f:
         f.write(token)
 

@@ -1,3 +1,10 @@
+"""shoppping_cart_product_repository.py
+
+Shopping cart product repository for managing cart item records.
+Handles CRUD operations for products added to shopping carts,
+including quantity and checkout status.
+"""
+
 import json
 from flask import (Flask, request, jsonify)
 from datetime import date
@@ -10,13 +17,41 @@ from modules.models import _models
 
 
 class ShoppingCartProductRepository(Repository):
+    """
+    Repository for managing shopping cart product records.
+    
+    Handles items added to shopping carts with relationships
+    to products and carts.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_class: The ShoppingCartProduct model class.
+    """
+    
     def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the shopping cart product repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
         self.model_class = _models.get('shopping_cart_product')
 
     def _get(self, id=None):
+        """
+        Internal method to retrieve shopping cart product records.
+        
+        Args:
+            id (int, optional): Filter by cart product ID.
+            
+        Returns:
+            tuple: (JSON response with cart product data, HTTP status code)
+        """
         model_class = self.model_class
         relationship_list = [model_class.produc, model_class.carts]
         session = self.db_manager.sessionlocal()
@@ -71,6 +106,16 @@ class ShoppingCartProductRepository(Repository):
         return jsonify(shopping_cart_product_list), 200
 
     def _add(self, data):
+        """
+        Internal method to create a new cart product entry.
+        
+        Args:
+            data (dict): Cart product data with cart_id, product_id,
+                        quantity, and checkout status.
+            
+        Returns:
+            tuple: (JSON response with new cart product data, HTTP status code)
+        """
         session = self.db_manager.sessionlocal()
         model_class = self.model_class
 
@@ -92,6 +137,16 @@ class ShoppingCartProductRepository(Repository):
             }), 200
 
     def _update(self, id, new_data):
+        """
+        Internal method to update a cart product entry.
+        
+        Args:
+            id (int): Cart product ID to update.
+            new_data (dict): Fields to update.
+            
+        Returns:
+            tuple: (JSON response, HTTP status code)
+        """
         if not new_data:
             return jsonify({"error": "No fields to update"}), 400
 
@@ -143,6 +198,15 @@ class ShoppingCartProductRepository(Repository):
             return jsonify({"error": str(e)}), 400
 
     def _remove(self, id):
+        """
+        Internal method to delete a cart product entry.
+        
+        Args:
+            id (int): Cart product ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         if not id:
             return jsonify({"error": "Shopping Cart Product ID is required"}), 400
         try:
@@ -174,6 +238,14 @@ class ShoppingCartProductRepository(Repository):
 
     @require_jwt("administrator")
     def post(self):
+        """
+        Create a new cart product entry.
+        
+        Requires administrator role.
+        
+        Returns:
+            tuple: (JSON response with new cart product data, HTTP status code)
+        """
         data = request.get_json()
         new_record, http_code = self._add(data)
         return new_record, http_code
@@ -189,6 +261,17 @@ class ShoppingCartProductRepository(Repository):
 
     @require_jwt("administrator")
     def delete(self, id):
+        """
+        Delete a cart product entry.
+        
+        Requires administrator role.
+        
+        Args:
+            id (int): Cart product ID to delete.
+            
+        Returns:
+            tuple: (JSON response with deletion message, HTTP status code)
+        """
         deleted_record, http_code = self._remove(id)
         return deleted_record, http_code
 
