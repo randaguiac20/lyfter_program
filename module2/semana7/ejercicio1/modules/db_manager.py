@@ -47,11 +47,11 @@ class DBManager:
     def drop_tables(self):
         self.base.metadata.drop_all(self.engine)
 
-    def get_query(self, session, id=None, name=None,
+    def get_query(self, session, model_class, id=None, name=None,
                   email=None, relationships=[]):
         try:
             query= None
-            _query = session.query(self.model_class)
+            _query = session.query(model_class)
             if relationships:
                 for relationship in relationships:
                     query = _query.options(joinedload(relationship))

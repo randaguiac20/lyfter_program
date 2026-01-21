@@ -3,7 +3,6 @@ from flask import (Flask, request, jsonify)
 from datetime import date
 from repositories.repository import Repository
 from modules.models import _models
-from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt
 
 
@@ -13,15 +12,15 @@ class UserRepository(Repository):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
-        self.model_name = self.db_manager._get_model_name('user')
-        self.model_class = self.db_manager._get_model()
+        self.model_class = _models.get('user')
 
     def _get(self, id=None, name=None):
         model_class = self.model_class
         relationship_list = [model_class.contacts, model_class.address, model_class.carts]
         session = self.db_manager.sessionlocal()
-        users = self.db_manager.get_query(session, id=id, name=name,
+        users = self.db_manager.get_query(session, model_class, id=id, name=name,
                                           relationships=relationship_list)
+
         # If querying by ID and no result found
         if id and not users:
             return jsonify({"error": "User not found"}), 404
@@ -105,8 +104,9 @@ class UserRepository(Repository):
             return jsonify({"error": "User ID is required"}), 400
         
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            users = self.db_manager.get_query(session, id=id)
+            users = self.db_manager.get_query(session, model_class, id=id)
             user = users[0]
             if not user:
                 return jsonify({"error": f"User ID {id} has not been found"}), 404
@@ -148,8 +148,9 @@ class UserRepository(Repository):
         if not id:
             return jsonify({"error": "User ID is required"}), 400
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            users = self.db_manager.get_query(session, id=id)
+            users = self.db_manager.get_query(session, model_class, id=id)
             user = users[0]
             if not user:
                 raise ValueError(f"User ID {id} has not been found")

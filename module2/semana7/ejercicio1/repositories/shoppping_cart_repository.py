@@ -2,10 +2,8 @@ import json
 from flask import (Flask, request, jsonify)
 from datetime import date
 from repositories.repository import Repository
-from modules.models import _models
-from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt
-
+from modules.models import _models
 
 
 class ShoppingCartRepository(Repository):
@@ -13,14 +11,13 @@ class ShoppingCartRepository(Repository):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
-        self.model_name = self.db_manager._get_model_name('shopping_cart')
-        self.model_class = self.db_manager._get_model()
+        self.model_class = _models.get('shopping_cart')
 
-    def _get(self, id=None, with_relationships=True):
+    def _get(self, id=None):
         model_class = self.model_class
         relationship_list= [model_class.receipt, model_class.cart_products]
         session = self.db_manager.sessionlocal()
-        shopping_carts = self.db_manager.get_query(session, id=id,
+        shopping_carts = self.db_manager.get_query(session, model_class, id=id,
                                                    relationships=relationship_list)
         
         # If querying by ID and no result found
@@ -32,7 +29,7 @@ class ShoppingCartRepository(Repository):
             shopping_cart_data = {
                 "id": shopping_cart.id,
                 "user_id": shopping_cart.user_id,
-                "status": shopping_cart.status,
+                "status": shopping_cart.status.value if hasattr(shopping_cart.status, 'value') else shopping_cart.status,
                 "purchase_date": shopping_cart.purchase_date,
                 "created_at": str(shopping_cart.created_at) if shopping_cart.created_at else None,
                 "updated_at": str(shopping_cart.updated_at) if shopping_cart.updated_at else None
@@ -83,10 +80,10 @@ class ShoppingCartRepository(Repository):
         return jsonify({
             "id": shooping_cart.id,
             "user_id": shooping_cart.user_id,
-            "status": shooping_cart.status,
+            "status": shooping_cart.status.value if hasattr(shooping_cart.status, 'value') else shooping_cart.status,
             "purchase_date": shooping_cart.purchase_date,
             "created_at": str(shooping_cart.created_at)
-        })
+        }), 200
 
     def _update(self, id, new_data):
         if not new_data:
@@ -95,8 +92,9 @@ class ShoppingCartRepository(Repository):
             return jsonify({"error": "Shopping Cart ID is required"}), 400
         
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            shooping_carts = self.db_manager.get_query(session, id=id)
+            shooping_carts = self.db_manager.get_query(session, model_class, id=id)
             shooping_cart = shooping_carts[0]
             if not shooping_cart:
                 return jsonify({"error": f"Shopping Cart ID {id} has not been found"}), 404
@@ -141,8 +139,9 @@ class ShoppingCartRepository(Repository):
         if not id:
             return jsonify({"error": "Shopping Cart ID is required"}), 400
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            shooping_carts = self.db_manager.get_query(session, id=id)
+            shooping_carts = self.db_manager.get_query(session, model_class, id=id)
             shooping_cart = shooping_carts[0]
             if not shooping_cart:
                 raise ValueError(f"Shopping Cart ID {id} has not been found")

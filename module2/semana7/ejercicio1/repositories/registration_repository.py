@@ -6,6 +6,7 @@ from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt, JWT_Manager
 from modules.secret_keys import password_hash, verify_password
 from modules.config import ALLOWED_ROLES
+from modules.models import _models
 
 
 
@@ -14,14 +15,13 @@ class RegistrationRepository(Repository):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
-        self.model_name = self.db_manager._get_model_name('register_user')
-        self.model_class = self.db_manager._get_model()
+        self.model_class = _models.get('register_user')
     
     def _get(self, id=None, email=None):
         model_class = self.model_class
         relationship_list = [model_class.user]
         session = self.db_manager.sessionlocal()
-        registrations = self.db_manager.get_query(session, id=id, email=email,
+        registrations = self.db_manager.get_query(session, model_class, id=id, email=email,
                                                   relationships=relationship_list)
         
         # If querying by ID and no result found
@@ -94,8 +94,9 @@ class RegistrationRepository(Repository):
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            registrations = self.db_manager.get_query(session, id=id)
+            registrations = self.db_manager.get_query(session, model_class, id=id)
             registration = registrations[0]
             if not registration:
                 return jsonify({"error": f"User ID {id} has not been found"}), 404
@@ -129,8 +130,9 @@ class RegistrationRepository(Repository):
         if not id:
             return jsonify({"error": "Registration ID is required"}), 400
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            registrations = self.db_manager.get_query(session, id=id)
+            registrations = self.db_manager.get_query(session, model_class, id=id)
             registration = registrations[0]
             if not registration:
                 raise ValueError(f"User ID {id} has not been found")

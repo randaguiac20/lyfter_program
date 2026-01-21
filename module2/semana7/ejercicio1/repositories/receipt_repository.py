@@ -3,6 +3,7 @@ from flask import (Flask, request, jsonify)
 from datetime import date
 from repositories.repository import Repository
 from modules.jwt_manager import require_jwt
+from modules.models import _models
 
 
 
@@ -11,14 +12,13 @@ class ReceiptRepository(Repository):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
-        self.model_name = self.db_manager._get_model_name('receipt')
-        self.model_class = self.db_manager._get_model()
+        self.model_class = _models.get('receipt')
 
     def _get(self, id=None):
         model_class = self.model_class
         relationship_list = [model_class.cart]
         session = self.db_manager.sessionlocal()
-        receipts = self.db_manager.get_query(session, id=id,
+        receipts = self.db_manager.get_query(session, model_class, id=id,
                                              relationships=relationship_list)
 
         # If querying by ID and no result found
@@ -83,8 +83,9 @@ class ReceiptRepository(Repository):
             return jsonify({"error": "Receipt ID is required"}), 400
         
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            receipts = self.db_manager.get_query(session, id=id)
+            receipts = self.db_manager.get_query(session, model_class, id=id)
             receipt = receipts[0]
             if not receipt:
                 return jsonify({"error": f"Receipt ID {id} has not been found"}), 404
@@ -128,8 +129,9 @@ class ReceiptRepository(Repository):
         if not id:
             return jsonify({"error": "Receipt ID is required"}), 400
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            receipts = self.db_manager.get_query(session, id=id)
+            receipts = self.db_manager.get_query(session, model_class, id=id)
             receipt = receipts[0]
             if not receipt:
                 raise ValueError(f"Receipt ID {id} has not been found")

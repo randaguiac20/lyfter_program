@@ -38,9 +38,10 @@ class LoginRepository(Repository):
         email = data.get("email")
         password = data.get("password")
         records = self.db_manager.get_by_email(session, email)
-        record = records[0]
+        
         if not records or len(records) == 0:
             return jsonify({"error": "User not found"}), 404
+        record = records[0]
         hashed = record.password
         is_valid = verify_password(hashed, password)
         

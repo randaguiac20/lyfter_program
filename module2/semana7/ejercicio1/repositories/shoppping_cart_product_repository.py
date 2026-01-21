@@ -5,6 +5,7 @@ from repositories.repository import Repository
 from modules.models import _models
 from sqlalchemy.orm import joinedload
 from modules.jwt_manager import require_jwt
+from modules.models import _models
 
 
 
@@ -13,14 +14,13 @@ class ShoppingCartProductRepository(Repository):
         # Ensure MethodView init runs and accept extra args if Flask passes any
         super().__init__(*args, **kwargs)
         self.db_manager = db_manager
-        self.model_name = self.db_manager._get_model_name('shopping_cart_product')
-        self.model_class = self.db_manager._get_model()
+        self.model_class = _models.get('shopping_cart_product')
 
     def _get(self, id=None):
         model_class = self.model_class
         relationship_list = [model_class.produc, model_class.carts]
         session = self.db_manager.sessionlocal()
-        shopping_cart_products = self.db_manager.get_query(session, id=id,
+        shopping_cart_products = self.db_manager.get_query(session, model_class, id=id,
                                                            relationships=relationship_list)
         # If querying by ID and no result found
         if id and not shopping_cart_products:
@@ -99,8 +99,9 @@ class ShoppingCartProductRepository(Repository):
             return jsonify({"error": "Shopping Cart Product ID is required"}), 400
         
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            shopping_cart_products = self.db_manager.get_query(session, id=id)
+            shopping_cart_products = self.db_manager.get_query(session, model_class, id=id)
             shopping_cart_product = shopping_cart_products[0]
             if not shopping_cart_product:
                 return jsonify({"error": f"Shopping Cart Product ID {id} has not been found"}), 404
@@ -145,8 +146,9 @@ class ShoppingCartProductRepository(Repository):
         if not id:
             return jsonify({"error": "Shopping Cart Product ID is required"}), 400
         try:
+            model_class = self.model_class
             session = self.db_manager.sessionlocal()
-            shopping_cart_products = self.db_manager.get_query(session, id=id)
+            shopping_cart_products = self.db_manager.get_query(session, model_class, id=id)
             shopping_cart_product = shopping_cart_products[0]
             if not shopping_cart_product:
                 raise ValueError(f"Shopping Cart Product ID {id} has not been found")
