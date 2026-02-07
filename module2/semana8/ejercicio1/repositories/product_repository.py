@@ -60,6 +60,7 @@ class ProductRepository(Repository):
             # Fallback to database if Redis is down
             cached_data = None
         if cached_data:
+            print("Pull from Redis")
             return jsonify(json.loads(cached_data)), 200
 
         model_class = self.model_class
@@ -150,7 +151,7 @@ class ProductRepository(Repository):
         except redis.RedisError as e:
             print(f"Redis Error: {e}")
         
-        return jsonify(record_list), 200
+        return jsonify(record_list), 201
 
     def _update(self, id, new_data):
         """
@@ -253,7 +254,7 @@ class ProductRepository(Repository):
                     self.cache_manager.delete_pattern("products:list:*")
             except redis.RedisError as e:
                 print(f"Redis Error: {e}")
-                
+
             return jsonify({"message": msg}), 200
         except ValueError as e:
             return jsonify({"error": str(e)}), 404

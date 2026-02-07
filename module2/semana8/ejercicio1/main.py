@@ -111,11 +111,6 @@ if __name__ == '__main__':
     
     # Generate keys
     generate_private_key()
-
-    # Configure cache
-    app.config['CACHE_TYPE'] = CACHE_TYPE
-    app.config['CACHE_DEFAULT_TIMEOUT'] = CACHE_DEFAULT_TIMEOUT
-    cache.init_app(app)
     
     # Initialize database manager
     db_manager = DBManager()

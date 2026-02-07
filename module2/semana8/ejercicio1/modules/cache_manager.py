@@ -16,12 +16,12 @@ class CacheManager:
         if connection_status:
             print("Connection created succesfully")
 
-    def store_data(self, key, value, time_to_live=None):
+    def store_data(self, key, value, ttl=None):
         try:
-            if time_to_live is None:
+            if ttl is None:
                 self.redis_client.set(key, value)
             else:
-                self.redis_client.setex(key, time_to_live, value)
+                self.redis_client.setex(key, ttl, value)
         except redis.RedisError as error:
             print(f"An error ocurred while storing data in Redis: {error}")
 
