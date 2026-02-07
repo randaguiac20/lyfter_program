@@ -53,7 +53,7 @@ class ProductRepository(Repository):
             tuple: (JSON response with product data, HTTP status code)
         """
         # Cache layer with Redis
-        cache_key = f"products:{id}" if id else "products:list:all"
+        cache_key = f"products:{id}" if id else "products:all"
         try:
             cached_data = self.cache_manager.get_data(cache_key)
         except redis.RedisError:
@@ -147,7 +147,7 @@ class ProductRepository(Repository):
             record_list.append(product_data)
         
         try:
-            self.cache_manager.delete_pattern("products:list:*")
+            self.cache_manager.delete_pattern("products:*")
         except redis.RedisError as e:
             print(f"Redis Error: {e}")
         
@@ -206,7 +206,7 @@ class ProductRepository(Repository):
                     self.cache_manager.delete_data(f"products:{id}")
                 else:
                     # Invalidate list caches
-                    self.cache_manager.delete_pattern("products:list:*")
+                    self.cache_manager.delete_pattern("products:*")
             except redis.RedisError as e:
                 print(f"Redis Error: {e}")
 
@@ -251,7 +251,7 @@ class ProductRepository(Repository):
                     self.cache_manager.delete_data(f"products:{id}")
                 else:
                     # Invalidate list caches
-                    self.cache_manager.delete_pattern("products:list:*")
+                    self.cache_manager.delete_pattern("products:*")
             except redis.RedisError as e:
                 print(f"Redis Error: {e}")
 
