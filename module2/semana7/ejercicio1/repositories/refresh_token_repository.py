@@ -1,0 +1,90 @@
+"""refresh_token_repository.py
+
+Refresh token repository for generating new JWT access and refresh tokens.
+Allows authenticated users to obtain new tokens without re-authenticating.
+"""
+
+import json
+from flask import (request, jsonify)
+from repositories.repository import Repository
+from modules.models import _models
+from modules.jwt_manager import require_jwt, JWT_Manager
+
+
+
+class RefreshTokenRepository(Repository):
+    """
+    Repository for handling token refresh operations.
+    
+    Generates new access and refresh tokens for authenticated users.
+    
+    Attributes:
+        db_manager: Database manager instance.
+        model_name: The model name for user registration.
+        model_class: The SQLAlchemy model class.
+    """
+    
+    def __init__(self, db_manager, *args, **kwargs):
+        """
+        Initialize the refresh token repository.
+        
+        Args:
+            db_manager: Database manager instance.
+            *args: Additional positional arguments.
+            **kwargs: Additional keyword arguments.
+        """
+        # Ensure MethodView init runs and accept extra args if Flask passes any
+        super().__init__(*args, **kwargs)
+        self.db_manager = db_manager
+        self.model_name = self.db_manager._get_model_name('register_user')
+        self.model_class = self.db_manager._get_model()
+
+    @require_jwt(["administrator", "client"])
+    def post(self):
+        """
+        Generate new access and refresh tokens.
+        
+        Extracts user info from current token and generates new token pair.
+        Requires valid JWT token with 'administrator' or 'client' role.
+        
+        Returns:
+            tuple: JSON response with email, access_token, refresh_token,
+                   and created_at, with HTTP status code.
+        """
+        model_class = self.model_class
+        session = self.db_manager.sessionlocal()
+        
+        _token = request.headers.get("Authorization")
+        _token = _token.replace("Bearer ","")
+        if not _token:
+            return jsonify({"error": "No token provided"}), 400
+        
+        jwt_manager = JWT_Manager()
+        decoded = jwt_manager.decode(_token)
+        email = decoded.get("email")
+        records = self.db_manager.get_by_email(session, email)
+        record = records[0]
+        if not records or len(records) == 0:
+            return jsonify({"error": "User not found"}), 404
+        token_data = {
+                "id": record.id,
+                "email": record.email,
+                "role": record.role
+            }
+        access_token = jwt_manager.encode(token_data)
+        refresh_token = jwt_manager.encode_refresh_token(email=email)
+        return jsonify({
+            "email": record.email,
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "created_at": str(record.created_at)
+        })
+
+    def get(self):
+        pass
+
+    def put(self):
+        pass
+
+    def delete(self):
+        pass
