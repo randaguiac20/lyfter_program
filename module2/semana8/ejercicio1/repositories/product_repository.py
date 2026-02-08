@@ -101,7 +101,7 @@ class ProductRepository(Repository):
                 product_data['cart_products'] = cart_list
             product_list.append(product_data)         
         
-        self.cache_manager.store_data(cache_key, json.dumps(product_list), ttl=10)
+        self.cache_manager.store_data(cache_key, json.dumps(product_list), ttl=300)
         # Return single object if querying by ID, otherwise return list
         if id and product_list:
             return jsonify(product_list[0]), 200
