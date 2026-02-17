@@ -26,6 +26,8 @@ from dotenv import load_dotenv
 # Load .env file
 load_dotenv()
 
+# Testing mode
+TESTING = os.getenv("TESTING", "false").lower() == "true"
 
 # Now use os.getenv() to read the variables
 DB_NAME = os.getenv("DB_NAME")
@@ -44,7 +46,7 @@ REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
 ALLOWED_ROLES = ["client", "administrator"]
 
 # SCHEMA and ORM Base
-_metadata = MetaData(schema=SCHEMA)
+_metadata = MetaData(schema=None if TESTING else SCHEMA)
 Base = declarative_base(metadata=_metadata)
 
 # DEFAULT ADMIN

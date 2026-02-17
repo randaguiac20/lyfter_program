@@ -30,14 +30,18 @@ class DBManager:
         _models (dict): Dictionary mapping model names to model classes.
     """
     
-    def __init__(self, model_name=None):
+    def __init__(self, model_name=None, db_uri=None):
         """
         Initialize the database manager.
-        
+
         Args:
             model_name (str, optional): Name of the default model to use.
+            db_uri (str, optional): Database URI. Defaults to PostgreSQL from .env.
         """
-        self.db_uri = f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+        if db_uri:
+            self.db_uri = db_uri
+        else:
+            self.db_uri = f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
         self.engine = create_engine(self.db_uri, echo=False)
         self.schema = SCHEMA
         self.base = Base
@@ -46,7 +50,8 @@ class DBManager:
         self._session = scoped_session(self.sessionlocal)
         self._models = _models
         self._model_name = model_name
-        self._ensure_schema()
+        if self.engine.dialect.name == 'postgresql':
+            self._ensure_schema()
 
     def _get_model_name(self, model_name):
         """

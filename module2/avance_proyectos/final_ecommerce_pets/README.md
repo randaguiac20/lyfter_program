@@ -16,10 +16,10 @@ REST API for a pet shop e-commerce platform built with Flask, PostgreSQL, Redis,
 cd final_ecommerce_pets
 ```
 
-### 2. Create a virtual environment
+### 2. Create and activate the virtual environment
 
 ```bash
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate   # macOS/Linux
 ```
 
@@ -28,6 +28,8 @@ source venv/bin/activate   # macOS/Linux
 ```bash
 pip install flask sqlalchemy psycopg2-binary python-dotenv pyjwt cryptography werkzeug redis pytest
 ```
+
+> **Note:** Always activate the venv before running the app or tests. All commands below assume the venv is active.
 
 ### 4. Configure environment variables
 
@@ -69,6 +71,7 @@ RSA keys (`private.pem`, `public.pem`) and the admin token are generated automat
 ## Running the App
 
 ```bash
+source venv/bin/activate
 python e_main.py
 ```
 
@@ -123,51 +126,26 @@ Authorization: Bearer <your_token>
 
 ## Running Tests
 
-See `doc/TESTING_GUIDE.md` for the full setup guide. Below is the quick-start summary.
-
-### 1. Apply infrastructure changes
-
-Two files need modification before tests can run:
-
-**`modules/config.py`** — Add after `load_dotenv()`:
-```python
-TESTING = os.getenv("TESTING", "false").lower() == "true"
-```
-Then change the MetaData line to:
-```python
-_metadata = MetaData(schema=None if TESTING else SCHEMA)
-```
-
-**`modules/db_manager.py`** — Add `db_uri` parameter to `__init__`:
-```python
-def __init__(self, model_name=None, db_uri=None):
-    if db_uri:
-        self.db_uri = db_uri
-    else:
-        self.db_uri = f'postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-    # ...
-    if self.engine.dialect.name == 'postgresql':
-        self._ensure_schema()
-```
-
-### 2. Create test files
-
-```
-test/__init__.py       # Empty file
-test/conftest.py       # Fixtures and mocks (see TESTING_GUIDE.md Part 2)
-test/test_api.py       # Test cases (see TESTING_GUIDE.md Part 3)
-run_tests.py           # Runner script (see TESTING_GUIDE.md Part 4)
-```
-
-### 3. Run
+Tests use an in-memory SQLite database and mocked Redis — no external services needed.
 
 ```bash
-# Using the runner script
+source venv/bin/activate
+
+# Using the runner script (recommended)
 python run_tests.py
 
 # Or directly with pytest
 TESTING=true python -m pytest test/ -v
+
+# Run only success or failure tests
+TESTING=true python -m pytest test/test_api.py::TestAPISuccess -v
+TESTING=true python -m pytest test/test_api.py::TestAPIFailure -v
+
+# Run a single test
+TESTING=true python -m pytest test/test_api.py::TestAPISuccess::test_login_success -v
 ```
+
+The test suite includes 10 tests (5 success + 5 failure). See `doc/TESTING_GUIDE.md` for full details on the test architecture and `doc/CODE_FIXES.md` for the infrastructure changes that enable testing.
 
 ## Project Structure
 
@@ -175,8 +153,9 @@ TESTING=true python -m pytest test/ -v
 final_ecommerce_pets/
 ├── e_main.py                  # App entry point
 ├── docker-compose.yml         # PostgreSQL container
-├── .env                       # Environment variables (not committed)
 ├── run_tests.py               # Test runner script
+├── .env                       # Environment variables (not committed)
+├── venv/                      # Python virtual environment (not committed)
 ├── modules/
 │   ├── config.py              # App configuration
 │   ├── db_manager.py          # SQLAlchemy database manager
@@ -198,11 +177,12 @@ final_ecommerce_pets/
 │   ├── shoppping_cart_product_repository.py
 │   └── user_contact_repository.py
 ├── test/
-│   ├── conftest.py            # Test fixtures
-│   └── test_api.py            # Unit tests
+│   ├── conftest.py            # Test fixtures and mocks
+│   └── test_api.py            # Unit tests (5 success + 5 failure)
 ├── secrets/                   # RSA keys and token (auto-generated)
 ├── certs/                     # SSL certificates (auto-generated)
 └── doc/
     ├── CACHING_STRATEGY.md    # Cache design decisions
+    ├── CODE_FIXES.md          # Infrastructure fixes for testability
     └── TESTING_GUIDE.md       # Full testing setup guide
 ```

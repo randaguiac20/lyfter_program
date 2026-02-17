@@ -1,1 +1,14 @@
 ejercicio1/secrets/token
+
+# Virtual environment
+venv/
+
+# Environment variables
+.env
+
+# Auto-generated
+secrets/
+certs/
+__pycache__/
+*.pyc
+.pytest_cache/
