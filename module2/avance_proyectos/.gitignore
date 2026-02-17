@@ -131,6 +131,11 @@ file.json
 *.crt
 *.key
 
+# Secrets
+token
+../token
+../../token
+
 # Directories like data
 db/
 data/

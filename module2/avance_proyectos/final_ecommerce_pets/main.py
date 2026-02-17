@@ -7,9 +7,10 @@ registers all API endpoints, and runs the server with HTTPS.
 
 from modules.db_manager import DBManager
 from modules.jwt_manager import JWT_Manager
-from flask import Flask
-from modules.config import DEFAULT_ADMIN
+from flask import Flask, Blueprint
+from modules.config import CACHE_TYPE, CACHE_DEFAULT_TIMEOUT, DEFAULT_ADMIN
 from modules.https_config import ssl_context
+from modules.cache_config import cache
 from repositories.user_repository import UserRepository
 from repositories.registration_repository import RegistrationRepository
 from repositories.login_repository import LoginRepository
@@ -21,6 +22,7 @@ from repositories.receipt_repository import ReceiptRepository
 from repositories.shoppping_cart_product_repository import ShoppingCartProductRepository
 from repositories.buy_fruits_repository import BuyFruitRepository
 from modules.secret_keys import generate_private_key, password_hash
+from modules.models import _models
 from modules.config import FILE_PATH
 
 
