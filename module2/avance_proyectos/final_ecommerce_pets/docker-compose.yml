@@ -1,0 +1,41 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: e_comerce_pets
+    environment:
+      POSTGRES_DB: ${DB_NAME:-lyfter}
+      POSTGRES_USER: ${DB_USERNAME:-randall_aguilar}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-lyfter_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${DB_PORT}:5432"
+    networks:
+      - lifter-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-randall_aguilar} -d ${DB_NAME:-lyfter}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: e_comerce_pets_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - lifter-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  lifter-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
