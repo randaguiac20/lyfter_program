@@ -84,13 +84,14 @@ class ReceiptRepository(Repository):
             }
             # Include related cart data if loaded
             if hasattr(receipt, 'cart') and receipt.cart:
-                receipt_data["receipt"] = {
-                    "cart_id": receipt.cart.cart_id,
-                    "product_id": receipt.cart.product_id,
-                    "quantity": receipt.cart.quantity,
-                    "checkout": receipt.cart.checkout,
-                    "created_at": str(receipt.cart.created_at),
-                    "updated_at": str(receipt.cart.updated_at)
+                cart = receipt.cart
+                receipt_data["cart"] = {
+                    "id": cart.id,
+                    "user_id": cart.user_id,
+                    "status": cart.status.value if hasattr(cart.status, 'value') else cart.status,
+                    "purchase_date": str(cart.purchase_date) if cart.purchase_date else None,
+                    "created_at": str(cart.created_at) if cart.created_at else None,
+                    "updated_at": str(cart.updated_at) if cart.updated_at else None
                 }
 
             receipts_list.append(receipt_data)
@@ -195,7 +196,7 @@ class ReceiptRepository(Repository):
                 "cart_id": updated_receipt.cart_id,
                 "payment_method": updated_receipt.payment_method,
                 "total_amount": updated_receipt.total_amount,
-                "created_at": str(updated_receipt.created_at)
+                "updated_at": str(updated_receipt.updated_at)
             }), 200
             
         except ValueError as e:

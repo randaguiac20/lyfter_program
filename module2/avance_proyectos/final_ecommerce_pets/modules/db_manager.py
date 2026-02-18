@@ -45,9 +45,10 @@ class DBManager:
         self.engine = create_engine(self.db_uri, echo=False)
         self.schema = SCHEMA
         self.base = Base
-        self.sessionlocal = sessionmaker(bind=self.engine)
-        self.session = self.sessionlocal()
-        self._session = scoped_session(self.sessionlocal)
+        self._sessionmaker = sessionmaker(bind=self.engine)
+        self._session = scoped_session(self._sessionmaker)
+        self.sessionlocal = self._session  # All repos use scoped session (cleaned up by teardown)
+        self.session = self._session()
         self._models = _models
         self._model_name = model_name
         if self.engine.dialect.name == 'postgresql':
@@ -141,14 +142,11 @@ class DBManager:
             Exception: If query execution fails.
         """
         try:
-            query= None
             _query = session.query(model_class)
             if relationships:
                 for relationship in relationships:
-                    query = _query.options(joinedload(relationship))
-            if not query:
-                query = _query
-                print("No relationship found for this query")
+                    _query = _query.options(joinedload(relationship))
+            query = _query
             if id:
                 try:
                     id = int(id)

@@ -166,7 +166,7 @@ class AddressRepository(Repository):
             addresses = self.db_manager.get_query(session, model_class, id=id)
             address = addresses[0]
             if not address:
-                return jsonify({"error": f"User ID {id} has not been found"}), 404
+                return jsonify({"error": f"Address ID {id} has not been found"}), 404
             
             for column in address.__table__.columns:
                 field_name = column.name

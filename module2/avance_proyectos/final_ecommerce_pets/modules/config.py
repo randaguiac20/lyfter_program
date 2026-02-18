@@ -39,8 +39,8 @@ SCHEMA = os.getenv("SCHEMA")
 
 # Redis
 REDIS_HOST = os.getenv("REDIS_HOST")
-REDIS_PORT = os.getenv("REDIS_PORT")  # Note: You have REDIS_HOST twice in .env
-REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD") or None
 
 # Roles
 ALLOWED_ROLES = ["client", "administrator"]

@@ -53,7 +53,7 @@ class ShoppingCartProductRepository(Repository):
             tuple: (JSON response with cart product data, HTTP status code)
         """
         model_class = self.model_class
-        relationship_list = [model_class.product, model_class.carts]
+        relationship_list = [model_class.product, model_class.cart]
         session = self.db_manager.sessionlocal()
         shopping_cart_products = self.db_manager.get_query(session, model_class, id=id,
                                                            relationships=relationship_list)
@@ -85,18 +85,15 @@ class ShoppingCartProductRepository(Repository):
                 }
             # Include related cart data if loaded
             if hasattr(shopping_cart_product, 'cart') and shopping_cart_product.cart:
-                cart_list = []
-                for cart in shopping_cart_product.cart:
-                    cart_data = {
-                        "cart_id": cart.id,
-                        "user_id": cart.user_id,
-                        "status": cart.status,
-                        "purchase_date": cart.purchase_date,
-                        "created_at": str(cart.created_at),
-                        "updated_at": str(cart.updated_at)
-                    }
-                    cart_list.append(cart_data)
-                scp_data["contacts"] = cart_list    
+                cart = shopping_cart_product.cart
+                scp_data["cart"] = {
+                    "cart_id": cart.id,
+                    "user_id": cart.user_id,
+                    "status": cart.status.value if hasattr(cart.status, 'value') else cart.status,
+                    "purchase_date": str(cart.purchase_date) if cart.purchase_date else None,
+                    "created_at": str(cart.created_at) if cart.created_at else None,
+                    "updated_at": str(cart.updated_at) if cart.updated_at else None
+                }
             shopping_cart_product_list.append(scp_data)
         
         # Return single object if querying by ID, otherwise return list

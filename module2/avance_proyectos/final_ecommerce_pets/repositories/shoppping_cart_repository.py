@@ -177,11 +177,10 @@ class ShoppingCartRepository(Repository):
             
             return jsonify({
                 "id": updated_scp.id,
-                "cart_id": updated_scp.cart_id,
-                "product_id": updated_scp.product_id,
-                "quantity": updated_scp.quantity,
-                "checkout": updated_scp.checkout,
-                "created_at": str(updated_scp.created_at)
+                "user_id": updated_scp.user_id,
+                "status": updated_scp.status.value if hasattr(updated_scp.status, 'value') else updated_scp.status,
+                "purchase_date": updated_scp.purchase_date,
+                "updated_at": str(updated_scp.updated_at)
             }), 200
             
         except ValueError as e:
@@ -232,26 +231,25 @@ class ShoppingCartRepository(Repository):
         return result, 200
 
     @require_jwt(["administrator", "client"])
-    def post(self, data):
+    def post(self):
         """
         Create a new shopping cart.
-        
+
         Requires administrator or client role.
-        
-        Args:
-            data (dict): Cart data.
-            
+
         Returns:
             tuple: (JSON response with new cart data, HTTP status code)
         """
+        data = request.get_json()
         new_record, http_code = self._add(data)
         return new_record, http_code
 
     @require_jwt(["administrator", "client"])
-    def put(self, id, data):
+    def put(self, id):
         """
         Update Shopping Cart information (e.g., status or purchase_date).
         """
+        data = request.get_json()
         updated_record, http_code = self._update(id, data)
         return updated_record, http_code
 

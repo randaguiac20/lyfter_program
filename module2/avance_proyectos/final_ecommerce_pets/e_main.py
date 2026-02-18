@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     # Create token
     jwt = JWT_Manager()
-    token = jwt.encode(data)
+    token = jwt.encode({"email": data["email"], "role": data["role"]})
     write_token(token)
 
     # Register all API endpoints

@@ -145,7 +145,8 @@ class UserContact(Base):
             f"{self.user.first_name} {self.user.last_name}"
             if self.user else "No user"
         )
-        return f"User contact id={self.id}, user_name='{user_name}', email='{self.user.email}'"
+        email = self.user.email if self.user else "No email"
+        return f"User contact id={self.id}, user_name='{user_name}', email='{email}'"
 
 
 class Address(Base):

@@ -19,6 +19,20 @@ services:
       timeout: 5s
       retries: 5
 
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: e_comerce_pets_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - lifter-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 networks:
   lifter-network:
     driver: bridge

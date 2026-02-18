@@ -141,7 +141,6 @@ class UserRepository(Repository):
         session = self.db_manager.sessionlocal()
         model_class = self.model_class
 
-        data = request.get_json()
         _user = model_class(**data)
         user = self.db_manager.insert(session, _user)
         

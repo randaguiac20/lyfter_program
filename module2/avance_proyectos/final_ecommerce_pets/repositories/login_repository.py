@@ -64,7 +64,7 @@ class LoginRepository(Repository):
         return jsonify({
             "email": record.email,
             "created_at": str(record.created_at)
-        })
+        }), 200
     
     def post(self):
         """
