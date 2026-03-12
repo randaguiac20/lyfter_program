@@ -1,10 +1,16 @@
-"""main.py
-
-Main entry point for the Fruit Products REST API application.
-Initializes the Flask app, configures extensions, creates database manager,
-registers all API endpoints, and runs the server with HTTPS.
 """
+main.py
 
+Entry point for the E-Commerce Mascotas API application.
+Initializes the Flask app, configures extensions, sets up the database and admin user,
+registers all API endpoints, and runs the server with SSL.
+
+Modules imported:
+    - Flask and related extensions
+    - API endpoint classes for registration, products, users, sales, inventory, and login
+    - Data manager for database operations
+    - Configuration modules for cache, authentication, and SSL
+"""
 from modules.db_manager import DBManager
 from modules.jwt_manager import JWT_Manager
 from flask import Flask
@@ -19,7 +25,7 @@ from repositories.product_repository import ProductRepository
 from repositories.shoppping_cart_repository import ShoppingCartRepository
 from repositories.receipt_repository import ReceiptRepository
 from repositories.shoppping_cart_product_repository import ShoppingCartProductRepository
-from repositories.buy_fruits_repository import BuyFruitRepository
+from repositories.user_contact_repository import UserContactRepository
 from modules.secret_keys import generate_private_key, password_hash
 from modules.config import FILE_PATH
 
@@ -35,14 +41,14 @@ def write_token(token):
     with open(f'{FILE_PATH}/token', 'w') as f:
         f.write(token)
 
+
 def register_api(app, name, db_manager):
     """
     Registers all API endpoints with the Flask app.
 
     Args:
         app (Flask): The Flask application instance.
-        name (str): The base path for all endpoints (e.g., 'fruit_products').
-        db_manager (DB_Manager): Database manager instance.
+        name (str): The base path for all endpoints (e.g., 'pet_shop').
 
     Returns:
         None
@@ -50,8 +56,8 @@ def register_api(app, name, db_manager):
     # Token refresh endpoint
     refresh_token_repo = RefreshTokenRepository.as_view("refresh-token", db_manager)
     app.add_url_rule(f"/{name}/refresh-token", view_func=refresh_token_repo, methods=["POST"])
-
-    # login and me endpoints
+    
+# login and me endpoints
     login_repo = LoginRepository.as_view("login", db_manager)
     app.add_url_rule(f"/{name}/login", view_func=login_repo, methods=["POST"])
     app.add_url_rule(f"/{name}/me", view_func=login_repo, methods=["GET"])
@@ -91,18 +97,17 @@ def register_api(app, name, db_manager):
     app.add_url_rule(f"/{name}/shopping_cart_products", view_func=shoping_cart_product_repo, methods=["GET", "POST"])
     app.add_url_rule(f"/{name}/shopping_cart_products/<id>", view_func=shoping_cart_product_repo, methods=["GET", "PUT", "DELETE"])
 
-    # buy fruits endpoints
-    buy_fruit_repo = BuyFruitRepository.as_view("buy-fruits", db_manager)
-    app.add_url_rule(f"/{name}/buy-fruits", view_func=buy_fruit_repo, methods=["GET", "POST"])
-    app.add_url_rule(f"/{name}/buy-fruits/<id>", view_func=buy_fruit_repo, methods=["GET", "PUT", "DELETE"])
+    # user contact endpoints
+    user_contact_repo = UserContactRepository.as_view("user_contacts", db_manager)
+    app.add_url_rule(f"/{name}/user_contacts", view_func=user_contact_repo, methods=["GET", "POST"])
+    app.add_url_rule(f"/{name}/user_contacts/<id>", view_func=user_contact_repo, methods=["GET", "PUT", "DELETE"])
 
 
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     """
     Main entry point for the application.
-    Initializes the Flask app, configures extensions, creates database manager,
-    registers all API endpoints, sets up session teardown, and runs the server with SSL.
+    Initializes the Flask app, configures extensions, creates necessary directories and admin user,
+    registers all API endpoints, and runs the server with SSL.
     """
     # Initialize Flask app
     app = Flask(__name__)
@@ -142,11 +147,11 @@ if __name__ == '__main__':
 
     # Create token
     jwt = JWT_Manager()
-    token = jwt.encode(data)
+    token = jwt.encode({"email": data["email"], "role": data["role"]})
     write_token(token)
 
     # Register all API endpoints
-    register_api(app, "fruit_products", db_manager)
+    register_api(app, "e_commerce_pets", db_manager)
     
     # Run the application with SSL
     app.run(
