@@ -1,0 +1,53 @@
+/* ── Reset ── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: lightgray;
+}
+
+/* ── Page wrapper ── */
+.page-wrapper {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 0 32px;
+  font-family: sans-serif;
+}
+
+/* ── Global container ── */
+.global-container {
+  display: flex;
+  align-items: center;
+  padding: 16px 0;
+  background-color: lightgray;
+}
+
+/* ── Title line ── */
+
+.title-line {
+  flex: 1;
+  border: none;
+  border-top: 5px solid white;
+  margin: 5px;
+}
+
+.date {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* -- Table --*/
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 12px 16px;
+  text-align: left;
+}
