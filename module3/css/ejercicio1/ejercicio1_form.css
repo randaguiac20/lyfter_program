@@ -1,0 +1,52 @@
+.global-container{
+  border: 15px solid blue;
+  display: flex;
+  padding: 25px 40px 200px 25px;
+  align-items: left;
+  justify-content: left;
+}
+.text-container{
+  width: 100%;
+}
+.text-case{
+  color: black;
+  font-size: 1.5em;
+  text-align: left;
+  font-family: sans-serif;
+}
+.text-case-p{
+  color: gray;
+  font-size: 1em;
+  text-align: left;
+  font-family: sans-serif;
+}
+
+label.label-style {
+  color: gray;
+  font-size: 1em;
+  text-align: left;
+  font-family: sans-serif;
+}
+
+
+.button-container{
+  display: flex;
+  justify-content: left;
+  #background-color: blanchedalmond;
+  padding: none;
+}
+.my-button{
+  border: none;
+  background: blue;
+  cursor: pointer;
+  border-radius: 10px;
+  padding: 20px 75px;
+  font-size: 1em;
+  color: white;
+}
+.my-button:hover{
+  background: dodgerblue;
+}
+.my-button:active{
+  background: cornflowerblue;
+}
