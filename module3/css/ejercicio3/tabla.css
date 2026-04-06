@@ -11,7 +11,7 @@ body {
 
 /* ── Page wrapper ── */
 .page-wrapper {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 40px auto;
   padding: 0 32px;
   font-family: sans-serif;
@@ -41,13 +41,152 @@ body {
   white-space: nowrap;
 }
 
-/* -- Table --*/
+/* ── Table ── */
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-th {
-  padding: 12px 16px;
+/* Header row */
+thead tr {
+  background-color: #3538cd;
+  color: white;
+}
+
+.th-this-week {
+  padding: 14px 16px;
   text-align: left;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.th-metric {
+  padding: 10px 16px;
+  text-align: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.info-icon {
+  font-size: 0.7rem;
+  opacity: 0.8;
+}
+
+/* Data row */
+tbody tr {
+  background-color: white;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+/* Rank number cell */
+.td-rank {
+  background-color: #111122;
+  color: white;
+  font-size: 2rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 0 24px;
+  width: 70px;
+  vertical-align: middle;
+}
+
+/* Album art cell */
+.td-art {
+  padding: 0;
+  width: 150px;
+}
+
+.album-art {
+  width: 150px;
+  height: 120px;
+  background-color: #5a7a55;
+}
+
+/* Song info cell */
+.td-info {
+  padding: 24px 20px;
+  vertical-align: middle;
+}
+
+.badge-new {
+  display: inline-block;
+  background-color: #f5c242;
+  color: #111;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.badge-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.badge-arrow--down {
+  background-color: #c0392b;
+  color: white;
+}
+
+.badge-arrow--neutral {
+  background-color: #aab0bb;
+  color: white;
+}
+
+.album-art--2 { background-color: #6a7fb5; }
+.album-art--3 { background-color: #b5a06a; }
+.album-art--4 { background-color: #7a5a8a; }
+
+.song-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.song-artist {
+  font-size: 0.85rem;
+  color: #444;
+}
+
+/* Metric cells */
+.td-metric {
+  background-color: #f5f5f5;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #444;
+  vertical-align: middle;
+  padding: 16px;
+  border-left: 1px solid #e8e8e8;
+}
+
+.td-metric.bold {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #111;
+}
+
+/* Award icon */
+.award-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 2px solid #111;
+  border-radius: 50%;
+  font-size: 1rem;
 }
