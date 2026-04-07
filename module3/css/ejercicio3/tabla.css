@@ -1,68 +1,89 @@
-/* ── Reset ── */
+/* ══════════════════════════════════════
+   REMOVE DEFAULT BROWSER STYLES
+   Every browser adds its own spacing by default.
+   This block removes all of that so we start fresh.
+   ══════════════════════════════════════ */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  margin: 0;               /* no space OUTSIDE elements */
+  padding: 0;              /* no space INSIDE elements */
+  box-sizing: border-box;  /* padding/border count INSIDE the width, not added on top */
 }
 
+/* The whole page background color */
 body {
   background-color: lightgray;
 }
 
-/* ── Page wrapper ── */
-.page-wrapper {
-  max-width: 1300px;
-  margin: 40px auto;
-  padding: 0 32px;
+/* ══════════════════════════════════════
+   WHOLE PAGE
+   This box holds everything on the page.
+   It limits the max width so on big screens
+   the content doesn't stretch too wide.
+   ══════════════════════════════════════ */
+.whole-page {
+  max-width: 1300px;   /* never wider than 1300px */
+  margin: 40px auto;   /* 40px gap top/bottom, auto = centered left/right */
+  padding: 0 32px;     /* 32px breathing room on the left and right edges */
   font-family: sans-serif;
 }
 
-/* ── Global container ── */
-.global-container {
-  display: flex;
-  align-items: center;
-  padding: 16px 0;
+/* ══════════════════════════════════════
+   TOP TITLE BAR
+   The row that shows: Billboard Hot 100™ ── WEEK OF...
+   display:flex puts all 3 items (title, line, date) side by side in one row.
+   ══════════════════════════════════════ */
+.top-title-bar {
+  display: flex;          /* put children side by side horizontally */
+  align-items: center;    /* vertically center them with each other */
+  padding: 16px 0;        /* space above and below the title bar */
   background-color: lightgray;
 }
 
-/* ── Title line ── */
-
-.title-line {
-  flex: 1;
-  border: none;
-  border-top: 5px solid white;
-  margin: 5px;
+/* The white horizontal line between the title and the date.
+   flex:1 means "take up ALL the leftover space" — that's how it stretches. */
+.divider-line {
+  flex: 1;                  /* grow to fill all available space */
+  border: none;             /* remove default hr border */
+  border-top: 5px solid white; /* our custom white line */
+  margin: 5px;              /* small gap around the line */
 }
 
-.date {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 1px;
-  white-space: nowrap;
+/* The small text on the right: WEEK OF FEBRUARY 10, 2024 */
+.week-label {
+  font-size: 0.7rem;      /* small text */
+  font-weight: 600;       /* semi-bold */
+  letter-spacing: 1px;    /* small gaps between letters */
+  white-space: nowrap;    /* keep it on one line, never wrap */
 }
 
-/* ── Table ── */
+/* ══════════════════════════════════════
+   THE TABLE
+   width:100% = stretch to fill its container.
+   border-collapse:collapse = no double borders between cells.
+   ══════════════════════════════════════ */
 table {
   width: 100%;
   border-collapse: collapse;
 }
 
-/* Header row */
+/* ── HEADER ROW (blue row at the top of the table) ── */
 thead tr {
-  background-color: #3538cd;
-  color: white;
+  background-color: #3538cd; /* blue background */
+  color: white;              /* white text */
 }
 
-.th-this-week {
+/* The "THIS WEEK" cell on the left of the header */
+.header-left {
   padding: 14px 16px;
   text-align: left;
   font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+  font-weight: 700;           /* bold */
+  letter-spacing: 1.5px;     /* spaced out letters */
+  text-transform: uppercase;  /* force ALL CAPS */
 }
 
-.th-metric {
+/* The stat columns: AWARD, LAST WEEK, PEAK POS., WKS ON CHART */
+.header-stat {
   padding: 10px 16px;
   text-align: center;
   font-size: 0.65rem;
@@ -72,50 +93,66 @@ thead tr {
   white-space: nowrap;
 }
 
-.info-icon {
+/* The little ℹ symbol next to AWARD */
+.small-info-symbol {
   font-size: 0.7rem;
-  opacity: 0.8;
+  opacity: 0.8; /* slightly transparent */
 }
 
-/* Data row */
+/* ── DATA ROWS (the white rows with each song) ── */
 tbody tr {
   background-color: white;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid #e8e8e8; /* thin gray line between rows */
 }
 
-/* Rank number cell */
-.td-rank {
-  background-color: #111122;
+/* ── THE RANK NUMBER (1, 2, 3, 4...) on the dark left cell ── */
+.rank-number {
+  background-color: #111122; /* very dark navy background */
   color: white;
-  font-size: 2rem;
-  font-weight: 900;
+  font-size: 2rem;           /* big number */
+  font-weight: 900;          /* heaviest/thickest font weight */
   text-align: center;
   padding: 0 24px;
   width: 70px;
-  vertical-align: middle;
+  vertical-align: middle;    /* center vertically inside the cell */
 }
 
-/* Album art cell */
-.td-art {
-  padding: 0;
+/* ── THE ALBUM COVER cell ── */
+.cover-art-cell {
+  padding: 0;    /* no spacing so image touches the edges */
   width: 150px;
 }
 
-.album-art {
+/* The colored box representing album art (replace with <img> for real photos) */
+.cover-art {
   width: 150px;
   height: 120px;
-  background-color: #5a7a55;
+  background-color: #5a7a55; /* placeholder green — row 1 */
+  display: block; /* removes the small gap below inline images */
 }
 
-/* Song info cell */
-.td-info {
+/* Row 1 is taller/bigger than the rest — the featured song gets more space */
+.cover-art--song1 {
+  width: 250px;
+  height: 200px;   /* taller than other rows (120px) — makes row 1 stand out */
+  object-fit: cover; /* crop the image to fill the box without stretching */   
+}
+
+/* Different placeholder colors for each song's album art */
+.cover-art--song2 { background-color: #6a7fb5; } /* blue */
+.cover-art--song3 { background-color: #b5a06a; } /* gold */
+.cover-art--song4 { background-color: #7a5a8a; } /* purple */
+
+/* ── THE SONG DETAILS cell (badge + song name + artist name) ── */
+.song-details-cell {
   padding: 24px 20px;
   vertical-align: middle;
 }
 
-.badge-new {
-  display: inline-block;
-  background-color: #f5c242;
+/* Yellow "NEW" badge shown for brand new songs */
+.new-badge {
+  display: inline-block;     /* so padding works on it */
+  background-color: #f5c242; /* yellow */
   color: #111;
   font-size: 0.65rem;
   font-weight: 800;
@@ -124,69 +161,71 @@ tbody tr {
   margin-bottom: 6px;
 }
 
-.badge-arrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Circle badge with an arrow (↓ going down, → staying same) */
+.trend-badge {
+  display: inline-flex;       /* use flex to center the arrow inside the circle */
+  align-items: center;        /* center vertically */
+  justify-content: center;    /* center horizontally */
   width: 28px;
   height: 28px;
-  border-radius: 50%;
+  border-radius: 50%;         /* 50% = makes it a perfect circle */
   font-size: 0.85rem;
   font-weight: 900;
   margin-bottom: 6px;
 }
 
-.badge-arrow--down {
-  background-color: #c0392b;
+/* Red circle = song went DOWN in the chart */
+.trend-badge--going-down {
+  background-color: #c0392b; /* red */
   color: white;
 }
 
-.badge-arrow--neutral {
-  background-color: #aab0bb;
+/* Gray circle = song stayed in the SAME position */
+.trend-badge--staying-same {
+  background-color: #aab0bb; /* gray */
   color: white;
 }
 
-.album-art--2 { background-color: #6a7fb5; }
-.album-art--3 { background-color: #b5a06a; }
-.album-art--4 { background-color: #7a5a8a; }
-
-.song-title {
+/* The song title text (bold, bigger) */
+.song-name {
   font-size: 1.1rem;
   font-weight: 800;
   color: #111;
   margin-bottom: 4px;
 }
 
-.song-artist {
+/* The artist name text (smaller, gray) */
+.artist-name {
   font-size: 0.85rem;
   color: #444;
 }
 
-/* Metric cells */
-.td-metric {
-  background-color: #f5f5f5;
+/* ── STAT CELLS: the light gray columns on the right ── */
+.stat-cell {
+  background-color: #f5f5f5; /* light gray */
   text-align: center;
   font-size: 0.9rem;
   color: #444;
   vertical-align: middle;
   padding: 16px;
-  border-left: 1px solid #e8e8e8;
+  border-left: 1px solid #e8e8e8; /* thin line separating columns */
 }
 
-.td-metric.bold {
+/* When a stat needs to be shown as a BIG bold number */
+.stat-cell.big-number {
   font-size: 1.4rem;
   font-weight: 900;
   color: #111;
 }
 
-/* Award icon */
-.award-icon {
+/* The star ★ inside a circle (award icon) */
+.star-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
-  border: 2px solid #111;
-  border-radius: 50%;
+  border: 2px solid #111;  /* circle border */
+  border-radius: 50%;      /* makes the border a circle */
   font-size: 1rem;
 }
