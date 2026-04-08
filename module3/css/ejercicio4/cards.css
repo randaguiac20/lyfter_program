@@ -1,0 +1,84 @@
+/* ══════════════════════════════════════
+   REMOVE DEFAULT BROWSER STYLES
+   Every browser adds its own spacing by default.
+   This block removes all of that so we start fresh.
+   ══════════════════════════════════════ */
+* {
+  margin: 0;               /* no space OUTSIDE elements */
+  padding: 0;              /* no space INSIDE elements */
+  box-sizing: border-box;  /* padding/border count INSIDE the width, not added on top */
+}
+
+/* The whole page background color */
+body {
+  background-color: lightgray;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  align-items: start;
+  margin: 60px 40px;   /* equal left and right margin */
+  gap: 30px;           /* space between cards — replaces card margin */
+}
+
+.card-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;  /* cards 2 & 3 always match each other's height */
+  gap: 30px;
+}
+
+.card {
+  background-color: white;
+  font-family: sans-serif;
+  color: #333;
+  border-radius: 4px;
+  overflow: hidden;        /* clips the image corners to match border-radius */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.card--1 {
+  min-height: 450px;
+}
+
+/* ── Card image: fixed height, always fills width cleanly ── */
+.card-image {
+  width: 100%;             /* stretches to full card width */
+  height: 220px;           /* fixed height — same for ALL cards regardless of image size */
+  object-fit: cover;       /* crops the image to fill the box without distorting it */
+  display: block;          /* removes the small gap browsers add below inline images */
+  padding: 10px;
+  border-radius: 8px;
+}
+
+/* ── Text area below the image ── */
+.card-body {
+  padding: 16px 20px 20px; /* breathing room around the text */
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.card-text {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.card-link {
+  display: block;
+  text-align: right;
+  color: #4a90d9;
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+
+.card-link:hover {
+  text-decoration: underline;
+}
+
