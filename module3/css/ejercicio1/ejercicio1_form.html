@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" href="ejercicio1_form.css" />
+  </head>
+  <body>
+    <div class="global-container">
+      <form action="https://dummyjson.com/test" method="POST">
+        <div class="text-container">
+          <div class="text-case">
+            <h1>Our elections for our new President!</h1>
+            <p class="text-case-p">Choose your candidate wisely.</p>
+            <input type="text" placeholder="First name *" />
+            <input type="text" placeholder="Last name *" />
+            <input type="email" placeholder="Email address *" />
+            <input type="text" placeholder="Personal ID *" />
+            <input type="text" placeholder="Phone number *" />
+            <h2>Candidates for President</h2>
+            <label class="label-style" for="type">
+              Choose a candidate from the menu
+            </label>
+          </div>
+        </div>
+        <select name="type" id="type">
+          <option hidden>Select one</option>
+          <option value="candidate1">candidate1</option>
+          <option value="candidate2">candidate2</option>
+          <option value="candidate3">candidate3</option>
+          <option value="candidate4">candidate4</option>
+        </select>
+        <div class="button-container">
+          <button class="clear-button my-button" type="submit">
+            Submit vote
+          </button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

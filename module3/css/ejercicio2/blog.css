@@ -1,0 +1,132 @@
+/* ── Reset ── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #1a1a1a;
+  background-color: #f9f8f6;
+  line-height: 1.7;
+}
+
+/* ── Article container ── */
+article {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+/* ── Header ── */
+header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.category {
+  color: #5046e5;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.read-time {
+  color: #888;
+  font-size: 0.85rem;
+  margin-left: 8px;
+}
+
+header h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.4rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 16px 0;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.byline {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* ── Featured image ── */
+.featured-image {
+  margin: 0 0 32px 0;
+}
+
+.featured-image img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+
+/* ── Disclaimer ── */
+.disclaimer {
+  border-left: 3px solid #ddd;
+  padding: 12px 20px;
+  margin-bottom: 32px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.disclaimer a {
+  color: #5046e5;
+  text-decoration: underline;
+}
+
+/* ── Content ── */
+.content p {
+  text-align: justify;
+  margin-bottom: 20px;
+  font-size: 1rem;
+}
+
+.content a {
+  color: #1a1a1a;
+  text-decoration: underline;
+  text-decoration-color: #5046e5;
+  text-underline-offset: 3px;
+}
+
+.content a:hover {
+  color: #5046e5;
+}
+
+/* ── Promo box ── */
+.promo-box {
+  float: right;
+  width: 250px;
+  margin: 0 0 16px 24px;
+  padding: 28px 24px;
+  background-color: #f5c242;
+  border-radius: 8px;
+}
+
+.promo-box p {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.promo-button {
+  display: inline-block;
+  background-color: #1a1a1a;
+  color: white !important;
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.promo-button:hover {
+  background-color: gray;
+}

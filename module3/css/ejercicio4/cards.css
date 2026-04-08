@@ -1,0 +1,110 @@
+/* ══════════════════════════════════════
+   REMOVE DEFAULT BROWSER STYLES
+   Every browser adds its own spacing by default.
+   This block removes all of that so we start fresh.
+   ══════════════════════════════════════ */
+* {
+  margin: 0;               /* no space OUTSIDE elements */
+  padding: 0;              /* no space INSIDE elements */
+  box-sizing: border-box;  /* padding/border count INSIDE the width, not added on top */
+}
+
+/* The whole page background color */
+body {
+  background-color: lightgray;
+}
+
+/* ══════════════════════════════════════
+   LAYOUT
+   The outer grid splits the page into two columns:
+   one narrow (card 1) and one wide (cards 2 & 3).
+   ══════════════════════════════════════ */
+.card-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr;  /* left column is half the width of the right */
+  align-items: start;              /* cards stay at the top instead of stretching to equal height */
+  margin: 60px 40px;               /* equal left and right margin */
+  gap: 30px;                       /* space between cards — replaces card margin */
+}
+
+/* ── Right-side pair: two cards sit side by side ── */
+.card-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;  /* two equal-width columns */
+  align-items: stretch;            /* cards 2 & 3 always match each other's height */
+  gap: 30px;
+}
+
+/* ══════════════════════════════════════
+   CARD BASE
+   Each card is a flex column so the body can grow
+   and push the "read more" link to the bottom.
+   ══════════════════════════════════════ */
+.card {
+  display: flex;             /* enables vertical layout control */
+  flex-direction: column;    /* stacks image → body top-to-bottom */
+  background-color: white;
+  font-family: sans-serif;
+  color: #333;
+  border-radius: 4px;
+  overflow: hidden;          /* clips the image corners to match border-radius */
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);  /* subtle drop shadow for depth */
+}
+
+/* ── Left card gets a minimum height so it doesn't collapse ── */
+.card--1 {
+  min-height: 450px;
+}
+
+/* ══════════════════════════════════════
+   CARD CONTENT
+   Image, text area, title, paragraph, and link.
+   ══════════════════════════════════════ */
+
+/* ── Card image: fixed height, always fills width cleanly ── */
+.card-image {
+  width: 100%;             /* stretches to full card width */
+  height: 220px;           /* fixed height — same for ALL cards regardless of image size */
+  object-fit: cover;       /* crops the image to fill the box without distorting it */
+  display: block;          /* removes the small gap browsers add below inline images */
+  padding: 10px;           /* inset so the card background peeks through as a frame */
+  border-radius: 8px;      /* rounds the visible image corners inside the frame */
+}
+
+/* ── Text area below the image ── */
+.card-body {
+  flex: 1;                 /* fills remaining card height so the link lands at the bottom */
+  display: flex;
+  flex-direction: column;  /* stacks title → text → link top-to-bottom */
+  padding: 16px 20px 20px; /* breathing room around the text */
+}
+
+/* ── Card title ── */
+.card-title {
+  font-size: 1rem;
+  font-weight: 700;        /* bold */
+  margin-bottom: 8px;      /* space between title and paragraph */
+}
+
+/* ── Card paragraph ── */
+.card-text {
+  font-size: 0.85rem;
+  line-height: 1.6;        /* generous line spacing for readability */
+  color: #555;             /* slightly lighter than the title */
+  margin-bottom: 12px;     /* space between paragraph and link */
+}
+
+/* ── "Read more" link ── */
+.card-link {
+  margin-top: auto;        /* pushes the link to the bottom of the card */
+  display: block;
+  text-align: right;       /* sits in the bottom-right corner */
+  color: #4a90d9;
+  font-size: 0.85rem;
+  text-decoration: none;   /* no underline by default */
+}
+
+.card-link:hover {
+  text-decoration: underline;  /* underline appears only on hover */
+  cursor: pointer;             /* shows the hand/pointer icon on hover */
+}
