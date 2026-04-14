@@ -84,8 +84,8 @@ body{
     justify-content: space-evenly;
     align-items: center;
     overflow: hidden;
-    height: 25rem;
-    background-color: #f3f3f3;
+    height: 20rem;
+    background-color: lightgray;
     .poster-image-wrapper{
         overflow: hidden;
         align-self: flex-start;
