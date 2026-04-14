@@ -42,7 +42,13 @@ body{
 
 /*card section*/
 .card-section {
+    justify-content: space-between;
     margin: 5rem 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    width: 81%;
+    margin: 5px auto;
     .section-title {
         font-size: 1.8rem;
         font-weight: bold;
@@ -130,7 +136,7 @@ body{
         width: 50%;
         display: flex;
         flex-direction: column;
-        justify-content: center;       
+        justify-content: center;
         p{
             margin: 0;
         }
@@ -151,6 +157,58 @@ body{
             margin-top: 0.8rem;
         }
         .shop-button{
+            background-color: rgb(225, 57, 199);
+            color: white;
+            text-transform: uppercase;
+            width: 7rem;
+            height: 2rem;
+            margin-top: 0.8rem;
+            border: none;
+            cursor: pointer;
+        }
+    }
+}
+
+/*form*/
+.form{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    overflow: hidden;
+    height: 20rem;
+    background-color: rgb(254, 209, 216);
+    padding: 40px;
+    margin: 20px auto;
+    width: 60%;
+    .form-content{
+        width: 50%;
+        display: flex;
+        align-items: center;
+        flex-direction: column;  
+        p{
+            margin: 0;
+        }
+        .form-sup-text{
+            text-transform: uppercase;
+            margin: 10px;
+        }
+        .form-text{
+            text-transform: uppercase;
+            font-weight: bold;
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: 1.3rem;
+        }
+        .form-box{
+            border: 1px solid #cccccc;
+            background: white;
+            border-radius: 3px;
+            margin-bottom: 15px;
+            padding: 5px 30px;
+            font-size: 0.85rem;
+            color: #999999;
+            font-family: Arial, Helvetica, sans-serif;
+        } 
+        .send-button{
             background-color: rgb(225, 57, 199);
             color: white;
             text-transform: uppercase;
