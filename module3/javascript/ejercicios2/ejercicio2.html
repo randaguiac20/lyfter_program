@@ -1,0 +1,32 @@
+<!--
+1. Crea un documento HTML con un input de texto y un botón
+2. Al presionar el botón se toman los datos y se muestran en pantalla
+3. Al presionar el botón también se limpia el input.
+4. Si se agregan datos nuevos, se sustituyen los anteriores y
+   se repite el proceso.
+-->
+<!doctype html>
+<html>
+  <head>
+    <title>Ejercicio2</title>
+  </head>
+  <body>
+    <input type="text" id="info" name="info" />
+    <button id="show-button">Display input</button>
+    <p id="display"></p>
+    <p>
+      Note: To clear the information, just press the display button again with
+      no input.
+    </p>
+    <script>
+      const input = document.getElementById("info");
+      const button = document.getElementById("show-button");
+      const display = document.getElementById("display");
+
+      button.addEventListener("click", () => {
+        display.textContent = input.value;
+        input.value = "";
+      });
+    </script>
+  </body>
+</html>
