@@ -13,7 +13,6 @@ html {
   justify-content: center;
   padding: 40px 20px;
   border: 10px solid blue;
-  border-radius: 25px;
   min-height: 100vh;
   box-sizing: border-box;
   font-family: sans-serif;
@@ -28,7 +27,6 @@ html {
 
 /* ── Headings / paragraph ── */
 .text-case {
-  color: #222;
   font-size: 1rem;
   text-align: left;
   font-family: sans-serif;
@@ -54,7 +52,7 @@ html {
 
 .text-case h2 {
   color: #333;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .text-case-p {
