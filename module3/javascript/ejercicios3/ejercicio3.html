@@ -1,0 +1,36 @@
+<!--
+1. Cree una pequeña página web con un botón y un <p>
+2. Al presionar el botón cambia el color del fondo del <p> 
+   por uno aleatorio de la siguiente lista [red, blue, green, yellow, cyan, pink].
+3. Para el texto puede utilzar un Lorem Ipsum corto, solamente para rellenar el espacio.
+4. La acción del botón debe agregarla con un listener
+-->
+
+<!doctype html>
+<html>
+  <head>
+    <title>Ejercicio3</title>
+  </head>
+  <body>
+    <br /><br />
+    <button id="show-button">Random color</button>
+    <p id="display">
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod
+      tempor incididunt ut labore et dolore magna aliqua."
+    </p>
+  </body>
+  <script>
+    // Available background colors
+    const colorList = ["red", "blue", "green", "yellow", "cyan", "pink"];
+
+    // Grab the button and paragraph from the page
+    const button = document.getElementById("show-button");
+    const display = document.getElementById("display");
+
+    // When the button is clicked, pick a random color and apply it
+    button.addEventListener("click", () => {
+      const randomIndex = Math.floor(Math.random() * colorList.length);
+      display.style.backgroundColor = colorList[randomIndex];
+    });
+  </script>
+</html>
