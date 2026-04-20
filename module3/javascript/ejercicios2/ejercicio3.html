@@ -1,0 +1,58 @@
+<!--
+1. Crea un form con inputs de correo, contraseña, nombre y apellidos. 
+2. También debe tener un radio button para seleccionar si es empleado o no.
+3. Al seleccionar “sí”, se debe mostrar un input extra para empleo.
+4. Si se vuelve a seleccionar “no”, este input se debe esconder.
+-->
+<!doctype html>
+<html>
+  <head>
+    <title>Ejercicio3</title>
+  </head>
+  <body>
+    <form>
+      <br /><br />
+      <label for="firstname">First name:</label>
+      <input type="text" id="firstname" name="First name" />
+
+      <label for="lastname">Last name:</label>
+      <input type="text" id="lastname" name="Last name" />
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" />
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="Password" />
+      <br /><br />
+      <label>Are you an employee?</label>
+      <input type="radio" id="yes" name="employee" value="yes" />
+      <label for="yes">Yes</label>
+
+      <input type="radio" id="no" name="employee" value="no" />
+      <label for="no">No</label>
+      <div id="employment-field" style="display: none">
+        <br />
+        <label for="employment">Current Role:</label>
+        <input type="text" id="employment" name="employment" />
+      </div>
+      <div>
+        <br /><br />
+        <button type="submit">Submit information</button>
+      </div>
+    </form>
+
+    <script>
+      const yesRadio = document.getElementById("yes");
+      const noRadio = document.getElementById("no");
+      const employmentField = document.getElementById("employment-field");
+
+      yesRadio.addEventListener("click", () => {
+        employmentField.style.display = "block";
+      });
+
+      noRadio.addEventListener("click", () => {
+        employmentField.style.display = "none";
+      });
+    </script>
+  </body>
+</html>
