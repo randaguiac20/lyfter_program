@@ -1,0 +1,55 @@
+<!--
+1. Construya un pequeño contenedor con HTML donde haya espacios para un input y un botón.
+2. Al presionar el botón tome el valor ingresado al input y realice la solicitud
+   al endpoint utilizado en los dos ejercicios anteriores.
+3. Si la solicitud fue exitosa, muestre nombre, apellido y correo del usuario.
+4. Si la solicitud falló, muestre un mensaje de error en pantalla.
+-->
+
+<!doctype html>
+<html>
+  <head>
+    <title>Ejercicio3</title>
+  </head>
+  <body>
+    <br /><br />
+    <label
+      >Enter user id: <input type="text" id="number" name="number"
+    /></label>
+    <button id="show-button">Submit</button>
+    <br /><br />
+    <div id="display"></div>
+  </body>
+  <script>
+    /* Add your API_KEY */
+    const API_KEY = "API_KEY";
+
+    const button = document.getElementById("show-button");
+    const input = document.getElementById("number");
+    const display = document.getElementById("display");
+
+    button.addEventListener("click", async () => {
+      const userId = Number(input.value);
+      if (isNaN(userId)) {
+        display.textContent = "This is not a valid user id!";
+        input.value = "";
+        return;
+      }
+      try {
+        const response = await fetch(`https://reqres.in/api/users/${userId}`, {
+          headers: {
+            "x-api-key": API_KEY,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Usuario no encontrado (status: ${response.status})`);
+        }
+        const data = await response.json();
+        const { first_name, last_name, email } = data.data;
+        display.textContent = `Fist name: ${first_name} | Last name: ${last_name} | Correo: ${email}`;
+      } catch (error) {
+        display.textContent = `Error: ${error.message}`;
+      }
+    });
+  </script>
+</html>
