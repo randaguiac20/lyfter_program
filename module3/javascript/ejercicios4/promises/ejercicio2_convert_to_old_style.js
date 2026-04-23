@@ -6,28 +6,32 @@ Al finalizar la solicitud, imprima los datos del usuario en pantalla.
 
 // Create a ".env" file with the key in it
 // API_KEY=reqres_xdfgdgdg
-
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 
+const userId = 23;
 
-async function getUser(userId) {
-  console.log("1. Enviando request");
-  const response = await fetch(`https://reqres.in/api/users/${userId}`, {
+console.log("1. Enviando request")
+const user = fetch(`https://reqres.in/api/users/${userId}`, {
     headers: {
       "x-api-key": process.env.API_KEY,
     },
   });
+
+user.then((response)=>{
   console.log("2. Response recibido");
   if (!response.ok) {
-    throw new Error(`Usuario no encontrado (status: ${response.status})`);
-  }
-  const data = await response.json();
+      throw new Error(`Usuario no encontrado (status: ${response.status})`);
+    }
+  return response.json();
+}).then((data)=>{
   console.log("3. Data:", data.data);
   console.log("4. Await terminado");
-}
+}).catch((error)=>{
+  console.log(`4. Hubo un problema: ${error}`);
+}).finally(()=>{
+  console.log("5. Promise terminado");
+});
 
-const id = 2;
-getUser(id);
-console.log("5. Codigo llegado al final");
+console.log("6. Codigo llegado al final");

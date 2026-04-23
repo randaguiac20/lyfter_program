@@ -5,7 +5,8 @@ Realice el manejo de error adecuado e imprima un mensaje de error indicando que 
 
 // Create a ".env" file with the key in it
 // API_KEY=reqres_xdfgdgdg
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const userId = 23;
 
