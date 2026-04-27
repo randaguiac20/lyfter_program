@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register — Lyfter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="register.html" class="navbar-brand">Lyfter</a>
+      <div class="navbar-links">
+        <a href="register.html" class="active">Register</a>
+        <a href="login.html">Login</a>
+      </div>
+    </nav>
+
+    <div class="page">
+      <div class="card">
+        <h1 class="card-title">Create account</h1>
+        <p class="card-subtitle">Fill in your details to get started.</p>
+
+        <!-- Global alert (success / error) -->
+        <div id="alert" class="alert hidden" role="alert"></div>
+
+        <form id="registerForm" novalidate>
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              placeholder="John Doe"
+              autocomplete="name"
+            />
+            <span class="field-error" id="name-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              placeholder="john@example.com"
+              autocomplete="email"
+            />
+            <span class="field-error" id="email-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input
+              type="tel"
+              id="phone"
+              placeholder="+1 555 000 0000"
+              autocomplete="tel"
+            />
+            <span class="field-error" id="phone-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" placeholder="25" min="1" max="120" />
+            <span class="field-error" id="age-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Min. 6 characters"
+              autocomplete="new-password"
+            />
+            <span class="field-error" id="password-error"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="Repeat your password"
+              autocomplete="new-password"
+            />
+            <span class="field-error" id="confirmPassword-error"></span>
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitButton">
+            Create Account
+          </button>
+        </form>
+
+        <p class="text-center mt-16">
+          Already have an account? <a href="login.html" class="link">Log in</a>
+        </p>
+      </div>
+    </div>
+
+    <script src="db.js"></script>
+    <script src="session.js"></script>
+    <script src="register.js"></script>
+  </body>
+</html>
