@@ -57,7 +57,6 @@ async function postNewObject(newObject) {
 async function main() {
   await getObjects();
   const newObject = {
-    id: 14,
     name: "my custom device",
     data: {
       color: "black",
