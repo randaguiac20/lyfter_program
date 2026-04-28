@@ -1,159 +1,125 @@
-/**
- * change-password.js — Change Password page logic
- *
- * Validates:
- *   1. All fields are filled
- *   2. New password meets minimum length
- *   3. New password matches confirmation
- * Then calls API.updateUserPassword() which verifies:
- *   - User exists (status 404 if not)
- *   - Old password is correct (status 401 if not)
- * If the logged-in user changes their own password, the session is cleared
- * and they are redirected to login after a brief success message.
- */
+// change-password.js — Change Password page logic
+// This runs when the user opens change-password.html.
+// It can be used by a logged-in user (whose ID is pre-filled)
+// OR by any visitor who knows their User ID.
 
-(function () {
-  const form      = document.getElementById('changePasswordForm');
-  const alertBox  = document.getElementById('alert');
-  const submitBtn = document.getElementById('submitBtn');
-  const navLinks  = document.getElementById('navLinks');
-  const userIdInput = document.getElementById('userId');
+// Get the current session (may be null if not logged in)
+var currentUser = getSession();
 
-  // ── Navbar: adapt to session state ────────────────────────────────────────
-  const session = Session.get();
+// Get the elements from the HTML
+var form = document.getElementById('changePasswordForm');
+var alertBox = document.getElementById('alert');
+var submitBtn = document.getElementById('submitBtn');
+var navLinks = document.getElementById('navLinks');
 
-  if (session) {
-    // Pre-fill User ID for convenience
-    userIdInput.value = session.id;
+// ── Set up the navigation bar based on login state ────────────────────────
 
-    navLinks.innerHTML = `
-      <a href="profile.html">My Profile</a>
-      <button id="navLogoutBtn">Log Out</button>
-    `;
-    document.getElementById('navLogoutBtn').addEventListener('click', function () {
-      Session.clear();
-      window.location.href = 'login.html';
-    });
-  } else {
-    navLinks.innerHTML = `
-      <a href="register.html">Register</a>
-      <a href="login.html">Login</a>
-    `;
+if (currentUser !== null) {
+  // User is logged in: pre-fill the User ID and show a logout button
+  document.getElementById('userId').value = currentUser.id;
+
+  navLinks.innerHTML =
+    '<a href="profile.html">My Profile</a>' +
+    '<button id="navLogoutBtn">Log Out</button>';
+
+  document.getElementById('navLogoutBtn').addEventListener('click', function() {
+    clearSession();
+    window.location.href = 'login.html';
+  });
+} else {
+  // User is NOT logged in: show register and login links
+  navLinks.innerHTML =
+    '<a href="register.html">Register</a>' +
+    '<a href="login.html">Login</a>';
+}
+
+// ── Helper functions ──────────────────────────────────────────────────────
+
+function showAlert(message, type) {
+  alertBox.textContent = message;
+  alertBox.className = 'alert alert-' + type;
+}
+
+function hideAlert() {
+  alertBox.textContent = '';
+  alertBox.className = 'alert hidden';
+}
+
+// ── Form submission ───────────────────────────────────────────────────────
+
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  hideAlert();
+
+  // Read the input fields
+  var userId = document.getElementById('userId').value.trim();
+  var oldPassword = document.getElementById('oldPassword').value;
+  var newPassword = document.getElementById('newPassword').value;
+  var confirmPassword = document.getElementById('confirmPassword').value;
+
+  // ── Basic validation ──────────────────────────────────────────────────────
+
+  if (userId === '') {
+    showAlert('Please enter your User ID.', 'error');
+    return;
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-
-  function showAlert(message, type) {
-    alertBox.className = `alert alert-${type}`;
-    alertBox.textContent = message;
-    alertBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (oldPassword === '') {
+    showAlert('Please enter your current password.', 'error');
+    return;
   }
 
-  function hideAlert() {
-    alertBox.className = 'alert hidden';
-    alertBox.textContent = '';
+  if (newPassword === '') {
+    showAlert('Please enter a new password.', 'error');
+    return;
   }
 
-  function setFieldError(fieldId, message) {
-    const input   = document.getElementById(fieldId);
-    const errorEl = document.getElementById(`${fieldId}-error`);
-    if (message) {
-      input.classList.add('error');
-      errorEl.textContent = message;
-    } else {
-      input.classList.remove('error');
-      errorEl.textContent = '';
-    }
+  if (newPassword.length < 6) {
+    showAlert('New password must be at least 6 characters long.', 'error');
+    return;
   }
 
-  function clearAllErrors() {
-    ['userId', 'oldPassword', 'newPassword', 'confirmPassword'].forEach(f => setFieldError(f, ''));
-    hideAlert();
+  if (confirmPassword === '') {
+    showAlert('Please confirm your new password.', 'error');
+    return;
   }
 
-  function setLoading(loading) {
-    submitBtn.disabled = loading;
-    submitBtn.innerHTML = loading
-      ? '<span class="spinner"></span> Updating…'
-      : 'Update Password';
+  if (newPassword !== confirmPassword) {
+    showAlert('New passwords do not match.', 'error');
+    return;
   }
 
-  // ── Validation (client-side) ──────────────────────────────────────────────
+  // ── Disable button while waiting ──────────────────────────────────────────
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Updating...';
 
-  function validate(fields) {
-    let valid = true;
-
-    if (!fields.userId.trim()) {
-      setFieldError('userId', 'User ID is required.');
-      valid = false;
-    }
-
-    if (!fields.oldPassword) {
-      setFieldError('oldPassword', 'Current password is required.');
-      valid = false;
-    }
-
-    if (!fields.newPassword) {
-      setFieldError('newPassword', 'New password is required.');
-      valid = false;
-    } else if (fields.newPassword.length < 6) {
-      setFieldError('newPassword', 'New password must be at least 6 characters.');
-      valid = false;
-    }
-
-    if (!fields.confirmPassword) {
-      setFieldError('confirmPassword', 'Please confirm your new password.');
-      valid = false;
-    } else if (fields.newPassword !== fields.confirmPassword) {
-      setFieldError('confirmPassword', 'Passwords do not match.');
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  // ── Submit handler ────────────────────────────────────────────────────────
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    clearAllErrors();
-
-    const fields = {
-      userId:          document.getElementById('userId').value.trim(),
-      oldPassword:     document.getElementById('oldPassword').value,
-      newPassword:     document.getElementById('newPassword').value,
-      confirmPassword: document.getElementById('confirmPassword').value,
-    };
-
-    if (!validate(fields)) return;
-
-    setLoading(true);
-
-    try {
-      // API validates: user exists + old password correct
-      await API.updateUserPassword(fields.userId, fields.oldPassword, fields.newPassword);
-
+  // ── Call changePassword() from db.js ──────────────────────────────────────
+  changePassword(userId, oldPassword, newPassword)
+    .then(function() {
       showAlert('Password updated successfully!', 'success');
       form.reset();
 
-      // If the logged-in user just changed their own password, clear session
-      // and redirect to login so they authenticate with the new password.
-      if (session && session.id === fields.userId) {
-        Session.clear();
-        showAlert('Password updated! Redirecting to login…', 'success');
-        setTimeout(() => {
+      // If the logged-in user just changed their own password,
+      // log them out so they sign in again with the new password
+      if (currentUser !== null && currentUser.id === userId) {
+        showAlert('Password updated! Redirecting to login...', 'success');
+        clearSession();
+        setTimeout(function() {
           window.location.href = 'login.html';
         }, 2000);
       } else {
-        // Not the current user — keep ID pre-filled if it was
-        if (session) userIdInput.value = session.id;
+        // Not the current user — re-enable the form
+        if (currentUser !== null) {
+          document.getElementById('userId').value = currentUser.id;
+        }
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Update Password';
       }
-    } catch (err) {
-      // API returns specific messages: "User not found" or "Current password is incorrect"
-      const message = err.message || 'Failed to update password. Please try again.';
-      showAlert(message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  });
-})();
+    })
+    .catch(function(error) {
+      // Show error (e.g. "User not found" or "Current password is incorrect")
+      showAlert(error.message, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update Password';
+    });
+});

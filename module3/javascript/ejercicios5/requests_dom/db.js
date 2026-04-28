@@ -1,171 +1,193 @@
-/**
- * db.js — Dummy API
- * Simulates a REST API using localStorage as the data store.
- * Mirrors the exact logic pattern from axios_exercise2.js:
- *   - getObjects()       → GET  /objects (filters those without `data`)
- *   - postNewObject()    → POST /objects (creates a new user with auto-generated ID)
- *   - verifyLogin()      → Verifies ID + password
- *   - updateUserPassword() → Updates a user's password
- *
- * Data shape (mirrors axios_exercise2.js structure):
- *   { id, name, password, data: { email, phone, age }, createdAt }
- */
+// db.js — Fake Database
+// We use the browser's localStorage as if it were a database.
+// All users are stored as a JSON array under the key 'lyfter_users'.
+//
+// This file exposes 4 global functions that the other JS files can call:
+//   getUsers()          - get all users (without passwords)
+//   createUser()        - register a new user
+//   loginUser()         - check login credentials
+//   changePassword()    - update a user's password
 
-const API = (() => {
-  const STORAGE_KEY = 'lyfter_users';
-  const DELAY = 400; // Simulate network latency (ms)
+var USERS_KEY = 'lyfter_users';
 
-  // ── Private helpers ──────────────────────────────────────────────────────────
+// ── Private helpers (only used inside this file) ──────────────────────────
 
-  function _getUsers() {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+// Read the user list from localStorage.
+// If nothing is saved yet, return an empty array.
+function readUsers() {
+  var stored = localStorage.getItem(USERS_KEY);
+  if (stored === null) {
+    return [];
   }
+  return JSON.parse(stored);
+}
 
-  function _saveUsers(users) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
-  }
+// Save the updated user list back to localStorage.
+function writeUsers(users) {
+  localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
 
-  function _generateId() {
-    const timestamp = Date.now().toString(36).toUpperCase();
-    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
-    return `USR-${timestamp}-${random}`;
-  }
+// Create a unique ID for a new user.
+// Example result: "USR-M3F2KX1A-HJ7QP"
+function makeUserId() {
+  var timestamp = Date.now().toString(36).toUpperCase();
+  var randomPart = Math.random().toString(36).substring(2, 7).toUpperCase();
+  return 'USR-' + timestamp + '-' + randomPart;
+}
 
-  // ── Public API ───────────────────────────────────────────────────────────────
+// ── Public functions ──────────────────────────────────────────────────────
 
-  /**
-   * GET /objects
-   * Returns all users that have a `data` field (same filter logic as exercise 2).
-   * Passwords are never exposed.
-   */
-  function getObjects() {
-    console.log('Loading objects...');
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          const users = _getUsers();
-          console.log('Data loaded! Returning...');
-          // Only users with data are added to the filetered var
-          const filtered = users.filter(u => u.data);
-          // These a 3 steps compact code
-          // It basically removes key password from the dataset
-          resolve(filtered.map(({ password, ...safe }) => safe));
-        } catch (err) {
-          console.log('Error fetching objects:', err);
-          reject({ status: 500, message: 'Internal error fetching objects.' });
-        }
-      }, DELAY);
-    });
-  }
+// GET all users — returns a Promise that resolves with a list of users.
+// We never include the password in what we return (security!).
+// The setTimeout simulates a real network request taking 400ms.
+function getUsers() {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      var users = readUsers();
+      var safeUsers = [];
 
-  /**
-   * POST /objects
-   * Creates a new user object >> postNewObject(newObject).
-   * Expected shape: { name, password, data: { email, phone, age } }
-   */
-  function postNewObject(newObject) {
-    console.log('Posting new object');
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          if (!newObject.name || !newObject.password || !newObject.data) {
-            reject({ status: 400, message: 'Missing required fields.' });
-            return;
-          }
-
-          const users = _getUsers();
-
-          // Enforce unique email
-          const emailExists = users.some(
-            u => u.data?.email?.toLowerCase() === newObject.data?.email?.toLowerCase()
-          );
-          if (emailExists) {
-            reject({ status: 409, message: 'This email is already registered.' });
-            return;
-          }
-
-          const user = {
-            id: _generateId(),
-            name: newObject.name,
-            password: newObject.password,
-            data: newObject.data,
-            createdAt: new Date().toISOString()
+      // Loop through every user and copy their info (without the password)
+      for (var i = 0; i < users.length; i++) {
+        var u = users[i];
+        if (u.data) {
+          var safeUser = {
+            id: u.id,
+            name: u.name,
+            data: u.data,
+            createdAt: u.createdAt
           };
-          // Append data for new user
-          users.push(user);
-          // Create new user
-          _saveUsers(users);
-
-          // Never return password — mirrors a real API response
-          const { password, ...safeUser } = user;
-          console.log('Object created:', safeUser);
-          console.log('POST is done.');
-          resolve(safeUser);
-        } catch (err) {
-          console.log('Error creating object:', err);
-          reject({ status: 500, message: 'Internal error creating user.' });
+          safeUsers.push(safeUser);
         }
-      }, DELAY);
-    });
-  }
+      }
 
-  /**
-   * Verifies login credentials by ID + password.
-   * Returns the user object (without password) if valid.
-   */
-  function verifyLogin(id, password) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          const users = _getUsers();
-          const user = users.find(u => u.id === id);
+      resolve(safeUsers);
+    }, 400);
+  });
+}
 
-          if (!user) {
-            reject({ status: 404, message: 'User not found. Please check your ID.' });
-            return;
-          }
-          if (user.password !== password) {
-            reject({ status: 401, message: 'Incorrect password. Please try again.' });
-            return;
-          }
+// POST a new user (register).
+// Expects an object like: { name, password, data: { email, phone, age } }
+// Returns a Promise that resolves with the created user (without password).
+function createUser(newUser) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      // Make sure all required fields are present
+      if (!newUser.name || !newUser.password || !newUser.data) {
+        reject({ status: 400, message: 'Please fill in all required fields.' });
+        return;
+      }
 
-          const { password: _, ...safeUser } = user;
-          resolve(safeUser);
-        } catch (err) {
-          reject({ status: 500, message: 'Internal error during login.' });
+      var users = readUsers();
+
+      // Check if the email is already in use
+      for (var i = 0; i < users.length; i++) {
+        if (users[i].data && users[i].data.email.toLowerCase() === newUser.data.email.toLowerCase()) {
+          reject({ status: 409, message: 'That email is already registered.' });
+          return;
         }
-      }, DELAY);
-    });
-  }
+      }
 
-  /**
-   * Updates a user's password after verifying the old one.
-   */
-  function updateUserPassword(id, oldPassword, newPassword) {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        try {
-          const users = _getUsers();
-          const user_index_id = users.findIndex(u => u.id === id);
+      // Build the new user object
+      var user = {
+        id: makeUserId(),
+        name: newUser.name,
+        password: newUser.password,
+        data: newUser.data,
+        createdAt: new Date().toISOString()
+      };
 
-          if (user_index_id === -1) {
-            reject({ status: 404, message: 'User not found. Please check your ID.' });
-            return;
-          }
-          if (users[user_index_id].password !== oldPassword) {
-            reject({ status: 401, message: 'Current password is incorrect.' });
-            return;
-          }
+      // Save to localStorage
+      users.push(user);
+      writeUsers(users);
 
-          users[user_index_id].password = newPassword;
-          _saveUsers(users);
-          resolve({ message: 'Password updated successfully.' });
-        } catch (err) {
-          reject({ status: 500, message: 'Internal error updating password.' });
+      // Return the user WITHOUT the password
+      var safeUser = {
+        id: user.id,
+        name: user.name,
+        data: user.data,
+        createdAt: user.createdAt
+      };
+
+      console.log('User created:', safeUser.id);
+      resolve(safeUser);
+    }, 400);
+  });
+}
+
+// Verify login credentials (User ID + password).
+// Returns a Promise that resolves with the user (without password) if correct.
+function loginUser(userId, password) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      var users = readUsers();
+      var foundUser = null;
+
+      // Search for the user by their ID
+      for (var i = 0; i < users.length; i++) {
+        if (users[i].id === userId) {
+          foundUser = users[i];
+          break;
         }
-      }, DELAY);
-    });
-  }
+      }
 
-  return { getObjects, postNewObject, verifyLogin, updateUserPassword };
-})();
+      // User not found
+      if (foundUser === null) {
+        reject({ status: 404, message: 'User not found. Please check your ID.' });
+        return;
+      }
+
+      // Password is wrong
+      if (foundUser.password !== password) {
+        reject({ status: 401, message: 'Incorrect password. Please try again.' });
+        return;
+      }
+
+      // Everything is correct — return the user WITHOUT the password
+      var safeUser = {
+        id: foundUser.id,
+        name: foundUser.name,
+        data: foundUser.data,
+        createdAt: foundUser.createdAt
+      };
+
+      resolve(safeUser);
+    }, 400);
+  });
+}
+
+// Update a user's password.
+// First checks that the old password is correct, then saves the new one.
+function changePassword(userId, oldPassword, newPassword) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+      var users = readUsers();
+      var userIndex = -1;
+
+      // Find the user's position in the array
+      for (var i = 0; i < users.length; i++) {
+        if (users[i].id === userId) {
+          userIndex = i;
+          break;
+        }
+      }
+
+      // User not found
+      if (userIndex === -1) {
+        reject({ status: 404, message: 'User not found. Please check your ID.' });
+        return;
+      }
+
+      // Old password does not match
+      if (users[userIndex].password !== oldPassword) {
+        reject({ status: 401, message: 'Current password is incorrect.' });
+        return;
+      }
+
+      // Update the password and save
+      users[userIndex].password = newPassword;
+      writeUsers(users);
+
+      resolve({ message: 'Password updated successfully.' });
+    }, 400);
+  });
+}

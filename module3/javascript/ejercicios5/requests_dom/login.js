@@ -1,121 +1,85 @@
-/**
- * login.js — Login page logic
- *
- * Receives User ID + password, calls API.verifyLogin() (backed by the same
- * localStorage DB used by register.js / API.postNewObject()).
- * Session is stored in localStorage so it persists across reloads/closes.
- */
+// login.js — Login page logic
+// This runs when the user opens login.html.
+// It reads the User ID and password, validates them,
+// then calls loginUser() from db.js to check the credentials.
 
-(function () {
-  // ── Auth guard: redirect to profile if already logged in ──────────────────
-  if (Session.isLoggedIn()) {
-    window.location.href = 'profile.html';
+// If already logged in, go straight to profile
+if (isLoggedIn()) {
+  window.location.href = 'profile.html';
+}
+
+// Grab the elements from the HTML
+var form = document.getElementById('loginForm');
+var alertBox = document.getElementById('alert');
+var submitBtn = document.getElementById('submitBtn');
+var userIdInput = document.getElementById('userId');
+var rememberCheckbox = document.getElementById('rememberMe');
+
+// The key we use to store the remembered User ID
+var REMEMBER_KEY = 'lyfter_remember_id';
+
+// If the user checked "Remember Me" last time, pre-fill their ID
+var savedId = localStorage.getItem(REMEMBER_KEY);
+if (savedId !== null) {
+  userIdInput.value = savedId;
+  rememberCheckbox.checked = true;
+}
+
+// Helper: show a message at the top of the card
+function showAlert(message, type) {
+  alertBox.textContent = message;
+  alertBox.className = 'alert alert-' + type;
+}
+
+// Helper: hide the alert box
+function hideAlert() {
+  alertBox.textContent = '';
+  alertBox.className = 'alert hidden';
+}
+
+// When the form is submitted...
+form.addEventListener('submit', function(event) {
+  event.preventDefault();
+  hideAlert();
+
+  // Read the input values
+  var userId = userIdInput.value.trim();
+  var password = document.getElementById('password').value;
+
+  // ── Basic validation ──────────────────────────────────────────────────────
+
+  if (userId === '') {
+    showAlert('Please enter your User ID.', 'error');
     return;
   }
 
-  const form           = document.getElementById('loginForm');
-  const alertBox        = document.getElementById('alert');
-  const submitBtn       = document.getElementById('submitBtn');
-  const userIdInput     = document.getElementById('userId');
-  const rememberCheckbox = document.getElementById('rememberMe');
-
-  const REMEMBER_KEY = 'lyfter_remember_id';
-
-  // ── Remember Me: pre-fill on page load ─────────────────────────────────
-  const savedId = localStorage.getItem(REMEMBER_KEY);
-  if (savedId) {
-    userIdInput.value = savedId;
-    rememberCheckbox.checked = true;
+  if (password === '') {
+    showAlert('Please enter your password.', 'error');
+    return;
   }
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Disable button while waiting for the fake API response ───────────────
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Logging in...';
 
-  function showAlert(message, type) {
-    alertBox.className = `alert alert-${type}`;
-    alertBox.textContent = message;
-  }
-
-  function hideAlert() {
-    alertBox.className = 'alert hidden';
-    alertBox.textContent = '';
-  }
-
-  function setFieldError(fieldId, message) {
-    const input   = document.getElementById(fieldId);
-    const errorEl = document.getElementById(`${fieldId}-error`);
-    if (message) {
-      input.classList.add('error');
-      errorEl.textContent = message;
-    } else {
-      input.classList.remove('error');
-      errorEl.textContent = '';
-    }
-  }
-
-  function clearAllErrors() {
-    ['userId', 'password'].forEach(f => setFieldError(f, ''));
-    hideAlert();
-  }
-
-  function setLoading(loading) {
-    submitBtn.disabled = loading;
-    submitBtn.innerHTML = loading
-      ? '<span class="spinner"></span> Logging in…'
-      : 'Log In';
-  }
-
-  // ── Validation ────────────────────────────────────────────────────────────
-
-  function validate(userId, password) {
-    let valid = true;
-
-    if (!userId.trim()) {
-      setFieldError('userId', 'User ID is required.');
-      valid = false;
-    }
-
-    if (!password) {
-      setFieldError('password', 'Password is required.');
-      valid = false;
-    }
-
-    return valid;
-  }
-
-  // ── Submit handler ────────────────────────────────────────────────────────
-
-  form.addEventListener('submit', async function (e) {
-    e.preventDefault();
-    clearAllErrors();
-
-    const userId   = userIdInput.value.trim();
-    const password = document.getElementById('password').value;
-
-    if (!validate(userId, password)) return;
-
-    setLoading(true);
-
-    try {
-      // Verify against the same DB used at registration
-      const user = await API.verifyLogin(userId, password);
-
-      // Remember Me: save or clear the User ID based on checkbox state
+  // ── Call loginUser() and handle the result ────────────────────────────────
+  loginUser(userId, password)
+    .then(function(user) {
+      // Save or remove the remembered ID based on the checkbox
       if (rememberCheckbox.checked) {
         localStorage.setItem(REMEMBER_KEY, userId);
       } else {
         localStorage.removeItem(REMEMBER_KEY);
       }
 
-      // Persist session in localStorage (survives reloads and browser close)
-      Session.save(user);
-
-      // Redirect to My Profile
+      // Save the session and go to profile
+      saveSession(user);
       window.location.href = 'profile.html';
-    } catch (err) {
-      setLoading(false);
-      // API returns specific messages: "User not found" or "Incorrect password"
-      const message = err.message || 'Login failed. Please try again.';
-      showAlert(message, 'error');
-    }
-  });
-})();
+    })
+    .catch(function(error) {
+      // Show the error (e.g. "User not found" or "Incorrect password")
+      showAlert(error.message, 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Log In';
+    });
+});

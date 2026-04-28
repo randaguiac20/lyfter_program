@@ -20,28 +20,47 @@
         <h1 class="card-title">Create account</h1>
         <p class="card-subtitle">Fill in your details to get started.</p>
 
-        <!-- Alert box — hidden by default, shown on error -->
-        <div id="alert" class="alert hidden"></div>
+        <!-- Global alert (success / error) -->
+        <div id="alert" class="alert hidden" role="alert"></div>
 
-        <form id="registerForm">
+        <form id="registerForm" novalidate>
           <div class="form-group">
             <label for="name">Full Name</label>
-            <input type="text" id="name" placeholder="John Doe" />
+            <input
+              type="text"
+              id="name"
+              placeholder="John Doe"
+              autocomplete="name"
+            />
+            <span class="field-error" id="name-error"></span>
           </div>
 
           <div class="form-group">
             <label for="email">Email</label>
-            <input type="email" id="email" placeholder="john@example.com" />
+            <input
+              type="email"
+              id="email"
+              placeholder="john@example.com"
+              autocomplete="email"
+            />
+            <span class="field-error" id="email-error"></span>
           </div>
 
           <div class="form-group">
             <label for="phone">Phone</label>
-            <input type="tel" id="phone" placeholder="+1 555 000 0000" />
+            <input
+              type="tel"
+              id="phone"
+              placeholder="+1 555 000 0000"
+              autocomplete="tel"
+            />
+            <span class="field-error" id="phone-error"></span>
           </div>
 
           <div class="form-group">
             <label for="age">Age</label>
             <input type="number" id="age" placeholder="25" min="1" max="120" />
+            <span class="field-error" id="age-error"></span>
           </div>
 
           <div class="form-group">
@@ -50,7 +69,9 @@
               type="password"
               id="password"
               placeholder="Min. 6 characters"
+              autocomplete="new-password"
             />
+            <span class="field-error" id="password-error"></span>
           </div>
 
           <div class="form-group">
@@ -59,7 +80,9 @@
               type="password"
               id="confirmPassword"
               placeholder="Repeat your password"
+              autocomplete="new-password"
             />
+            <span class="field-error" id="confirmPassword-error"></span>
           </div>
 
           <button type="submit" class="btn btn-primary" id="submitButton">
@@ -73,7 +96,6 @@
       </div>
     </div>
 
-    <!-- Load order matters: db.js and session.js must come first -->
     <script src="db.js"></script>
     <script src="session.js"></script>
     <script src="register.js"></script>
