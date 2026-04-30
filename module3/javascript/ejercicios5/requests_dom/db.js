@@ -14,7 +14,7 @@
 //   changePassword()    - update a user's password
 
 var API_BASE = 'https://api.restful-api.dev';
-var API_KEY = 'bfb54eb0-c07c-4dd6-a16a-435f26cbd5f8'; // <-- your API key from restful-api.dev/dashboard
+var API_KEY = 'xxxxxx-xxxxxxxx-xxxxxxxxx'; // <-- your API key from restful-api.dev/dashboard
 var COLLECTION = 'lyfter_users';                       // the "table" name in the API
 
 // ── Authenticated request ─────────────────────────────────────────────────
