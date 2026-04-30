@@ -8,130 +8,158 @@
    y los nuevos datos a modificar.
 */
 
-const url = "https://api.restful-api.dev/objects"
+const url = "https://api.restful-api.dev/objects";
 
+// GET all objects — filters out items with no data and displays each one clearly
 async function getObjects() {
-  console.log("1. Requesting objetcs");
-  
+  console.log("--- GET All Objects ---");
+
   try {
     const response = await fetch(url);
-    console.log("2. Objects recevied");
+
     if (!response.ok) {
-      throw new Error(`Objects were not found (status: ${response.status})`);
+      throw new Error(`Could not get objects (status: ${response.status})`);
     }
-    const all_data = await response.json();
-    const filtered = all_data.filter(obj => obj.data !== null && Object.keys(obj.data).length > 0);
-    console.log("3. Object Data collected:");
-    console.log("4. Request is done.");
-    console.log("5. Getting all objects:", filtered);
+
+    const allObjects = await response.json();
+
+    // Safer filter: data must exist, be an object, and have at least one property
+    const filtered = allObjects.filter(obj => {
+      return obj.data !== null &&
+             obj.data !== undefined &&
+             typeof obj.data === "object" &&
+             Object.keys(obj.data).length > 0;
+    });
+
+    console.log(`Found ${filtered.length} objects with data:\n`);
+
+    filtered.forEach(obj => {
+      console.log(`ID: ${obj.id}`);
+      console.log(`Name: ${obj.name}`);
+      console.log("Data:", obj.data);
+      console.log("---");
+    });
+
   } catch (error) {
-    console.log(`Error: ${error.message}`);
+    console.log(`Error in getObjects: ${error.message}`);
   }
 }
 
+// GET a single object by ID — returns the object or null if not found
 async function getObject(id) {
-  console.log("9. Requesting object");
-  
+  console.log(`--- GET Object (id: ${id}) ---`);
+
   try {
     const response = await fetch(`${url}/${id}`);
-    console.log("10. Object recevied");
+
     if (!response.ok) {
-      throw new Error(`Object was not found (status: ${response.status})`);
+      console.log(`Object with id ${id} was not found (status: ${response.status})`);
+      return null;
     }
+
     const data = await response.json();
-    console.log("11. Object Data collected.");
-    console.log("12. Request is done.");
-    console.log("13. Getting object:", data);
+    console.log("Object found:");
+    console.log(`ID: ${data.id}`);
+    console.log(`Name: ${data.name}`);
+    console.log("Data:", data.data);
+
+    return data;
+
   } catch (error) {
-    console.log(`Error: ${error.message}`);
+    console.log(`Error in getObject: ${error.message}`);
+    return null;
   }
 }
 
-async function updateObject(id, updatedObject) {
-  console.log("14. Updating object");
-  
-  try {
-    const response = await fetch(`${url}/${id}`, {
-    method: "PUT", // *GET, POST, PUT, DELETE, etc.
-    mode: "cors", // no-cors, *cors, same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: "same-origin", // include, *same-origin, omit
-    headers: {
-      "Content-Type": "application/json",
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: "follow", // manual, *follow, error
-    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: JSON.stringify(updatedObject), // body data type must match "Content-Type" header
-    });
-    console.log("15. New Object recevied");
-    if (!response.ok) {
-      throw new Error(`Object was not updated (status: ${response.status})`);
-    }
-    const data = await response.json();
-    console.log("16. Object Data collected.");
-    console.log("17. Request is done.");
-    console.log("18. Updated object:", data);
-  } catch (error) {
-    console.log(`Error: ${error.message}`);
-  }
-}
-
+// POST a new object — returns the created object or null on error
 async function postNewObject(newObject) {
-  
+  console.log("--- POST New Object ---");
+
   try {
     const response = await fetch(url, {
-    method: "POST", // *GET, POST, PUT, DELETE, etc.
-    mode: "cors", // no-cors, *cors, same-origin
-    cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
-    credentials: "same-origin", // include, *same-origin, omit
-    headers: {
-      "Content-Type": "application/json",
-      // 'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    redirect: "follow", // manual, *follow, error
-    referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-    body: JSON.stringify(newObject), // body data type must match "Content-Type" header
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(newObject),
     });
-    console.log("6. Posting new object");
+
     if (!response.ok) {
       throw new Error(`Object was not created (status: ${response.status})`);
     }
-    const data = await response.json();
-    console.log("7. Object created:", data);
-    console.log("8. POST is done.");
+
+    const created = await response.json();
+    console.log("Object created successfully:");
+    console.log(`ID: ${created.id}`);
+    console.log(`Name: ${created.name}`);
+    console.log("Data:", created.data);
+
+    return created;
+
   } catch (error) {
-    console.log(`Error: ${error.message}`);
+    console.log(`Error in postNewObject: ${error.message}`);
+    return null;
   }
 }
 
+// PUT (update) an existing object by ID — returns the updated object or null on error
+async function updateObject(id, updatedObject) {
+  console.log(`--- PUT Update Object (id: ${id}) ---`);
+
+  try {
+    const response = await fetch(`${url}/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedObject),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Object was not updated (status: ${response.status})`);
+    }
+
+    const updated = await response.json();
+    console.log("Object updated successfully:");
+    console.log(`ID: ${updated.id}`);
+    console.log(`Name: ${updated.name}`);
+    console.log("Data:", updated.data);
+
+    return updated;
+
+  } catch (error) {
+    console.log(`Error in updateObject: ${error.message}`);
+    return null;
+  }
+}
 
 async function main() {
-  // Get all objects
+  // 1. Get all objects
   await getObjects();
 
-  // Create a new object
+  // 2. Create a new object
   const newObject = {
-    id: 14,
     name: "my custom device",
     data: {
       color: "black",
-      capacity: "256 GB"
-    }
+      capacity: "256 GB",
+    },
   };
-  await postNewObject(newObject);
+  const created = await postNewObject(newObject);
+  console.log("Returned from postNewObject:", created);
 
-  // Get one object
-  const id = 1
-  await getObject(id);
+  // 3. Get one object by ID
+  const found = await getObject(1);
+  console.log("Returned from getObject:", found);
 
-  // Updated object
+  // 4. Update an existing object
   const updatedObject = {
-    name: 'Google Pixel 6 MAX',
-    data: { color: 'Cloudy White', capacity: '256 GB' }
-  }
-  const updatedID = "ff8081819d82fab6019dcc432b3f508b"
-  await updateObject(updatedID, updatedObject);
+    name: "Google Pixel 6 MAX",
+    data: { color: "Cloudy White", capacity: "256 GB" },
+  };
+  const updatedID = "ff8081819d82fab6019dcc432b3f508b";
+  const updated = await updateObject(updatedID, updatedObject);
+  console.log("Returned from updateObject:", updated);
 }
 
 main();
