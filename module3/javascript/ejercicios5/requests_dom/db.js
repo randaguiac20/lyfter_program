@@ -1,6 +1,11 @@
-// db.js — Fake Database
-// We use the browser's localStorage as if it were a database.
-// All users are stored as a JSON array under the key 'lyfter_users'.
+// db.js — Real API Database
+// Instead of using localStorage as a fake database, we now use restful-api.dev
+// to store user data for real via HTTP requests.
+//
+// ── SETUP (do this once before running the app) ───────────────────────────
+// 1. Go to https://restful-api.dev/ and log in to your account
+// 2. Copy your API key from the dashboard and paste it in API_KEY below
+// ─────────────────────────────────────────────────────────────────────────
 //
 // This file exposes 4 global functions that the other JS files can call:
 //   getUsers()          - get all users (without passwords)
@@ -8,186 +13,196 @@
 //   loginUser()         - check login credentials
 //   changePassword()    - update a user's password
 
-var USERS_KEY = 'lyfter_users';
+var API_BASE = 'https://api.restful-api.dev';
+var API_KEY = 'bfb54eb0-c07c-4dd6-a16a-435f26cbd5f8'; // <-- your API key from restful-api.dev/dashboard
+var COLLECTION = 'lyfter_users';                       // the "table" name in the API
 
-// ── Private helpers (only used inside this file) ──────────────────────────
+// ── Authenticated request ─────────────────────────────────────────────────
 
-// Read the user list from localStorage.
-// If nothing is saved yet, return an empty array.
-function readUsers() {
-  var stored = localStorage.getItem(USERS_KEY);
-  if (stored === null) {
-    return [];
+// A wrapper around axios that automatically adds the API key to every request.
+// It returns response.data directly so callers get the already-parsed object.
+function authFetch(url, options) {
+  if (!options) {
+    options = {};
   }
-  return JSON.parse(stored);
-}
 
-// Save the updated user list back to localStorage.
-function writeUsers(users) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
-
-// Create a unique ID for a new user.
-// Example result: "USR-M3F2KX1A-HJ7QP"
-function makeUserId() {
-  var timestamp = Date.now().toString(36).toUpperCase();
-  var randomPart = Math.random().toString(36).substring(2, 7).toUpperCase();
-  return 'USR-' + timestamp + '-' + randomPart;
+  return axios({
+    method: options.method || 'GET',
+    url: url,
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY
+    },
+    data: options.body ? JSON.parse(options.body) : undefined
+  }).then(function(response) {
+    return response.data;
+  }).catch(function(error) {
+    // 403 means the API key is wrong or expired — get a new one from the dashboard
+    if (error.response && error.response.status === 403) {
+      throw { status: 403, message: 'API key is invalid. Get a fresh one from restful-api.dev/dashboard and update API_KEY in db.js.' };
+    }
+    throw error;
+  });
 }
 
 // ── Public functions ──────────────────────────────────────────────────────
 
 // GET all users — returns a Promise that resolves with a list of users.
 // We never include the password in what we return (security!).
-// The setTimeout simulates a real network request taking 400ms.
 function getUsers() {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      var users = readUsers();
+  return authFetch(API_BASE + '/collections/' + COLLECTION + '/objects')
+    .catch(function(error) {
+      // axios throws when the server returns 4xx/5xx.
+      // A 404 here just means the collection is brand new (no users yet).
+      if (error.response && error.response.status === 404) {
+        return [];
+      }
+      throw error;
+    })
+    .then(function(objects) {
       var safeUsers = [];
 
       // Loop through every user and copy their info (without the password)
-      for (var i = 0; i < users.length; i++) {
-        var u = users[i];
-        if (u.data) {
-          var safeUser = {
-            id: u.id,
-            name: u.name,
-            data: u.data,
-            createdAt: u.createdAt
-          };
-          safeUsers.push(safeUser);
+      for (var i = 0; i < objects.length; i++) {
+        var obj = objects[i];
+        if (obj.data) {
+          safeUsers.push({
+            id: obj.id,
+            name: obj.name,
+            data: {
+              email: obj.data.email,
+              phone: obj.data.phone,
+              age: obj.data.age
+            },
+            createdAt: obj.data.createdAt || null
+          });
         }
       }
 
-      resolve(safeUsers);
-    }, 400);
-  });
+      return safeUsers;
+    });
 }
 
 // POST a new user (register).
 // Expects an object like: { name, password, data: { email, phone, age } }
 // Returns a Promise that resolves with the created user (without password).
 function createUser(newUser) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      // Make sure all required fields are present
-      if (!newUser.name || !newUser.password || !newUser.data) {
-        reject({ status: 400, message: 'Please fill in all required fields.' });
-        return;
+  // Step 1: get all users first so we can check for duplicate emails
+  return authFetch(API_BASE + '/collections/' + COLLECTION + '/objects')
+    .catch(function(error) {
+      // 404 means the collection is empty — that is fine, no duplicates possible
+      if (error.response && error.response.status === 404) {
+        return [];
       }
-
-      var users = readUsers();
-
+      throw error;
+    })
+    .then(function(objects) {
       // Check if the email is already in use
-      for (var i = 0; i < users.length; i++) {
-        if (users[i].data && users[i].data.email.toLowerCase() === newUser.data.email.toLowerCase()) {
-          reject({ status: 409, message: 'That email is already registered.' });
-          return;
+      for (var i = 0; i < objects.length; i++) {
+        if (objects[i].data && objects[i].data.email &&
+            objects[i].data.email.toLowerCase() === newUser.data.email.toLowerCase()) {
+          throw { status: 409, message: 'That email is already registered.' };
         }
       }
 
-      // Build the new user object
-      var user = {
-        id: makeUserId(),
-        name: newUser.name,
-        password: newUser.password,
-        data: newUser.data,
-        createdAt: new Date().toISOString()
-      };
-
-      // Save to localStorage
-      users.push(user);
-      writeUsers(users);
+      // Step 2: send a POST request to create the user.
+      // We store createdAt inside data because the API does not add it automatically.
+      return authFetch(API_BASE + '/collections/' + COLLECTION + '/objects', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: newUser.name,
+          data: {
+            email: newUser.data.email,
+            phone: newUser.data.phone,
+            age: newUser.data.age,
+            password: newUser.password,
+            createdAt: new Date().toISOString()
+          }
+        })
+      });
+    })
+    .then(function(created) {
+      console.log('User created:', created.id);
 
       // Return the user WITHOUT the password
-      var safeUser = {
-        id: user.id,
-        name: user.name,
-        data: user.data,
-        createdAt: user.createdAt
+      return {
+        id: created.id,
+        name: created.name,
+        data: {
+          email: created.data.email,
+          phone: created.data.phone,
+          age: created.data.age
+        },
+        createdAt: created.data.createdAt
       };
-
-      console.log('User created:', safeUser.id);
-      resolve(safeUser);
-    }, 400);
-  });
+    });
 }
 
-// Verify login credentials (User ID + password).
+// GET a single user by their ID and verify their password (login).
 // Returns a Promise that resolves with the user (without password) if correct.
 function loginUser(userId, password) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      var users = readUsers();
-      var foundUser = null;
-
-      // Search for the user by their ID
-      for (var i = 0; i < users.length; i++) {
-        if (users[i].id === userId) {
-          foundUser = users[i];
-          break;
-        }
+  return authFetch(API_BASE + '/collections/' + COLLECTION + '/objects/' + userId)
+    .catch(function(error) {
+      // axios throws on 404 — translate it into a friendly message
+      if (error.response && error.response.status === 404) {
+        throw { status: 404, message: 'User not found. Please check your ID.' };
+      }
+      throw error;
+    })
+    .then(function(obj) {
+      // Check if the password matches
+      if (obj.data.password !== password) {
+        throw { status: 401, message: 'Incorrect password. Please try again.' };
       }
 
-      // User not found
-      if (foundUser === null) {
-        reject({ status: 404, message: 'User not found. Please check your ID.' });
-        return;
-      }
-
-      // Password is wrong
-      if (foundUser.password !== password) {
-        reject({ status: 401, message: 'Incorrect password. Please try again.' });
-        return;
-      }
-
-      // Everything is correct — return the user WITHOUT the password
-      var safeUser = {
-        id: foundUser.id,
-        name: foundUser.name,
-        data: foundUser.data,
-        createdAt: foundUser.createdAt
+      // Return the user WITHOUT the password
+      return {
+        id: obj.id,
+        name: obj.name,
+        data: {
+          email: obj.data.email,
+          phone: obj.data.phone,
+          age: obj.data.age
+        },
+        createdAt: obj.data.createdAt
       };
-
-      resolve(safeUser);
-    }, 400);
-  });
+    });
 }
 
 // Update a user's password.
-// First checks that the old password is correct, then saves the new one.
+// First fetches the user to verify the old password, then PATCHes with the new one.
 function changePassword(userId, oldPassword, newPassword) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-      var users = readUsers();
-      var userIndex = -1;
-
-      // Find the user's position in the array
-      for (var i = 0; i < users.length; i++) {
-        if (users[i].id === userId) {
-          userIndex = i;
-          break;
-        }
+  // Step 1: get the current user data from the API
+  return authFetch(API_BASE + '/collections/' + COLLECTION + '/objects/' + userId)
+    .catch(function(error) {
+      if (error.response && error.response.status === 404) {
+        throw { status: 404, message: 'User not found. Please check your ID.' };
+      }
+      throw error;
+    })
+    .then(function(obj) {
+      // Step 2: check that the old password is correct
+      if (obj.data.password !== oldPassword) {
+        throw { status: 401, message: 'Current password is incorrect.' };
       }
 
-      // User not found
-      if (userIndex === -1) {
-        reject({ status: 404, message: 'User not found. Please check your ID.' });
-        return;
-      }
-
-      // Old password does not match
-      if (users[userIndex].password !== oldPassword) {
-        reject({ status: 401, message: 'Current password is incorrect.' });
-        return;
-      }
-
-      // Update the password and save
-      users[userIndex].password = newPassword;
-      writeUsers(users);
-
-      resolve({ message: 'Password updated successfully.' });
-    }, 400);
-  });
+      // Step 3: send a PATCH request with the updated password.
+      // We include ALL data fields so nothing gets lost.
+      return authFetch(API_BASE + '/collections/' + COLLECTION + '/objects/' + userId, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          name: obj.name,
+          data: {
+            email: obj.data.email,
+            phone: obj.data.phone,
+            age: obj.data.age,
+            password: newPassword,
+            createdAt: obj.data.createdAt
+          }
+        })
+      });
+    })
+    .then(function() {
+      return { message: 'Password updated successfully.' };
+    });
 }

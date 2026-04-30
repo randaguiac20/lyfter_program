@@ -3,10 +3,11 @@
 // It reads the current session, then builds the profile card HTML
 // and injects it into the page.
 
-// If not logged in, send the user to the login page
+// If not logged in, send the user to the login page and stop here.
+// The else block makes sure nothing below runs if there is no session.
 if (!isLoggedIn()) {
   window.location.href = 'login.html';
-}
+} else {
 
 // Get the current logged-in user from session
 var user = getSession();
@@ -89,3 +90,5 @@ document.getElementById('cardLogoutBtn').addEventListener('click', logout);
 
 // Attach the logout listener to the navbar button
 document.getElementById('navLogoutBtn').addEventListener('click', logout);
+
+} // end of else block — nothing above runs if the user is not logged in
