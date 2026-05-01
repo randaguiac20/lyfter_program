@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register — Lyfter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="register.html" class="navbar-brand">Lyfter</a>
+      <div class="navbar-links">
+        <a href="register.html" class="active">Register</a>
+        <a href="login.html">Login</a>
+      </div>
+    </nav>
+
+    <div class="page">
+      <div class="card">
+        <h1 class="card-title">Create account</h1>
+        <p class="card-subtitle">Fill in your details to get started.</p>
+
+        <!-- Alert box — hidden by default, shown on error -->
+        <div id="alert" class="alert hidden"></div>
+
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="John Doe" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="john@example.com" />
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone</label>
+            <input type="tel" id="phone" placeholder="+1 555 000 0000" />
+          </div>
+
+          <div class="form-group">
+            <label for="age">Age</label>
+            <input type="number" id="age" placeholder="25" min="1" max="120" />
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              placeholder="Min. 6 characters"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              placeholder="Repeat your password"
+            />
+          </div>
+
+          <button type="submit" class="btn btn-primary" id="submitButton">
+            Create Account
+          </button>
+        </form>
+
+        <p class="text-center mt-16">
+          Already have an account? <a href="login.html" class="link">Log in</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Load order matters: db.js and session.js must come first -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="db.js"></script>
+    <script src="session.js"></script>
+    <script src="register.js"></script>
+  </body>
+</html>

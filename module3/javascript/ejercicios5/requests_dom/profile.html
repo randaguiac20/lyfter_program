@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Profile — Lyfter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <a href="profile.html" class="navbar-brand">Lyfter</a>
+      <div class="navbar-links">
+        <a href="change-password.html">Change Password</a>
+        <button id="navLogoutBtn">Log Out</button>
+      </div>
+    </nav>
+
+    <div class="page">
+      <!-- profile.js will fill this div with the user's info -->
+      <div class="card card-wide" id="profileCard">
+        <p style="text-align: center; color: #9ca3af; padding: 40px 0">
+          Loading profile...
+        </p>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="db.js"></script>
+    <script src="session.js"></script>
+    <script src="profile.js"></script>
+  </body>
+</html>
