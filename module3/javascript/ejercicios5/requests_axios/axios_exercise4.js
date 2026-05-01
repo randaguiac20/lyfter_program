@@ -31,7 +31,10 @@ async function getObjects() {
 
     console.log("Objects with data:");
     filtered.forEach(obj => {
-      console.log(`ID: ${obj.id} | Name: ${obj.name} | Data:`, obj.data);
+      console.log(`ID: ${obj.id}`);
+      console.log(`Name: ${obj.name}`);
+      console.log("Data:", obj.data);
+      console.log("---");
     });
 
     return filtered;
@@ -50,7 +53,10 @@ async function getObject(id) {
   try {
     const response = await userInstance.get(`/${id}`);
     const data = response.data;
-    console.log("Getting object:", data);
+    console.log("Object found:");
+    console.log(`ID: ${data.id}`);
+    console.log(`Name: ${data.name}`);
+    console.log("Data:", data.data);
     return data;
   } catch (error) {
     if (error.response) {
@@ -66,10 +72,13 @@ async function postNewObject(newObject) {
   try {
     const response = await userInstance.post('', newObject);
     console.log("--- POST New Object ---");
-    const data = response.data;
-    console.log("Object created:", data);
+    const created = response.data;
+    console.log("Object created successfully:");
+    console.log(`ID: ${created.id}`);
+    console.log(`Name: ${created.name}`);
+    console.log("Data:", created.data);
     console.log("POST is done.");
-    return data;
+    return created;
   } catch (error) {
     if (error.response) {
       console.log("Status:", error.response.status);
@@ -85,10 +94,13 @@ async function updateObject(id, updatedObject) {
   try {
     const response = await userInstance.put(`/${id}`, updatedObject);
     console.log("Updating existent object");
-    const data = response.data;
-    console.log("Object updated:", data);
+    const updated = response.data;
+    console.log("Object updated successfully:");
+    console.log(`ID: ${updated.id}`);
+    console.log(`Name: ${updated.name}`);
+    console.log("Data:", updated.data);
     console.log("PUT is done.");
-    return data;
+    return updated;
   } catch (error) {
     if (error.response) {
       console.log("Status:", error.response.status);
