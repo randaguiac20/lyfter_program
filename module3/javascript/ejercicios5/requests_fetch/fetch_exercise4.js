@@ -145,21 +145,18 @@ async function main() {
       capacity: "256 GB",
     },
   };
-  const created = await postNewObject(newObject);
-  console.log("Returned from postNewObject:", created);
+  const createdObject = await postNewObject(newObject);
 
   // 3. Get one object by ID
-  const found = await getObject(1);
-  console.log("Returned from getObject:", found);
+  await getObject(1);
 
   // 4. Update an existing object
   const updatedObject = {
     name: "Google Pixel 6 MAX",
     data: { color: "Cloudy White", capacity: "256 GB" },
   };
-  const updatedID = "ff8081819d82fab6019dcc432b3f508b";
-  const updated = await updateObject(updatedID, updatedObject);
-  console.log("Returned from updateObject:", updated);
+  const updatedID = createdObject.id;
+  await updateObject(updatedID, updatedObject);
 }
 
 main();
